@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SideBar from "./components/sideBar";
 import Header from "./components/header";
+import HorizontNav from "./components/horizonNav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,11 +28,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div className="flex min-h-screen bg-gray-100">
+        <div className="flex min-h-screen bg-stone-700">
           <SideBar />
           <div className="flex flex-col flex-1">
             <Header />
-            <main className="flex-1 bg-white p-6 rounded-xl shadow-md m-4 overflow-y-auto">
+            <main className="flex-1 bg-stone-800 p-3 rounded-xl shadow-md m-2 overflow-y-auto">
+              <HorizontNav />
               {children}
             </main>
           </div>

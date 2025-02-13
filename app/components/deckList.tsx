@@ -1,6 +1,6 @@
 // components/DeckList.tsx
 import { Deck } from "../interfaces";
-import CreateCardForm from "./createCardForm.tsx";
+import CreateCardForm from "./createCardForm";
 
 interface DeckListProps {
   decks: Deck[];

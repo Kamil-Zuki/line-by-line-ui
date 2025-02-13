@@ -1,4 +1,4 @@
-// pages/index.tsx
+// deck/page.tsx
 "use client";
 import { useState } from "react";
 import CreateDeckForm from "../components/createDeckForm";
@@ -8,7 +8,6 @@ import { Deck, Card } from "../interfaces";
 const HomePage = () => {
   const [decks, setDecks] = useState<Deck[]>([]);
 
-  // Handle creation of a deck
   const handleCreateDeck = (name: string) => {
     const newDeck: Deck = {
       id: Date.now().toString(),

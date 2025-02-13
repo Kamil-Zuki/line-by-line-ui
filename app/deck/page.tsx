@@ -1,44 +1,36 @@
-// deck/page.tsx
 "use client";
-import { useState } from "react";
-import CreateDeckForm from "../components/createDeckForm";
-import DeckList from "../components/deckList";
-import { Deck, Card } from "../interfaces";
+import React, { useState } from 'react';
+import DeckCard from '../components/deckCard';
 
-const HomePage = () => {
-  const [decks, setDecks] = useState<Deck[]>([]);
+interface DeckCardProps {
+  title: string;
+  description: string;
+  imageUrl?: string;
+}
 
-  const handleCreateDeck = (name: string) => {
-    const newDeck: Deck = {
-      id: Date.now().toString(),
-      name,
-      cards: [],
+export default function Deck() {
+  const [decks, setDecks] = useState<DeckCardProps[]>([
+    { title: 'French Basics', description: 'Learn basic French', imageUrl: '/kakashi.jpg' },
+    { title: 'Spanish Intermediate', description: 'Improve your Spanish', imageUrl: '/kakashi.jpg' }
+  ]);
+
+  const createDeck = () => {
+    const newDeck: DeckCardProps = {
+      title: `New Deck ${decks.length + 1}`,
+      description: 'New deck description',
+      // imageUrl: 'https://via.placeholder.com/256x144.png?text=New+Deck'
     };
-    setDecks((prev) => [...prev, newDeck]);
-  };
-
-  // Handle creation of a card
-  const handleCreateCard = (deckId: string, content: string) => {
-    const newCard: Card = {
-      id: Date.now().toString(),
-      content,
-      nextReviewDate: new Date(Date.now() + 86400000), // 1 day from now
-      interval: 1,
-    };
-    setDecks((prev) =>
-      prev.map((deck) =>
-        deck.id === deckId ? { ...deck, cards: [...deck.cards, newCard] } : deck
-      )
-    );
+    setDecks([...decks, newDeck]);
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-extrabold mb-8">Language Learning Decks</h1>
-      <CreateDeckForm onCreateDeck={handleCreateDeck} />
-      <DeckList decks={decks} onAddCard={handleCreateCard} />
+    <div className="container mx-auto px-4 py-1">
+      <button className="mb-4 bg-blue-600 text-white px-4 py-2 rounded" onClick={createDeck}>Create Deck</button>
+      <div className="flex flex-wrap gap-4 justify-start">
+        {decks.map((deck, index) => (
+          <DeckCard key={index} {...deck} />
+        ))}
+      </div>
     </div>
   );
-};
-
-export default HomePage;
+}

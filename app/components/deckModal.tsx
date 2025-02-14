@@ -1,92 +1,74 @@
-// components/Modal.tsx
+// components/deckModal.tsx
 import React from "react";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: () => void;
-  newDeck: {
-    title: string;
-    description: string;
-    imageUrl: string;
-  };
+  newDeck: { title: string; description: string; imageUrl: string };
   onChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
 }
 
-const deckModal = ({
+const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
   newDeck,
   onChange,
-}: ModalProps) => {
+}) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg w-96">
-        <h2 className="text-black text-xl font-semibold mb-4">
-          Create New Deck
-        </h2>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            onSubmit();
-          }}
-        >
+        <h2 className="text-2xl font-bold mb-4">Create New Deck</h2>
+
+        <form>
           <div className="mb-4">
-            <label className="block text-gray-700" htmlFor="title">
-              Title
-            </label>
+            <label className="block mb-2">Deck Title</label>
             <input
               type="text"
-              id="title"
               name="title"
               value={newDeck.title}
               onChange={onChange}
-              className="text-black w-full p-2 mt-2 border border-gray-300 rounded"
-              required
+              className="w-full p-2 border rounded-md"
             />
           </div>
+
           <div className="mb-4">
-            <label className="block text-gray-700" htmlFor="description">
-              Description
-            </label>
+            <label className="block mb-2">Deck Description</label>
             <textarea
-              id="description"
               name="description"
               value={newDeck.description}
               onChange={onChange}
-              className="text-black w-full p-2 mt-2 border border-gray-300 rounded"
-              rows={4}
-              required
+              className="w-full p-2 border rounded-md"
             />
           </div>
+
           <div className="mb-4">
-            <label className="block text-gray-700" htmlFor="imageUrl">
-              Image URL
-            </label>
+            <label className="block mb-2">Image URL</label>
             <input
               type="text"
-              id="imageUrl"
               name="imageUrl"
               value={newDeck.imageUrl}
               onChange={onChange}
-              className="text-black w-full p-2 mt-2 border border-gray-300 rounded"
+              className="w-full p-2 border rounded-md"
             />
           </div>
-          <div className="flex justify-end gap-4">
+
+          <div className="flex justify-between">
             <button
               type="button"
-              className="bg-gray-500 text-white px-4 py-2 rounded"
               onClick={onClose}
+              className="bg-gray-500 text-white px-4 py-2 rounded"
             >
               Cancel
             </button>
             <button
-              type="submit"
+              type="button"
+              onClick={onSubmit}
               className="bg-blue-600 text-white px-4 py-2 rounded"
             >
               Create Deck
@@ -98,4 +80,4 @@ const deckModal = ({
   );
 };
 
-export default deckModal;
+export default Modal;

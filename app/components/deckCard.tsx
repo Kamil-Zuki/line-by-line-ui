@@ -18,7 +18,7 @@ const DeckCard: React.FC<DeckCardProps> = ({
   let defaultImg = "/kakashi.jpg";
   return (
     <Link href={`/deck/${id}`} passHref>
-      <div className="w-64 p-4 bg-white shadow-lg rounded-md cursor-pointer">
+      <div className="w-64 p-4 bg-white shadow-lg rounded-md cursor-pointer transform transition-transform duration-300 ease-in-out hover:scale-105">
         <img
           src={imageUrl || defaultImg}
           alt={title}

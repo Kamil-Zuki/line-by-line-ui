@@ -1,4 +1,3 @@
-// components/Deck.tsx
 "use client";
 import React, { useState } from "react";
 import Modal from "../components/deckModal"; // Modal for deck creation
@@ -11,7 +10,7 @@ interface DeckCardProps {
   imageUrl: string;
 }
 
-export default function Deck() {
+export default function DeckPage() {
   const [decks, setDecks] = useState<DeckCardProps[]>([
     {
       id: "1",
@@ -35,6 +34,7 @@ export default function Deck() {
     imageUrl: "/kakashi.jpg", // Default image
   });
 
+  // Create new deck function
   const createDeck = () => {
     const newDeckItem: DeckCardProps = {
       ...newDeck,
@@ -44,6 +44,7 @@ export default function Deck() {
     setShowModal(false); // Close modal after adding the deck
   };
 
+  // Handle input changes in modal
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {

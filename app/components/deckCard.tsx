@@ -1,7 +1,7 @@
-// components/deckCard.tsx
+"use client";
 import React from "react";
+import Link from "next/link";
 
-// Define interface for deck card properties
 interface DeckCardProps {
   id: string;
   title: string;
@@ -10,20 +10,24 @@ interface DeckCardProps {
 }
 
 const DeckCard: React.FC<DeckCardProps> = ({
+  id,
   title,
   description,
   imageUrl,
 }) => {
+  let defaultImg = "/kakashi.jpg";
   return (
-    <div className="w-64 p-4 bg-white shadow-lg rounded-md">
-      <img
-        src={imageUrl}
-        alt={title}
-        className="w-full h-40 object-cover rounded-md"
-      />
-      <h2 className="mt-2 text-xl font-bold">{title}</h2>
-      <p className="text-sm text-gray-600">{description}</p>
-    </div>
+    <Link href={`/deck/${id}`} passHref>
+      <div className="w-64 p-4 bg-white shadow-lg rounded-md cursor-pointer">
+        <img
+          src={imageUrl || defaultImg}
+          alt={title}
+          className="w-full h-40 object-cover rounded-md"
+        />
+        <h2 className="mt-2 text-xl font-bold">{title}</h2>
+        <p className="text-sm text-gray-600">{description}</p>
+      </div>
+    </Link>
   );
 };
 

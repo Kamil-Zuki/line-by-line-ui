@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import Modal from "../components/deckModal"; // Modal for deck creation
+import DeckModal from "../components/deckModal"; // Modal for deck creation
 import DeckCard from "../components/deckCard"; // Card for each deck
 
 interface DeckCardProps {
@@ -69,7 +69,7 @@ export default function DeckPage() {
       </div>
 
       {/* Modal Component */}
-      <Modal
+      <DeckModal
         isOpen={showModal}
         onClose={() => setShowModal(false)} // Close modal
         onSubmit={createDeck} // Submit the new deck

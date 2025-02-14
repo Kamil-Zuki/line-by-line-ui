@@ -6,7 +6,7 @@ interface DeckCardProps {
   id: string;
   title: string;
   description: string;
-  imageUrl: string;
+  imageUrl?: string;
 }
 
 const DeckCard: React.FC<DeckCardProps> = ({

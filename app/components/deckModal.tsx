@@ -11,7 +11,7 @@ interface ModalProps {
   ) => void;
 }
 
-const Modal: React.FC<ModalProps> = ({
+const DeckModal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
@@ -80,4 +80,4 @@ const Modal: React.FC<ModalProps> = ({
   );
 };
 
-export default Modal;
+export default DeckModal;

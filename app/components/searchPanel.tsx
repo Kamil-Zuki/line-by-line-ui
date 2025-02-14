@@ -86,11 +86,11 @@ export default function SearchPanel() {
           placeholder="Search..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-3/4 h-14 p-4 rounded-xl bg-gray-100 text-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-md"
+          className="w-3/4 h-10 p-3 rounded-xl bg-gray-100 text-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-md"
         />
         <button
           onClick={handleSearch}
-          className="h-14 bg-blue-600 text-white px-6 rounded-xl hover:bg-blue-700 font-semibold transition-all shadow-lg"
+          className="h-10 bg-blue-600 text-white px-6 rounded-xl hover:bg-blue-700 font-semibold transition-all shadow-lg"
         >
           Search
         </button>

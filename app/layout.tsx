@@ -4,6 +4,7 @@ import "./globals.css";
 import SideBar from "./components/sideBar";
 import Header from "./components/header";
 import HorizontNav from "./components/horizonNav";
+import AuthProvider from "./components/sessionProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,7 +20,6 @@ export const metadata: Metadata = {
   title: "Line By Line",
   description: "Deck and Cards",
 };
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,16 +28,22 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div className="flex min-h-screen bg-white">
-          <SideBar />
-          <div className="flex flex-col flex-1">
-            <Header />
-            <main className="flex-1 bg-white p-4 rounded-xl shadow-md m-4 overflow-y-auto">
-              <HorizontNav />
-              {children}
-            </main>
+        <AuthProvider>
+          {/* Ensure full-screen height */}
+          <div className="flex h-screen bg-white">
+            {/* Sidebar takes full height */}
+            <SideBar />
+
+            {/* This wrapper makes sure everything fills height */}
+            <div className="flex flex-col flex-1 h-full">
+              <Header />
+              <main className="flex-1 bg-white p-4 rounded-xl shadow-md m-4 overflow-y-auto">
+                {/* <HorizontNav /> */}
+                {children}
+              </main>
+            </div>
           </div>
-        </div>
+        </AuthProvider>
       </body>
     </html>
   );

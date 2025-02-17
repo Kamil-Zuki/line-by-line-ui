@@ -1,4 +1,3 @@
-// app/auth/register/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -10,12 +9,10 @@ export default function RegisterPage() {
   const [message, setMessage] = useState("");
   const [isMounted, setIsMounted] = useState(false);
 
-  // Ensure the component is mounted before rendering
   useEffect(() => {
+    // This effect only runs client-side
     setIsMounted(true);
   }, []);
-
-  if (!isMounted) return null; // Prevent hydration mismatch
 
   const handleRegister = async () => {
     setMessage("");
@@ -33,6 +30,8 @@ export default function RegisterPage() {
     const data = await response.json();
     setMessage(data.error || data.message);
   };
+
+  if (!isMounted) return null; // Hydration is safe now
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#2f3136]">

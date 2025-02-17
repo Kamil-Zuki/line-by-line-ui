@@ -1,49 +1,31 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+"use client"; // Mark this file as a client component
+
+import { SessionProvider, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation"; // This hook will now work
 import SideBar from "./components/sideBar";
 import Header from "./components/header";
-import HorizontNav from "./components/horizonNav";
-import AuthProvider from "./components/sessionProvider";
+import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export const metadata: Metadata = {
-  title: "Line By Line",
-  description: "Deck and Cards",
-};
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body>
-        <AuthProvider>
-          {/* Ensure full-screen height */}
-          <div className="flex h-screen bg-white">
-            {/* Sidebar takes full height */}
+        {/* Wrap the entire layout with SessionProvider */}
+        <SessionProvider>
+          <div className="flex h-screen bg-white overflow-hidden">
             <SideBar />
-
-            {/* This wrapper makes sure everything fills height */}
-            <div className="flex flex-col flex-1 h-full">
+            <div className="flex flex-col flex-1 min-h-0">
               <Header />
-              <main className="flex-1 bg-white p-4 rounded-xl shadow-md m-4 overflow-y-auto">
-                {/* <HorizontNav /> */}
+              <main className="flex-1 bg-white p-4 rounded-xl shadow-md m-4 overflow-y-auto min-h-0">
                 {children}
               </main>
             </div>
           </div>
-        </AuthProvider>
+        </SessionProvider>
       </body>
     </html>
   );

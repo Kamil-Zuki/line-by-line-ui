@@ -1,28 +1,32 @@
-import React, { useEffect, useState } from "react";
+// components/LearningCard.tsx
+import React from "react";
 import { useRouter } from "next/router";
 
-const DeckCard = ({ id, title, description, imageUrl }: DeckCardProps) => {
-  const [isClient, setIsClient] = useState(false);
+interface LearningCardProps {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  cards: { front: string; back: string }[]; // Cards for the deck
+}
+
+const LearningCard = ({
+  id,
+  title,
+  description,
+  imageUrl,
+  cards,
+}: LearningCardProps) => {
   const router = useRouter();
 
-  useEffect(() => {
-    // Set isClient to true once the component is mounted on the client
-    setIsClient(true);
-  }, []);
-
-  // Prevent rendering until the component is mounted in the browser
-  if (!isClient) {
-    return null;
-  }
-
-  const navigateToDeck = () => {
-    router.push(`/learn/${id}`); // Or use router.push for navigating to a specific deck
+  const handleOpenDeck = () => {
+    router.push(`/learn/${id}`); // Redirect to the learning page for this deck
   };
 
   return (
     <div
       className="relative w-64 h-36 rounded-xl overflow-hidden shadow-lg bg-gray-800 hover:scale-105 transition-transform cursor-pointer"
-      onClick={navigateToDeck}
+      onClick={handleOpenDeck}
     >
       <img
         src={imageUrl}
@@ -37,4 +41,4 @@ const DeckCard = ({ id, title, description, imageUrl }: DeckCardProps) => {
   );
 };
 
-export default DeckCard;
+export default LearningCard;

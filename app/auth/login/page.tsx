@@ -1,116 +1,67 @@
-// app/auth/login/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function LoginPage() {
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const [isMounted, setIsMounted] = useState(false);
+  const [error, setError] = useState("");
 
-  // Ensure the component is mounted before rendering to prevent hydration issues
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) return null; // Prevent rendering before the component is mounted
-
-  // Handle login process
-  const handleLogin = async () => {
-    setMessage("");
-
-    // Basic validation
-    if (!email || !password) {
-      setMessage("Both email and password are required.");
-      return;
+    // If session is available, redirect to home
+    if (status === "authenticated") {
+      router.push("/");
     }
+  }, [status, router]);
 
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+  const handleLogin = async () => {
+    const result = await signIn("credentials", {
+      redirect: false, // Prevent next-auth from redirecting itself
+      email,
+      password,
+    });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        if (data.token) {
-          // Ensure localStorage is used only on the client
-          if (typeof window !== "undefined") {
-            localStorage.setItem("token", data.token);
-          }
-          setMessage("Login successful!");
-          setTimeout(() => router.push("/profile"), 1000);
-        } else {
-          setMessage("Login failed. Please check your credentials.");
-        }
-      } else {
-        setMessage(data.error || "An error occurred.");
-      }
-    } catch (error) {
-      setMessage("An unexpected error occurred.");
+    if (result?.error) {
+      setError("Invalid credentials");
+    } else {
+      router.push("/"); // Redirect after successful login
     }
   };
 
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-[#2f3136]">
-      <div className="p-8 bg-gray-900 shadow-md rounded-md w-96">
-        <h2 className="text-2xl font-bold mb-6 text-center text-white">
-          Login
-        </h2>
+  if (status === "loading") return null; // Prevent flickering
 
-        {/* Email input */}
+  return (
+    <div className="flex h-screen items-center justify-center bg-[#2f3136]">
+      <div className="p-8 bg-gray-900 shadow-md rounded-md w-96">
+        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+
+        {error && <p className="text-red-500 text-center">{error}</p>}
+
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full mb-4 p-2 border border-gray-300 rounded text-gray-900"
+          className="w-full text-black mb-4 p-2 border border-gray-300 rounded"
         />
-
-        {/* Password input */}
         <input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full mb-4 p-2 border border-gray-300 rounded text-gray-900"
+          className="w-ful text-black mb-4 p-2 border border-gray-300 rounded"
         />
 
-        {/* Login Button */}
         <button
           onClick={handleLogin}
-          className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"
+          className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
         >
           Login
         </button>
-
-        {/* Error or success message */}
-        {message && (
-          <p
-            className={`mt-4 text-center ${
-              message.includes("failed") || message.includes("error")
-                ? "text-red-600"
-                : "text-green-600"
-            }`}
-          >
-            {message}
-          </p>
-        )}
-
-        {/* Redirect to Register Page */}
-        <div className="mt-4 text-center">
-          <p className="text-white">
-            Don't have an account?{" "}
-            <a href="/auth/register" className="text-blue-500 hover:underline">
-              Register here
-            </a>
-          </p>
-        </div>
       </div>
     </div>
   );

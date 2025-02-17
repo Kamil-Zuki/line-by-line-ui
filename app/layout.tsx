@@ -1,7 +1,7 @@
 "use client";
 
 import { SessionProvider, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import SideBar from "./components/sideBar";
 import Header from "./components/header";
@@ -13,43 +13,44 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
-        <SessionProvider>
-          <AuthGuard>{children}</AuthGuard>
-        </SessionProvider>
-      </body>
-    </html>
+    <SessionProvider>
+      <AuthGuard>{children}</AuthGuard>
+    </SessionProvider>
   );
 }
 
-// 🔹 AuthGuard to check authentication and handle layout visibility
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
+  const isAuthPage = pathname.startsWith("/auth");
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/login"); // Redirect to login if not authenticated
+    if (status === "unauthenticated" && !isAuthPage) {
+      router.push("/auth/login");
     }
-  }, [status, router]);
+  }, [status, router, isAuthPage]);
 
-  // Prevent flicker while loading session
+  // 🛑 Fix: Prevent redirect loops by waiting for session status
   if (status === "loading") return null;
 
-  // Hide sidebar & header only for auth pages
-  const isAuthPage =
-    typeof window !== "undefined" &&
-    window.location.pathname.startsWith("/auth");
-
   return (
-    <div className="flex h-screen">
-      {!isAuthPage && <SideBar />}
-      <div className="flex flex-col flex-1">
-        {!isAuthPage && <Header />}
-        <main className="flex-1 overflow-y-auto">{children}</main>{" "}
-        {/* Removed padding, margin, bg */}
-      </div>
-    </div>
+    <html lang="en">
+      <body>
+        {isAuthPage ? (
+          <div className="flex h-screen items-center justify-center bg-[#2f3136]">
+            {children}
+          </div>
+        ) : (
+          <div className="flex h-screen bg-gray-100 overflow-hidden">
+            <SideBar />
+            <div className="flex flex-col flex-1 min-h-0">
+              <Header />
+              <main className="flex-1 overflow-y-auto min-h-0">{children}</main>
+            </div>
+          </div>
+        )}
+      </body>
+    </html>
   );
 }

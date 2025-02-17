@@ -43,21 +43,21 @@ export default function RegisterPage() {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full mb-4 p-2 border border-gray-300 rounded"
+          className="w-full text-black mb-4 p-2 border border-gray-300 rounded"
         />
         <input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full mb-4 p-2 border border-gray-300 rounded"
+          className="w-full text-black mb-4 p-2 border border-gray-300 rounded"
         />
         <input
           type="password"
           placeholder="Confirm Password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full mb-4 p-2 border border-gray-300 rounded"
+          className="w-full text-black mb-4 p-2 border border-gray-300 rounded"
         />
 
         <button

@@ -28,33 +28,35 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="p-8 bg-white shadow-md rounded-md w-96">
-        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+    <div className="flex items-center justify-center min-h-screen bg-[#2f3136]">
+      <div className="p-8 bg-[#40444b] shadow-lg rounded-lg w-96">
+        <h2 className="text-2xl font-bold mb-6 text-center text-white">
+          Login
+        </h2>
 
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full mb-4 p-2 border border-gray-300 rounded"
+          className="w-full mb-4 p-3 border border-gray-600 rounded-lg text-white bg-[#2f3136]"
         />
         <input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full mb-4 p-2 border border-gray-300 rounded"
+          className="w-full mb-4 p-3 border border-gray-600 rounded-lg text-white bg-[#2f3136]"
         />
 
         <button
           onClick={handleLogin}
-          className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"
+          className="w-full bg-[#5865f2] text-white p-3 rounded-lg hover:bg-[#4752c4]"
         >
           Login
         </button>
 
-        {message && <p className="text-center mt-4 text-gray-700">{message}</p>}
+        {message && <p className="text-center mt-4 text-red-500">{message}</p>}
       </div>
     </div>
   );

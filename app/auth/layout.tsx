@@ -1,15 +1,20 @@
-// In your auth layout for login/register pages
+import AuthProvider from "../components/sessionProvider";
+import "../globals.css"; // Ensure global styles are imported
 
-import AuthProvider from "../components/authProvider"; // Import the AuthProvider
-
-export default function AuthLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <AuthProvider>
-      {children} {/* Render children here */}
-    </AuthProvider>
+    <html lang="en">
+      <body>
+        <AuthProvider>
+          <div className="flex h-screen bg-white overflow-hidden">
+            {children}
+          </div>
+        </AuthProvider>
+      </body>
+    </html>
   );
 }

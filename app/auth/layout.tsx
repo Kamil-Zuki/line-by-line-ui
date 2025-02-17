@@ -1,3 +1,4 @@
+// app/layout.tsx
 import AuthProvider from "../components/sessionProvider";
 import "../globals.css"; // Ensure global styles are imported
 

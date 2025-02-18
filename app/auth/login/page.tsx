@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -14,7 +13,7 @@ export default function LoginPage() {
     const token = localStorage.getItem("authToken");
     console.log(token);
     if (token) {
-      // router.push("/");
+      router.push("/");
     }
   }, [router]);
 
@@ -32,7 +31,6 @@ export default function LoginPage() {
         localStorage.setItem("authToken", data.token);
         router.push("/");
       } else {
-        // If login fails, display the error message from API
         setError(data.error || "Login failed");
       }
     } catch (error) {

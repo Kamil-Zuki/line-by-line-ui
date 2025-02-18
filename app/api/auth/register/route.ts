@@ -8,19 +8,31 @@ export async function POST(req: Request) {
     const response = await fetch(API_URL, {
       method: "POST",
       headers: {
-        "Accept": "*/*",
+        Accept: "application/json",
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
     });
 
     const data = await response.json();
+
     if (!response.ok) {
-      return NextResponse.json({ error: data.message || "Registration failed" }, { status: response.status });
+      // Return the error message if available, otherwise default to 'Registration failed'
+      return NextResponse.json(
+        { error: data.message || "Registration failed" },
+        { status: response.status }
+      );
     }
 
-    return NextResponse.json(data, { status: 200 });
+    // Assuming registration is successful, you might want to send a success message or the user's info
+    return NextResponse.json(
+      { message: "Registration successful", user: data },
+      { status: 200 }
+    );
   } catch (error) {
-    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Something went wrong" },
+      { status: 500 }
+    );
   }
 }

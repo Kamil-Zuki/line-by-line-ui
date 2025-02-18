@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import DeckModal from "../components/deckModal"; // Modal for deck creation
-import DeckCard from "../components/deckCard"; // Card for each deck
+import DeckModal from "../components/DeckModal"; // Modal for deck creation
+import DeckCard from "../components/DeckCard"; // Card for each deck
 
 interface DeckCardProps {
   id: string;
@@ -68,7 +68,6 @@ export default function DeckPage() {
         ))}
       </div>
 
-      {/* Modal Component */}
       <DeckModal
         isOpen={showModal}
         onClose={() => setShowModal(false)} // Close modal

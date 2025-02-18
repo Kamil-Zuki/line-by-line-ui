@@ -10,7 +10,6 @@ export default function RegisterPage() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    // This effect only runs client-side
     setIsMounted(true);
   }, []);
 
@@ -24,45 +23,47 @@ export default function RegisterPage() {
     const response = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, confirmPassword }),
+      body: JSON.stringify({ email, password }), // No need to send confirmPassword
     });
 
     const data = await response.json();
-    setMessage(data.error || data.message);
+    setMessage(data.error || data.message); // Display specific error or success message
   };
 
-  if (!isMounted) return null; // Hydration is safe now
+  if (!isMounted) return null;
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#2f3136]">
-      <div className="p-8 bg-gray-900 shadow-md rounded-md w-96">
-        <h2 className="text-2xl font-bold mb-6 text-center">Register</h2>
+    <div className="flex items-center justify-center h-screen bg-[#2f3136]">
+      <div className="p-8 bg-gray-900 shadow-md rounded-md w-96 max-w-full">
+        <h2 className="text-3xl font-bold mb-6 text-center text-white">
+          Register
+        </h2>
 
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full text-black mb-4 p-2 border border-gray-300 rounded"
+          className="w-full text-black mb-4 p-3 border border-gray-300 rounded focus:outline-none"
         />
         <input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full text-black mb-4 p-2 border border-gray-300 rounded"
+          className="w-full text-black mb-4 p-3 border border-gray-300 rounded focus:outline-none"
         />
         <input
           type="password"
           placeholder="Confirm Password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full text-black mb-4 p-2 border border-gray-300 rounded"
+          className="w-full text-black mb-6 p-3 border border-gray-300 rounded focus:outline-none"
         />
 
         <button
           onClick={handleRegister}
-          className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+          className="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 focus:outline-none"
         >
           Register
         </button>

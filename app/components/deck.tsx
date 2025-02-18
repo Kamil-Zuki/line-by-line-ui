@@ -1,8 +1,8 @@
 // components/Deck.tsx
 "use client";
 import React, { useState } from "react";
-import Modal from "../components/deckModal"; // Modal for deck creation
-import DeckCard from "../components/deckCard"; // Card for each deck
+import Modal from "../components/DeckModal"; // Modal for deck creation
+import DeckCard from "../components/DeckCard"; // Card for each deck
 
 // Define interface for deck properties
 interface DeckCardProps {

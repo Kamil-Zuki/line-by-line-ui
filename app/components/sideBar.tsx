@@ -1,7 +1,19 @@
-// components/SideBar.tsx
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function SideBar() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      router.push("/auth/login"); // Redirect to login if not authenticated
+    }
+  }, [router]);
+
   return (
     <aside className="flex flex-col bg-stone-900 w-28 h-screen p-4 text-white">
       <h2 className="text-xl font-bold mb-4">

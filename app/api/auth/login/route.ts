@@ -5,7 +5,6 @@ const API_URL = "http://85.175.218.17/api/v1/auth/login";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    console.log(body);
     const response = await fetch(API_URL, {
       method: "POST",
       headers: {

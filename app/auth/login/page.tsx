@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 export default function LoginPage() {
@@ -76,6 +77,12 @@ export default function LoginPage() {
         >
           {loading ? "Logging in..." : "Login"}
         </button>
+        <p className="block text-center">
+          If you haven't an account yet,{" "}
+          <Link href="/auth/register" className="text-blue-500 translate-x-20">
+            register
+          </Link>
+        </p>
       </div>
     </div>
   );

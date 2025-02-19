@@ -1,5 +1,4 @@
 import "./globals.css";
-import AuthGuard from "./components/AuthGuard";
 import SideBar from "./components/SideBar";
 import Header from "./components/Header";
 

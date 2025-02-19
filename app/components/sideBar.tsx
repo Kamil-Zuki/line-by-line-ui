@@ -10,7 +10,7 @@ export default function SideBar() {
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     if (!token) {
-      router.push("/auth/login"); // Redirect to login if not authenticated
+      router.push("/auth/login");
     }
   }, [router]);
 

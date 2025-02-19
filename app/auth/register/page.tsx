@@ -7,6 +7,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -14,20 +15,19 @@ export default function RegisterPage() {
   }, []);
 
   const handleRegister = async () => {
+    setError("");
     setMessage("");
-    if (password !== confirmPassword) {
-      setMessage("Passwords do not match");
-      return;
-    }
 
     const response = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }), // No need to send confirmPassword
+      body: JSON.stringify({ email, password, confirmPassword }), // No need to send confirmPassword
     });
 
     const data = await response.json();
-    setMessage(data.error || data.message); // Display specific error or success message
+    console.log(data);
+    setError(data.error);
+    setMessage(data.message);
   };
 
   if (!isMounted) return null;
@@ -68,7 +68,10 @@ export default function RegisterPage() {
           Register
         </button>
 
-        {message && <p className="text-center mt-4 text-gray-700">{message}</p>}
+        {message && (
+          <p className="text-center mt-4 text-green-600">{message}</p>
+        )}
+        {error && <p className="text-center mt-4 text-red-600">{error}</p>}
       </div>
     </div>
   );

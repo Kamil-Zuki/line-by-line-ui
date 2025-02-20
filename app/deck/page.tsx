@@ -21,19 +21,18 @@ export default function DeckPage() {
       setError("");
 
       const token = localStorage.getItem("authToken");
-      console.log(token);
       if (!token) {
         setError("Authorization token not found. Please log in.");
         setLoading(false);
         return;
       }
-      console.log(token);
+
       try {
-        const response = await fetch("http://85.175.218.17/api/v1/deck", {
+        const response = await fetch("/api/personal-vocab/decks", {
           method: "GET",
           headers: {
             Accept: "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`, // Send token to Next.js API
           },
         });
 
@@ -45,8 +44,8 @@ export default function DeckPage() {
         const formattedDecks = data.map((deck: any) => ({
           id: deck.id,
           title: deck.name,
-          description: "No description available", // Adjust if API provides it
-          imageUrl: "/kakashi.jpg", // Default image
+          description: deck.description || "No description available", // If API provides description
+          imageUrl: "/kakashi.jpg",
         }));
 
         setDecks(formattedDecks);
@@ -62,20 +61,22 @@ export default function DeckPage() {
 
   return (
     <div className="container">
-      {loading && <p>Loading decks...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      {loading && <p className="text-center text-gray-500">Loading decks...</p>}
+      {error && <p className="text-center text-red-500">{error}</p>}
 
       <button
-        className="mb-4 bg-blue-600 text-white px-3 py-1 rounded"
+        className="mb-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
         onClick={() => alert("Deck creation not implemented yet")} // Replace with modal logic
       >
         Create Deck
       </button>
 
-      <div className="flex flex-wrap gap-4 justify-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {decks.length > 0
           ? decks.map((deck) => <DeckCard key={deck.id} {...deck} />)
-          : !loading && <p>No decks available.</p>}
+          : !loading && (
+              <p className="text-center text-gray-500">No decks available.</p>
+            )}
       </div>
     </div>
   );

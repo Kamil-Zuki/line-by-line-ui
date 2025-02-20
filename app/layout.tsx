@@ -10,11 +10,13 @@ export default function RootLayout({
   return (
     <html lang="eng">
       <body>
-        <div className="flex h-screen bg-gray-100 overflow-hidden">
+        <div className="flex h-screen max-w-[2574px] m-auto bg-neutral-900 overflow-hidden">
           <SideBar />
           <div className="flex flex-col flex-1 min-h-0">
             <Header />
-            <main className="flex-1 overflow-y-auto min-h-0">{children}</main>
+            <main className="flex-1 bg-neutral-800 overflow-y-auto min-h-0 m-5 p-5 rounded-2xl">
+              {children}
+            </main>
           </div>
         </div>
       </body>

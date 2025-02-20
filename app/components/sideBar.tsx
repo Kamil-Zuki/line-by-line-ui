@@ -15,7 +15,7 @@ export default function SideBar() {
   }, [router]);
 
   return (
-    <aside className="flex flex-col bg-stone-900 w-28 h-screen p-4 text-white">
+    <aside className="flex flex-col m-auto bg-neutral-800 w-28 h-screen p-4 text-white ml-2">
       <h2 className="text-xl font-bold mb-4">
         <Link href="/" className="block p-2 rounded">
           SideBar

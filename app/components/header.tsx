@@ -10,7 +10,7 @@ export default function Header() {
   };
 
   return (
-    <div className="flex items-center justify-between h-16 bg-stone-900 w-full px-4 gap-2">
+    <div className="flex items-center justify-between h-16 bg-neutral-800 w-full px-4 gap-2">
       <div className="flex-3"></div>
       <SearchPanel />
 

@@ -26,7 +26,7 @@ export default function DeckPage() {
     },
   ]);
 
-  const [showModal, setShowModal] = useState(false); // Track modal visibility
+  const [showModal, setShowModal] = useState(false);
   const [newDeck, setNewDeck] = useState<DeckCardProps>({
     id: "",
     title: "",
@@ -57,7 +57,7 @@ export default function DeckPage() {
   return (
     <div className="container">
       <button
-        className="mb-4 bg-blue-600 text-white px-4 py-2 rounded"
+        className="mb-4 bg-blue-600 text-white px-3 py-1 rounded "
         onClick={() => setShowModal(true)} // Show modal on button click
       >
         Create Deck

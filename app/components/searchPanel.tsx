@@ -79,21 +79,15 @@ export default function SearchPanel() {
   };
 
   return (
-    <div className="flex flex-col items-center w-full">
+    <div className="flex h-10 flex-col items-center justify-center w-full">
       <div className="flex w-full max-w-[800px] justify-center">
         <input
           type="text"
           placeholder="Search..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-3/4 h-10 p-3 rounded-xl bg-gray-600 text-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-md"
+          className="w-3/4 h-8 p-2  rounded-lg bg-gray-600 text-base text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-md"
         />
-        <button
-          onClick={handleSearch}
-          className="h-10 bg-blue-600 text-white px-6 rounded-xl hover:bg-blue-700 font-semibold transition-all shadow-lg"
-        >
-          Search
-        </button>
       </div>
 
       {isModalOpen && (

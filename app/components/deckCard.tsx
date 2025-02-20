@@ -24,7 +24,7 @@ const DeckCard: React.FC<DeckCardProps> = ({
           alt={title}
           className="w-full h-40 object-cover rounded-md"
         />
-        <h2 className="mt-2 text-xl font-bold">{title}</h2>
+        <h2 className="mt-2 text-xl font-bold text-gray-600">{title}</h2>
         <p className="text-sm text-gray-600">{description}</p>
       </div>
     </Link>

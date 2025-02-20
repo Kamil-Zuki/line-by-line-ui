@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -12,13 +13,16 @@ export default function LoginPage() {
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
-    console.log(token);
+    console.log("Stored Token:", token);
+
     if (token) {
       router.push("/");
     }
   }, [router]);
 
   const handleLogin = async () => {
+    setLoading(true);
+
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
@@ -27,9 +31,10 @@ export default function LoginPage() {
       });
 
       const data = await response.json();
+      console.log("Login Response:", data); // Debugging: Check response structure
 
-      if (response.ok && data.token) {
-        localStorage.setItem("authToken", data.token);
+      if (response.ok && typeof data.token === "string") {
+        localStorage.setItem("authToken", data.token); // Ensure it's a string
         router.push("/");
       } else {
         setError(data.error || "Login failed");
@@ -37,7 +42,7 @@ export default function LoginPage() {
     } catch (error) {
       setError("Something went wrong. Please try again.");
     } finally {
-      setLoading(false);
+      setLoading(false); // Reset loading state
     }
   };
 
@@ -77,6 +82,7 @@ export default function LoginPage() {
         >
           {loading ? "Logging in..." : "Login"}
         </button>
+
         <p className="block text-center">
           If you haven't an account yet,{" "}
           <Link href="/auth/register" className="text-blue-500 translate-x-20">

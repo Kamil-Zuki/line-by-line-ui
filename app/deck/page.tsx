@@ -1,7 +1,7 @@
 "use client";
-import React, { useState } from "react";
-import DeckModal from "../components/DeckModal"; // Modal for deck creation
-import DeckCard from "../components/DeckCard"; // Card for each deck
+import React, { useEffect, useState } from "react";
+import DeckModal from "../components/DeckModal";
+import DeckCard from "../components/DeckCard";
 
 interface DeckCardProps {
   id: string;
@@ -11,70 +11,72 @@ interface DeckCardProps {
 }
 
 export default function DeckPage() {
-  const [decks, setDecks] = useState<DeckCardProps[]>([
-    {
-      id: "1",
-      title: "French Basics",
-      description: "Learn basic French",
-      imageUrl: "/kakashi.jpg",
-    },
-    {
-      id: "2",
-      title: "Spanish Intermediate",
-      description: "Improve your Spanish",
-      imageUrl: "/kakashi.jpg",
-    },
-  ]);
+  const [decks, setDecks] = useState<DeckCardProps[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const [showModal, setShowModal] = useState(false);
-  const [newDeck, setNewDeck] = useState<DeckCardProps>({
-    id: "",
-    title: "",
-    description: "",
-    imageUrl: "/kakashi.jpg", // Default image
-  });
+  useEffect(() => {
+    const fetchDecks = async () => {
+      setLoading(true);
+      setError("");
 
-  // Create new deck function
-  const createDeck = () => {
-    const newDeckItem: DeckCardProps = {
-      ...newDeck,
-      id: (decks.length + 1).toString(), // Generate a new ID
+      const token = localStorage.getItem("authToken");
+      console.log(token);
+      if (!token) {
+        setError("Authorization token not found. Please log in.");
+        setLoading(false);
+        return;
+      }
+      console.log(token);
+      try {
+        const response = await fetch("http://85.175.218.17/api/v1/deck", {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const formattedDecks = data.map((deck: any) => ({
+          id: deck.id,
+          title: deck.name,
+          description: "No description available", // Adjust if API provides it
+          imageUrl: "/kakashi.jpg", // Default image
+        }));
+
+        setDecks(formattedDecks);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     };
-    setDecks([...decks, newDeckItem]); // Add the new deck to the list
-    setShowModal(false); // Close modal after adding the deck
-  };
 
-  // Handle input changes in modal
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setNewDeck({
-      ...newDeck,
-      [e.target.name]: e.target.value, // Update newDeck state dynamically
-    });
-  };
+    fetchDecks();
+  }, []);
 
   return (
     <div className="container">
+      {loading && <p>Loading decks...</p>}
+      {error && <p className="text-red-500">{error}</p>}
+
       <button
-        className="mb-4 bg-blue-600 text-white px-3 py-1 rounded "
-        onClick={() => setShowModal(true)} // Show modal on button click
+        className="mb-4 bg-blue-600 text-white px-3 py-1 rounded"
+        onClick={() => alert("Deck creation not implemented yet")} // Replace with modal logic
       >
         Create Deck
       </button>
-      <div className="flex flex-wrap gap-4 justify-start">
-        {decks.map((deck) => (
-          <DeckCard key={deck.id} {...deck} /> // Render deck cards
-        ))}
-      </div>
 
-      <DeckModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)} // Close modal
-        onSubmit={createDeck} // Submit the new deck
-        newDeck={newDeck} // Pass the newDeck data to modal
-        onChange={handleChange} // Pass change handler for modal inputs
-      />
+      <div className="flex flex-wrap gap-4 justify-start">
+        {decks.length > 0
+          ? decks.map((deck) => <DeckCard key={deck.id} {...deck} />)
+          : !loading && <p>No decks available.</p>}
+      </div>
     </div>
   );
 }

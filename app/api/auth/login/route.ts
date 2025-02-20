@@ -5,6 +5,7 @@ const API_URL = "http://85.175.218.17/api/v1/auth/login";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+
     const response = await fetch(API_URL, {
       method: "POST",
       headers: {
@@ -14,7 +15,21 @@ export async function POST(req: Request) {
       body: JSON.stringify(body),
     });
 
-    const token = await response.json();
+    if (!response.ok) {
+      const errorData = await response.json();
+      return NextResponse.json(
+        { error: errorData.message || "Invalid credentials" },
+        { status: response.status }
+      );
+    }
+
+    const data = await response.json();
+
+    const token = typeof data.data === "string" ? data.data : null;
+
+    if (!token) {
+      return NextResponse.json({ error: "No token received" }, { status: 500 });
+    }
 
     return NextResponse.json({ token }, { status: 200 });
   } catch (error) {

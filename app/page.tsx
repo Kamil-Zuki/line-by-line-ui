@@ -1,3 +1,9 @@
+import AuthenticatedLayout from "./AuthenticatedLayout";
+
 export default function Home() {
-  return <div className="text-white">Text</div>;
+  return (
+    <AuthenticatedLayout>
+      <div className="text-white">Text</div>
+    </AuthenticatedLayout>
+  );
 }

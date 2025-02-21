@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import DeckModal from "../components/DeckModal";
 import DeckCard from "../components/DeckCard";
+import AuthenticatedLayout from "../AuthenticatedLayout";
 
 interface DeckCardProps {
   id: string;
@@ -141,32 +142,36 @@ export default function DeckPage() {
   };
 
   return (
-    <div className="flex flex-col">
-      {loading && <p className="text-center text-gray-500">Loading decks...</p>}
-      {error && <p className="text-center text-red-500">{error}</p>}
+    <AuthenticatedLayout>
+      <div className="flex flex-col">
+        {loading && (
+          <p className="text-center text-gray-500">Loading decks...</p>
+        )}
+        {error && <p className="text-center text-red-500">{error}</p>}
 
-      <button
-        className="w-32 mb-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-        onClick={handleOpenModal}
-      >
-        Create Deck
-      </button>
+        <button
+          className="w-32 mb-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          onClick={handleOpenModal}
+        >
+          Create Deck
+        </button>
 
-      <DeckModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSubmit={handleCreateDeck}
-        newDeck={newDeck}
-        onChange={handleChange}
-      />
+        <DeckModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onSubmit={handleCreateDeck}
+          newDeck={newDeck}
+          onChange={handleChange}
+        />
 
-      <div className="flex gap-4 w-auto justify-start items-center flex-wrap">
-        {decks.length > 0
-          ? decks.map((deck) => <DeckCard key={deck.id} {...deck} />)
-          : !loading && (
-              <p className="text-center text-gray-500">No decks available.</p>
-            )}
+        <div className="flex gap-4 w-auto justify-start items-center flex-wrap">
+          {decks.length > 0
+            ? decks.map((deck) => <DeckCard key={deck.id} {...deck} />)
+            : !loading && (
+                <p className="text-center text-gray-500">No decks available.</p>
+              )}
+        </div>
       </div>
-    </div>
+    </AuthenticatedLayout>
   );
 }

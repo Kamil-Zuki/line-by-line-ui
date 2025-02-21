@@ -1,41 +1,81 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const API_URL = "http://85.175.218.17/api/v1/deck";
 
 export async function GET(req: Request) {
   try {
-    // Extract the token from the request headers
-    const authHeader = req.headers.get("authorization");
+    // Extract the Authorization token from the request headers
+    const authHeader = req.headers.get("Authorization");
 
     if (!authHeader) {
-      return NextResponse.json(
-        { error: "Missing authorization token" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Forward request to the external API
+    // Forward the request to the backend API with the token
     const response = await fetch(API_URL, {
       method: "GET",
       headers: {
-        Accept: "application/json",
-        Authorization: authHeader, // Pass the token
+        "Content-Type": "application/json",
+        Authorization: authHeader, // Pass the token to the backend
       },
     });
 
-    if (!response.ok) {
+    if (!response.ok) throw new Error("Failed to fetch decks");
+
+    const decks = await response.json();
+    return NextResponse.json(decks);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+export async function POST(req: NextRequest) {
+  try {
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const token = authHeader.startsWith("Bearer ")
+      ? authHeader
+      : `Bearer ${authHeader}`;
+
+    // ✅ Parse request body (matching the API's expected fields)
+    const { title, imageUrl, description, groupId } = await req.json();
+
+    if (!title || !groupId) {
       return NextResponse.json(
-        { error: `Failed to fetch decks: ${response.statusText}` },
-        { status: response.status }
+        { error: "Missing required fields" },
+        { status: 400 }
       );
     }
 
-    const data = await response.json();
-    return NextResponse.json(data, { status: 200 });
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Something went wrong" },
-      { status: 500 }
-    );
+    // ✅ Log outgoing request
+    console.log("Sending request to API:", {
+      title,
+      imageUrl,
+      description,
+      groupId,
+    });
+
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json-patch+json",
+        Accept: "text/plain",
+        Authorization: token,
+      },
+      body: JSON.stringify({ title, imageUrl, description, groupId }),
+    });
+
+    const responseText = await response.text();
+    console.log("Backend response:", responseText);
+
+    if (!response.ok) {
+      throw new Error(`Failed to create deck: ${responseText}`);
+    }
+
+    return NextResponse.json(JSON.parse(responseText), { status: 201 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

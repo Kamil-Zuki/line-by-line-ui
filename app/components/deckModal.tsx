@@ -5,7 +5,12 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: () => void;
-  newDeck: { title: string; description: string; imageUrl: string };
+  newDeck: {
+    title: string;
+    description: string;
+    imageUrl: string;
+    groupId: string;
+  };
   onChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;

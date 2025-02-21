@@ -54,7 +54,7 @@ export default function DeckPage() {
             id: deck.id,
             title: deck.title, // ✅ Now using "title" from API response
             description: deck.description || "No description available",
-            imageUrl: "/kakashi.jpg",
+            imageUrl: deck.imageUrl || "/kakashi.jpg",
             groupId: deck.groupId,
           }))
         );
@@ -141,12 +141,12 @@ export default function DeckPage() {
   };
 
   return (
-    <div className="container">
+    <div className="flex flex-col">
       {loading && <p className="text-center text-gray-500">Loading decks...</p>}
       {error && <p className="text-center text-red-500">{error}</p>}
 
       <button
-        className="mb-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+        className="w-32 mb-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
         onClick={handleOpenModal}
       >
         Create Deck
@@ -160,7 +160,7 @@ export default function DeckPage() {
         onChange={handleChange}
       />
 
-      <div className="flex gap-8 justify-start items-center flex-wrap">
+      <div className="flex gap-4 w-auto justify-start items-center flex-wrap">
         {decks.length > 0
           ? decks.map((deck) => <DeckCard key={deck.id} {...deck} />)
           : !loading && (

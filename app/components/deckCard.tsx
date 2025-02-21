@@ -18,14 +18,16 @@ const DeckCard: React.FC<DeckCardProps> = ({
   let defaultImg = "/kakashi.jpg";
   return (
     <Link href={`/deck/${id}`} passHref>
-      <div className="w-64 p-4 bg-white shadow-lg rounded-md cursor-pointer transform transition-transform duration-300 ease-in-out hover:scale-105">
+      <div className="flex flex-col justify-center w-96 h-72 bg-opacity-5 overflow-hidden  px-1 py-2    rounded-md cursor-pointer transform transition-transform duration-300 ease-in-out hover:scale-105">
         <img
           src={imageUrl || defaultImg}
           alt={title}
-          className="w-full h-40 object-cover rounded-md"
+          className="w-96 h-60 object-cover rounded-md"
         />
-        <h2 className="mt-2 text-xl font-bold text-gray-600">{title}</h2>
-        <p className="text-sm text-gray-600">{description}</p>
+        <div className="flex flex-col gap-2 p-2">
+          <h2 className="mt-2 text-base font-bold text-gray-200">{title}</h2>
+          <p className="text-sm text-neutral-400">{description}</p>
+        </div>
       </div>
     </Link>
   );

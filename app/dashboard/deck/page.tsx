@@ -1,8 +1,8 @@
 "use client";
+import AuthenticatedLayout from "@/app/AuthenticatedLayout";
+import DeckCard from "@/app/components/DeckCard";
+import DeckModal from "@/app/components/DeckModal";
 import React, { useEffect, useState } from "react";
-import DeckModal from "../components/DeckModal";
-import DeckCard from "../components/DeckCard";
-import AuthenticatedLayout from "../AuthenticatedLayout";
 
 interface DeckCardProps {
   id: string;
@@ -13,6 +13,7 @@ interface DeckCardProps {
 }
 
 export default function DeckPage() {
+  const [token, setToken] = useState<string | null>(null);
   const [decks, setDecks] = useState<DeckCardProps[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -25,16 +26,26 @@ export default function DeckPage() {
   });
 
   useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const response = await fetch("/api/auth/token");
+        if (!response.ok) throw new Error("Unauthorized");
+        const data = await response.json();
+        setToken(data.token);
+      } catch (err) {
+        setError("Authorization token not found. Please log in.");
+      }
+    };
+
+    fetchToken();
+  }, []);
+
+  useEffect(() => {
+    if (!token) return;
+
     const fetchDecks = async () => {
       setLoading(true);
       setError("");
-
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        setError("Authorization token not found. Please log in.");
-        setLoading(false);
-        return;
-      }
 
       try {
         const response = await fetch("/api/personal-vocab/decks", {
@@ -45,41 +56,27 @@ export default function DeckPage() {
           },
         });
 
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status} ${response.statusText}`);
-        }
+        if (!response.ok) throw new Error("Error fetching decks");
 
         const data = await response.json();
         setDecks(
           data.map((deck: any) => ({
             id: deck.id,
-            title: deck.title, // ✅ Now using "title" from API response
+            title: deck.title,
             description: deck.description || "No description available",
             imageUrl: deck.imageUrl || "/kakashi.jpg",
             groupId: deck.groupId,
           }))
         );
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "An unknown error occurred"
-        );
+        setError("Failed to fetch decks.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchDecks();
-  }, []);
-
-  const handleOpenModal = () => setIsModalOpen(true);
-  const handleCloseModal = () => setIsModalOpen(false);
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setNewDeck((prev) => ({ ...prev, [name]: value }));
-  };
+  }, [token]);
 
   const handleCreateDeck = async () => {
     if (!newDeck.title.trim()) {
@@ -87,57 +84,28 @@ export default function DeckPage() {
       return;
     }
 
-    const token = localStorage.getItem("authToken");
     if (!token) {
       setError("Authorization token not found. Please log in.");
       return;
     }
 
     try {
-      console.log(newDeck);
-
       const response = await fetch("/api/personal-vocab/decks", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          title: newDeck.title, // ✅ Ensuring we send "title" instead of "name"
-          description: newDeck.description,
-          imageUrl: newDeck.imageUrl || "/kakashi.jpg",
-          groupId: newDeck.groupId,
-        }),
+        body: JSON.stringify(newDeck),
       });
 
-      console.log(response);
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status} ${response.statusText}`);
-      }
+      if (!response.ok) throw new Error("Failed to create deck");
 
       const createdDeck = await response.json();
-      setDecks((prevDecks) => [
-        ...prevDecks,
-        {
-          id: createdDeck.id,
-          title: createdDeck.title, // ✅ Ensuring we use "title" from API response
-          description: createdDeck.description || "No description available",
-          imageUrl: newDeck.imageUrl || "/kakashi.jpg",
-          groupId: createdDeck.groupId,
-        },
-      ]);
-
-      setNewDeck({
-        title: "",
-        description: "",
-        imageUrl: "",
-        groupId: "bcdae31d-148e-4df6-8fa5-01399472d5c0",
-      });
-
-      handleCloseModal();
+      setDecks([...decks, createdDeck]);
+      setIsModalOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create deck.");
+      setError("Failed to create deck.");
     }
   };
 
@@ -151,17 +119,19 @@ export default function DeckPage() {
 
         <button
           className="w-32 mb-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-          onClick={handleOpenModal}
+          onClick={() => setIsModalOpen(true)}
         >
           Create Deck
         </button>
 
         <DeckModal
           isOpen={isModalOpen}
-          onClose={handleCloseModal}
+          onClose={() => setIsModalOpen(false)}
           onSubmit={handleCreateDeck}
           newDeck={newDeck}
-          onChange={handleChange}
+          onChange={(e) =>
+            setNewDeck({ ...newDeck, [e.target.name]: e.target.value })
+          }
         />
 
         <div className="flex gap-4 w-auto justify-start items-center flex-wrap">

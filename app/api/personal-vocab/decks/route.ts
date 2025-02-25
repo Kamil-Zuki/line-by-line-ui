@@ -16,7 +16,6 @@ export async function GET(req: NextRequest) {
         Authorization: authHeader,
       },
     });
-    console.log(response.status);
     if (response.status === 401) {
       return NextResponse.redirect(new URL("/auth/login", req.url));
     }

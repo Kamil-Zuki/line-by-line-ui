@@ -10,24 +10,12 @@ interface DeckCardProps {
   title: string;
   description: string;
   imageUrl: string;
+  groupId: string;
 }
 
 export default function Deck() {
   // State for the decks list
-  const [decks, setDecks] = useState<DeckCardProps[]>([
-    {
-      id: "1",
-      title: "French Basics",
-      description: "Learn basic French",
-      imageUrl: "/kakashi.jpg",
-    },
-    {
-      id: "2",
-      title: "Spanish Intermediate",
-      description: "Improve your Spanish",
-      imageUrl: "/kakashi.jpg",
-    },
-  ]);
+  const [decks, setDecks] = useState<DeckCardProps[]>([]);
 
   // State for managing modal visibility
   const [showModal, setShowModal] = useState(false);
@@ -38,6 +26,7 @@ export default function Deck() {
     title: "",
     description: "",
     imageUrl: "/kakashi.jpg", // Default image for new decks
+    groupId: "",
   });
 
   // Function to handle deck creation

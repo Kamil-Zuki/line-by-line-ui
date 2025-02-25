@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers"; // Import cookies API
 
 const API_URL = "http://85.175.218.17/api/v1/auth/login";
 
@@ -14,7 +15,6 @@ export async function POST(req: Request) {
       },
       body: JSON.stringify(body),
     });
-
     if (!response.ok) {
       const errorData = await response.json();
       return NextResponse.json(
@@ -24,14 +24,23 @@ export async function POST(req: Request) {
     }
 
     const data = await response.json();
-
     const token = typeof data.data === "string" ? data.data : null;
 
     if (!token) {
       return NextResponse.json({ error: "No token received" }, { status: 500 });
     }
 
-    return NextResponse.json({ token }, { status: 200 });
+    // Set HTTP-only cookie
+    const responseWithCookie = NextResponse.json(
+      { success: true },
+      { status: 200 }
+    );
+
+    responseWithCookie.headers.set(
+      "Set-Cookie",
+      `authToken=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400`
+    );
+    return responseWithCookie;
   } catch (error) {
     return NextResponse.json(
       { error: "Something went wrong" },

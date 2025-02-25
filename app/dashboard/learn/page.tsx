@@ -1,7 +1,7 @@
 // pages/learn/[deckId].tsx
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import LearningDeck from "../components/LearningDeck";
+import LearningDeck from "@/app/components/LearningDeck";
 
 const LearnDeckPage = () => {
   const router = useRouter();

@@ -12,37 +12,53 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    console.log("Stored Token:", token);
+    const checkToken = async () => {
+      try {
+        const response = await fetch("/api/auth/token", {
+          credentials: "include", // Ensures cookies are included
+        });
 
-    if (token) {
-      router.push("/");
-    }
+        if (response.ok) {
+          router.push("/dashboard"); // Redirect to home if already authenticated
+        }
+      } catch (err) {
+        console.error("Error checking auth:", err);
+      }
+    };
+
+    checkToken();
   }, [router]);
 
   const handleLogin = async () => {
     setLoading(true);
+    setError(""); // Reset error message on each attempt
+
+    if (!email || !password) {
+      setError("Please provide both email and password.");
+      setLoading(false);
+      return; // Prevent sending request if fields are empty
+    }
 
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // Include cookies in request
       });
 
       const data = await response.json();
-      console.log("Login Response:", data); // Debugging: Check response structure
+      console.log("Login Response:", data);
 
-      if (response.ok && typeof data.token === "string") {
-        localStorage.setItem("authToken", data.token); // Ensure it's a string
-        router.push("/");
+      if (response.ok) {
+        router.push("/"); // Redirect to home after successful login
       } else {
-        setError(data.error || "Login failed");
+        setError(data.error || "Login failed"); // Display error if login fails
       }
     } catch (error) {
       setError("Something went wrong. Please try again.");
     } finally {
-      setLoading(false); // Reset loading state
+      setLoading(false);
     }
   };
 
@@ -83,9 +99,9 @@ export default function LoginPage() {
           {loading ? "Logging in..." : "Login"}
         </button>
 
-        <p className="block text-center">
-          If you haven't an account yet,{" "}
-          <Link href="/auth/register" className="text-blue-500 translate-x-20">
+        <p className="block text-center mt-4">
+          If you don't have an account yet,{" "}
+          <Link href="/auth/register" className="text-blue-500">
             register
           </Link>
         </p>

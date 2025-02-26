@@ -28,7 +28,6 @@ export default function DeckPage() {
     const fetchToken = async () => {
       try {
         const response = await fetch("/api/auth/token");
-        console.log(response);
         if (!response.ok) throw new Error("Unauthorized");
         const data = await response.json();
         setToken(data.token);

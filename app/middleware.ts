@@ -19,7 +19,7 @@ export async function middleware(req: NextRequest) {
   const token = cookieStore.get("authToken")?.value; // Access the token from cookies
 
   if (!token) {
-    return NextResponse.redirect(new URL("/auth/login", req.url));
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
   try {
@@ -28,12 +28,12 @@ export async function middleware(req: NextRequest) {
     const tokenExpTime = decodedToken.exp;
 
     if (tokenExpTime < currentTime) {
-      return NextResponse.redirect(new URL("/auth/login", req.url));
+      return NextResponse.redirect(new URL("/login", req.url));
     } else if (tokenExpTime < currentTime && req.nextUrl.pathname === "/") {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
   } catch (err) {
-    return NextResponse.redirect(new URL("/auth/login", req.url));
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
   // If everything is valid, continue with the request

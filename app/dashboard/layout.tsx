@@ -1,8 +1,8 @@
-import "./globals.css";
-import SideBar from "./components/SideBar";
-import Header from "./components/Header";
+import Header from "../components/Header";
+import SideBar from "../components/SideBar";
+import "../globals.css";
 
-export default function AuthenticatedLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;

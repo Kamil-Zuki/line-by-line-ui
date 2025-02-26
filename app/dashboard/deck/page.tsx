@@ -1,5 +1,4 @@
 "use client";
-import AuthenticatedLayout from "@/app/AuthenticatedLayout";
 import DeckCard from "@/app/components/DeckCard";
 import DeckModal from "@/app/components/DeckModal";
 import React, { useEffect, useState } from "react";
@@ -29,6 +28,7 @@ export default function DeckPage() {
     const fetchToken = async () => {
       try {
         const response = await fetch("/api/auth/token");
+        console.log(response);
         if (!response.ok) throw new Error("Unauthorized");
         const data = await response.json();
         setToken(data.token);
@@ -110,38 +110,34 @@ export default function DeckPage() {
   };
 
   return (
-    <AuthenticatedLayout>
-      <div className="flex flex-col">
-        {loading && (
-          <p className="text-center text-gray-500">Loading decks...</p>
-        )}
-        {error && <p className="text-center text-red-500">{error}</p>}
+    <div className="flex flex-col">
+      {loading && <p className="text-center text-gray-500">Loading decks...</p>}
+      {error && <p className="text-center text-red-500">{error}</p>}
 
-        <button
-          className="w-32 mb-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-          onClick={() => setIsModalOpen(true)}
-        >
-          Create Deck
-        </button>
+      <button
+        className="w-32 mb-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+        onClick={() => setIsModalOpen(true)}
+      >
+        Create Deck
+      </button>
 
-        <DeckModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={handleCreateDeck}
-          newDeck={newDeck}
-          onChange={(e) =>
-            setNewDeck({ ...newDeck, [e.target.name]: e.target.value })
-          }
-        />
+      <DeckModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreateDeck}
+        newDeck={newDeck}
+        onChange={(e) =>
+          setNewDeck({ ...newDeck, [e.target.name]: e.target.value })
+        }
+      />
 
-        <div className="flex gap-4 w-auto justify-start items-center flex-wrap">
-          {decks.length > 0
-            ? decks.map((deck) => <DeckCard key={deck.id} {...deck} />)
-            : !loading && (
-                <p className="text-center text-gray-500">No decks available.</p>
-              )}
-        </div>
+      <div className="flex gap-4 w-auto justify-start items-center flex-wrap">
+        {decks.length > 0
+          ? decks.map((deck) => <DeckCard key={deck.id} {...deck} />)
+          : !loading && (
+              <p className="text-center text-gray-500">No decks available.</p>
+            )}
       </div>
-    </AuthenticatedLayout>
+    </div>
   );
 }

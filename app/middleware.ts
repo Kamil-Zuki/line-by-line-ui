@@ -19,24 +19,20 @@ export async function middleware(req: NextRequest) {
   const token = cookieStore.get("authToken")?.value; // Access the token from cookies
 
   if (!token) {
-    // If there's no token, redirect to login page
     return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 
-  // Decode the token to check expiration
   try {
     const decodedToken = decodeJwt(token);
-
-    // Get the token expiration time (exp) and compare with the current time
-    const currentTime = Math.floor(Date.now() / 1000); // Current Unix timestamp
+    const currentTime = Math.floor(Date.now() / 1000);
     const tokenExpTime = decodedToken.exp;
 
     if (tokenExpTime < currentTime) {
-      // If the token has expired, redirect to login page
       return NextResponse.redirect(new URL("/auth/login", req.url));
+    } else if (tokenExpTime < currentTime && req.nextUrl.pathname === "/") {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
     }
   } catch (err) {
-    // If the token is malformed or decoding fails, redirect to login page
     return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 

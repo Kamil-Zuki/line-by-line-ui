@@ -8,7 +8,7 @@ export default function Header() {
       <SearchPanel />
 
       <div className="flex-none">
-        <Link href="/auth/login">
+        <Link href="/login">
           <img
             src="/ml.jpg"
             alt="Logo"

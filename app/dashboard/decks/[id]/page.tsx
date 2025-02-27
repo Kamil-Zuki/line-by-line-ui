@@ -97,12 +97,24 @@ export default function DeckPage({
   }
 
   return (
-    <div className="mx-auto p-4 max-w-2xl">
-      <div className="flex flex-col justify-center items-center w-5/6 bg-inheri shadow-md rounded-lg p-6">
-        <DeckCard key={deck.id} {...deck} />
+    <div className="container mx-auto p-4 max-w-2xl">
+      <div className="bg-neutral-900 shadow-md rounded-lg p-6">
+        <div className="relative w-full h-64 mb-4">
+          <Image
+            src={deck.imageUrl}
+            alt={`${deck.title} deck cover`}
+            fill
+            className="object-cover rounded-t-lg"
+            priority
+          />
+        </div>
 
-        <div className="flex w-full flex-col gap-4">
+        <h1 className="text-2xl font-bold mb-2">{deck.title}</h1>
+        <p className="text-gray-300 mb-4">{deck.description}</p>
+
+        <div className="flex flex-col gap-4">
           <button
+            aria-label={`Start learning ${deck.title} deck`}
             onClick={() => router.push(`/dashboard/decks/${params.id}/learn`)}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
           >
@@ -110,6 +122,7 @@ export default function DeckPage({
           </button>
 
           <button
+            aria-label={`Create cards for ${deck.title} deck`}
             onClick={() => router.push(`/dashboard/decks/${params.id}/cards`)}
             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
           >

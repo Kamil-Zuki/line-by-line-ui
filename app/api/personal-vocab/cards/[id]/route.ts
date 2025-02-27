@@ -21,11 +21,11 @@ export async function GET(
     });
 
     if (!response.ok) {
-      throw new Error("Term not found");
+      throw new Error("Card not found");
     }
 
-    const term = await response.json();
-    return NextResponse.json(term);
+    const card = await response.json();
+    return NextResponse.json(card);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 404 });
   }
@@ -53,11 +53,11 @@ export async function PUT(
     });
 
     if (!response.ok) {
-      throw new Error("Failed to update term");
+      throw new Error("Failed to update card");
     }
 
-    const term = await response.json();
-    return NextResponse.json(term);
+    const card = await response.json();
+    return NextResponse.json(card);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -82,7 +82,7 @@ export async function DELETE(
     });
 
     if (!response.ok) {
-      throw new Error("Failed to delete term");
+      throw new Error("Failed to delete card");
     }
 
     return new NextResponse(null, { status: 204 });

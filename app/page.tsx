@@ -8,7 +8,7 @@ export default function MainPage() {
         Pass registration process or login to enjoy your learning journey
       </p>
       <p className="text-lg text-blue-700">
-        <Link href="/auth/login">Login link</Link>
+        <Link href="/login">Login link</Link>
       </p>
     </div>
   );

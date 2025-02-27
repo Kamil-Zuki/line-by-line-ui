@@ -11,7 +11,7 @@ export default function SideBar() {
       <ul className="space-y-4 text-sm">
         <li>
           <Link
-            href="/dashboard/deck"
+            href="/dashboard/decks"
             className="block hover:bg-stone-700 p-2 rounded"
           >
             Decks

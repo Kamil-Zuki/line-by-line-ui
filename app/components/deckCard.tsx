@@ -17,7 +17,7 @@ const DeckCard: React.FC<DeckCardProps> = ({
 }) => {
   let defaultImg = "/kakashi.jpg";
   return (
-    <Link href={`/deck/${id}`} passHref>
+    <Link href={`/dashboard/decks/${id}`} passHref>
       <div className="flex flex-col justify-center w-96 h-80 bg-opacity-5 overflow-hidden  px-1 py-2    rounded-md cursor-pointer transform transition-transform duration-300 ease-in-out hover:scale-105">
         <img
           src={imageUrl || defaultImg}

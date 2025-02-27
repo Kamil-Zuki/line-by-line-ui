@@ -7,14 +7,46 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const response = await fetch(`${API_URL}/${params.id}`, { method: "GET" });
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return NextResponse.json(
+        { error: "Authorization header is required" },
+        { status: 401 }
+      );
+    }
 
-    if (!response.ok) throw new Error("Deck not found");
+    // Ensure the token is in "Bearer <token>" format
+    const token = authHeader.startsWith("Bearer ")
+      ? authHeader
+      : `Bearer ${authHeader}`;
+
+    const { id } = params; // Get ID from route params, not req.json()
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: "GET",
+      headers: {
+        Authorization: token,
+      },
+    });
+
+    if (response.status === 401) {
+      return NextResponse.json(
+        { error: "Unauthorized - invalid or expired token" },
+        { status: 401 }
+      );
+    }
+
+    if (!response.ok) {
+      throw new Error(`Deck not found or server error: ${response.status}`);
+    }
 
     const deck = await response.json();
     return NextResponse.json(deck);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 404 });
+    const status = error.message.includes("Deck not found") ? 404 : 500;
+    return NextResponse.json(
+      { error: error.message || "Internal server error" },
+      { status }
+    );
   }
 }
 

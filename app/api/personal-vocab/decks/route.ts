@@ -6,7 +6,10 @@ export async function GET(req: NextRequest) {
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return NextResponse.redirect(new URL("/auth/login", req.url));
+      return NextResponse.json(
+        { error: "Authorization header is required" },
+        { status: 401 }
+      );
     }
 
     const response = await fetch(API_URL, {
@@ -17,7 +20,10 @@ export async function GET(req: NextRequest) {
       },
     });
     if (response.status === 401) {
-      return NextResponse.redirect(new URL("/auth/login", req.url));
+      return NextResponse.json(
+        { error: "Authorization header is required" },
+        { status: 401 }
+      );
     }
 
     if (!response.ok) throw new Error("Failed to fetch decks");
@@ -33,7 +39,10 @@ export async function POST(req: NextRequest) {
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return NextResponse.redirect(new URL("/auth/login", req.url));
+      return NextResponse.json(
+        { error: "Authorization header is required" },
+        { status: 401 }
+      );
     }
 
     const token = authHeader.startsWith("Bearer ")
@@ -67,7 +76,10 @@ export async function POST(req: NextRequest) {
     });
 
     if (response.status === 401) {
-      return NextResponse.redirect(new URL("/auth/login", req.url));
+      return NextResponse.json(
+        { error: "Authorization header is required" },
+        { status: 401 }
+      );
     }
 
     const responseText = await response.text();

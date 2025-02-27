@@ -95,13 +95,13 @@ export default function DeckPage({
       </div>
     );
   }
-
+  let defaultImg = "/kakashi.jpg";
   return (
     <div className="container mx-auto p-4 max-w-2xl">
       <div className="bg-neutral-900 shadow-md rounded-lg p-6">
         <div className="relative w-full h-64 mb-4">
           <Image
-            src={deck.imageUrl}
+            src={deck.imageUrl || defaultImg}
             alt={`${deck.title} deck cover`}
             fill
             className="object-cover rounded-t-lg"
@@ -126,7 +126,7 @@ export default function DeckPage({
             onClick={() => router.push(`/dashboard/decks/${params.id}/cards`)}
             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
           >
-            Create Cards
+            View Cards
           </button>
 
           <Link

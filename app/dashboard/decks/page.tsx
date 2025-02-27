@@ -21,7 +21,7 @@ export default function DeckPage() {
     title: "",
     description: "",
     imageUrl: "",
-    groupId: "c5c37f10-c417-4171-893e-3c2eadf77782",
+    groupId: "05a8fefd-d719-4c8f-8eee-414a66748063",
   });
 
   useEffect(() => {

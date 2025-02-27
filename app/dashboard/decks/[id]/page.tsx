@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { use } from "react";
+import DeckCard from "@/app/components/DeckCard";
 
 interface Deck {
   id: string;
@@ -96,22 +97,11 @@ export default function DeckPage({
   }
 
   return (
-    <div className="container mx-auto p-4 max-w-2xl">
-      <div className="bg-white shadow-md rounded-lg p-6">
-        <div className="relative w-full h-64 mb-4">
-          <Image
-            src={deck.imageUrl}
-            alt={deck.title}
-            fill
-            className="object-cover rounded-t-lg"
-            priority
-          />
-        </div>
+    <div className="mx-auto p-4 max-w-2xl">
+      <div className="flex flex-col justify-center items-center w-5/6 bg-inheri shadow-md rounded-lg p-6">
+        <DeckCard key={deck.id} {...deck} />
 
-        <h1 className="text-2xl font-bold mb-2">{deck.title}</h1>
-        <p className="text-gray-600 mb-4">{deck.description}</p>
-
-        <div className="flex flex-col gap-4">
+        <div className="flex w-full flex-col gap-4">
           <button
             onClick={() => router.push(`/dashboard/decks/${params.id}/learn`)}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"

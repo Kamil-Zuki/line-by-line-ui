@@ -8,13 +8,6 @@ import Image from "next/image";
 import { use } from "react";
 import DeckCard from "@/app/components/DeckCard";
 
-interface Deck {
-  id: string;
-  title: string;
-  imageUrl: string;
-  description: string;
-  groupId: string;
-}
 
 export default function DeckPage({
   params: paramsPromise,
@@ -109,7 +102,7 @@ export default function DeckPage({
           />
         </div>
 
-        <h1 className="text-2xl font-bold mb-2">{deck.title}</h1>
+        <h1 className="text-gray-300 text-2xl font-bold mb-2">{deck.title}</h1>
         <p className="text-gray-300 mb-4">{deck.description}</p>
 
         <div className="flex flex-col gap-4">

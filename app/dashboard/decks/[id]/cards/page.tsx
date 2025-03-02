@@ -4,24 +4,16 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { use } from "react";
-
-interface Card {
-  id: string;
-  text: string;
-  transcription: string;
-  meaning: string;
-  example: string;
-  image: string;
-  deckId: string;
-}
+import { Card, Deck } from "@/app/interfaces";
 
 export default function CardsPage({
   params: paramsPromise,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string}>;
 }) {
   const params = use(paramsPromise);
   const [cards, setCards] = useState<Card[]>([]);
+  const [deck, setDeck] = useState<Deck | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -56,6 +48,23 @@ export default function CardsPage({
   useEffect(() => {
     if (!token) return; // Wait for token before fetching cards
 
+    const fetchDeck = async () => {
+      try{
+        const response = await fetch(
+          `/api/personal-vocab/decks/${params.id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        if (!response.ok) throw new Error("Failed to fetch the deck");
+        const data = await response.json();
+        setDeck(data);
+      }
+      catch(err){
+        setError(err instanceof Error ? err.message : "An error occurred");
+      }
+    }
+
     const fetchCards = async () => {
       try {
         setLoading(true);
@@ -75,6 +84,7 @@ export default function CardsPage({
       }
     };
 
+    fetchDeck();
     fetchCards();
   }, [params.id, token]);
 
@@ -180,8 +190,8 @@ export default function CardsPage({
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
-      <h1 className="text-2xl font-bold mb-4">
-        Manage Cards for Deck {params.id}
+      <h1 className="text-white text-2xl font-bold mb-4">
+        Manage Cards for Deck <p className="text-lime-400">{deck?.title || ""}</p>
       </h1>
 
       {/* Create Card Form */}

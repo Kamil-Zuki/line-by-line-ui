@@ -4,7 +4,7 @@ const API_URL = "http://85.175.218.17/api/v1/deck";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authHeader = req.headers.get("Authorization");
@@ -20,7 +20,8 @@ export async function GET(
       ? authHeader
       : `Bearer ${authHeader}`;
 
-    const { id } = params; // Get ID from route params, not req.json()
+     const paramsData = await params;
+    const { id } = paramsData; 
     const response = await fetch(`${API_URL}/${id}`, {
       method: "GET",
       headers: {
@@ -52,9 +53,10 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }>}
 ) {
   try {
+    const paramsData = await params;
     const { name, groupId, token } = await req.json();
     if (!name || !groupId || !token) {
       return NextResponse.json(
@@ -63,7 +65,7 @@ export async function PUT(
       );
     }
 
-    const response = await fetch(`${API_URL}/${params.id}`, {
+    const response = await fetch(`${API_URL}/${paramsData.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json-patch+json",
@@ -84,14 +86,15 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const paramsData = await params;
     const { token } = await req.json();
     if (!token)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const response = await fetch(`${API_URL}/${params.id}`, {
+    const response = await fetch(`${API_URL}/${paramsData.id}`, {
       method: "DELETE",
       headers: {
         Accept: "text/plain",

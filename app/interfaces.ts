@@ -1,13 +1,17 @@
 // interfaces.ts
 export interface Card {
   id: string;
-  content: string;
-  nextReviewDate: Date;
-  interval: number;
+  text: string;
+  transcription: string;
+  meaning: string;
+  example: string;
+  image: string;
+  deckId: string;
 }
-
-export interface Deck {
+export interface Deck{
   id: string;
-  name: string;
-  cards: Card[];
+  title: string;
+  description: string;
+  imageUrl: string;
+  groupId: string;
 }

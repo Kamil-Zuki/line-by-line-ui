@@ -4,15 +4,16 @@ const API_URL = "http://85.175.218.17/api/v1/term";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const paramsData = await params;
     const token = req.headers.get("Authorization");
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const response = await fetch(`${API_URL}/${params.id}`, {
+    const response = await fetch(`${API_URL}/${paramsData.id}`, {
       method: "GET",
       headers: {
         accept: "text/plain",

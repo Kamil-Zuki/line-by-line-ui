@@ -190,6 +190,12 @@ export default function CardsPage({
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
+      <Link
+        href={`/dashboard/decks/${params.id}`}
+        className="mt-4 inline-block text-blue-500 hover:underline"
+      >
+        Back to Deck
+      </Link>
       <h1 className="text-white text-2xl font-bold mb-4">
         Manage Cards for Deck <p className="text-lime-400">{deck?.title || ""}</p>
       </h1>
@@ -249,6 +255,7 @@ export default function CardsPage({
           Create Card
         </button>
       </form>
+
 
       {/* Cards List */}
       <div className="space-y-4">
@@ -327,10 +334,10 @@ export default function CardsPage({
                 </div>
               </form>
             ) : (
-              <>
+              <div className="flex w-full flex-row justify-between items-center">
                 <div>
                   <h3 className="font-bold">{card.text}</h3>
-                  <p>{card.transcription}</p>
+                  <p className="text-emerald-500">{card.transcription}</p>
                   <p>{card.meaning}</p>
                   <p>{card.example}</p>
                   {card.image && (
@@ -341,10 +348,10 @@ export default function CardsPage({
                     />
                   )}
                 </div>
-                <div className="space-x-2">
+                <div className="flex gap-1 w-1/6 justify-end">
                   <button
                     onClick={() => setEditingCard(card)}
-                    className="bg-yellow-500 text-white p-2 rounded hover:bg-yellow-600"
+                    className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
                   >
                     Edit
                   </button>
@@ -355,18 +362,12 @@ export default function CardsPage({
                     Delete
                   </button>
                 </div>
-              </>
+              </div>
             )}
           </div>
         ))}
       </div>
 
-      <Link
-        href={`/dashboard/decks/${params.id}`}
-        className="mt-4 inline-block text-blue-500 hover:underline"
-      >
-        Back to Deck
-      </Link>
     </div>
   );
 }

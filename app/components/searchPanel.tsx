@@ -38,7 +38,7 @@ interface ApiResponse {
 export default function SearchPanel() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<DictionaryResult[]>([]);
-  const [suggestions, setSuggestions] = useState<string[]>([]); // Ensure initial empty array
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState<string | null>(null);
 
@@ -56,13 +56,11 @@ export default function SearchPanel() {
       const response = await axios.get<ApiResponse>(
         `http://85.175.218.17/api/v1/cambridge-dictionary?term=${query}&isWord=true&isPhrasalVerb=true&isIdiom=true`
       );
-      // Add null checks and default values
       setResults(response.data.termData || []);
       setSuggestions(response.data.termSuggestions || []);
       setIsModalOpen(true);
     } catch (error) {
       console.error("Error fetching data:", error);
-      // Set empty states on error
       setResults([]);
       setSuggestions([]);
     }
@@ -138,29 +136,43 @@ export default function SearchPanel() {
                   <div key={index} className="mb-8 border-b pb-4">
                     <div className="text-center">
                       <h3 className="text-3xl font-semibold">{result.word}</h3>
-                      <p className="text-xl font-medium text-blue-600 mt-2">
-                        {result.partOfspeech}
-                      </p>
-                      <p className="text-lg text-gray-400 mt-1">
-                        Formality: {result.formality}
-                      </p>
+                      {result.partOfspeech && (
+                        <p className="text-xl font-medium text-blue-600 mt-2">
+                          {result.partOfspeech}
+                        </p>
+                      )}
+                      {result.formality && (
+                        <p className="text-lg text-gray-400 mt-1">
+                          Formality: {result.formality}
+                        </p>
+                      )}
                     </div>
 
                     {result.vebForms && (
                       <div className="mt-4 text-center">
                         <h4 className="text-xl font-medium">Verb Forms:</h4>
-                        <p>Present Participle: {result.vebForms.presentParticiple}</p>
-                        <p>Past Tense: {result.vebForms.pastTense}</p>
-                        <p>Past Participle: {result.vebForms.pastParticiple}</p>
+                        {result.vebForms.presentParticiple && (
+                          <p>Present Participle: {result.vebForms.presentParticiple}</p>
+                        )}
+                        {result.vebForms.pastTense && (
+                          <p>Past Tense: {result.vebForms.pastTense}</p>
+                        )}
+                        {result.vebForms.pastParticiple && (
+                          <p>Past Participle: {result.vebForms.pastParticiple}</p>
+                        )}
                       </div>
                     )}
 
                     <div className="mt-6 space-y-6">
                       <div className="text-center">
-                        <span className="text-lg font-medium">
-                          UK Transcription:
-                        </span>
-                        <p className="text-lg">{result.uk.transcription}</p>
+                        {result.uk.transcription && (
+                          <>
+                            <span className="text-lg font-medium">
+                              UK Transcription:
+                            </span>
+                            <p className="text-lg">{result.uk.transcription}</p>
+                          </>
+                        )}
                         {result.uk.audio && (
                           <CustomAudioPlayer
                             src={result.uk.audio}
@@ -170,10 +182,14 @@ export default function SearchPanel() {
                         )}
                       </div>
                       <div className="text-center">
-                        <span className="text-lg font-medium">
-                          US Transcription:
-                        </span>
-                        <p className="text-lg">{result.us.transcription}</p>
+                        {result.us.transcription && (
+                          <>
+                            <span className="text-lg font-medium">
+                              US Transcription:
+                            </span>
+                            <p className="text-lg">{result.us.transcription}</p>
+                          </>
+                        )}
                         {result.us.audio && (
                           <CustomAudioPlayer
                             src={result.us.audio}
@@ -188,19 +204,27 @@ export default function SearchPanel() {
                           key={i}
                           className="bg-gray-800 p-6 rounded-lg shadow-lg"
                         >
-                          <h4 className="text-xl font-medium text-center">
-                            {useCase.content}
-                          </h4>
+                          {useCase.content && (
+                            <h4 className="text-xl font-medium text-center">
+                              {useCase.content}
+                            </h4>
+                          )}
                           <div className="mt-4 space-y-4">
                             {useCase.definition.map((def, j) => (
                               <div key={j} className="space-y-2">
-                                <p className="text-lg">{def.content}</p>
-                                <p className="text-sm text-gray-400">
-                                  Level: {def.lvl}
-                                </p>
-                                <p className="text-sm text-gray-400">
-                                  Translation: {def.translate}
-                                </p>
+                                {def.content && (
+                                  <p className="text-lg">{def.content}</p>
+                                )}
+                                {def.lvl && (
+                                  <p className="text-sm text-gray-400">
+                                    Level: {def.lvl}
+                                  </p>
+                                )}
+                                {def.translate && (
+                                  <p className="text-sm text-gray-400">
+                                    Translation: {def.translate}
+                                  </p>
+                                )}
                                 {def.examples?.length > 0 && (
                                   <div>
                                     <p className="text-sm text-gray-400 font-medium">
@@ -208,7 +232,7 @@ export default function SearchPanel() {
                                     </p>
                                     <ul className="list-disc list-inside text-sm text-gray-300">
                                       {def.examples.map((example, k) => (
-                                        <li key={k}>{example}</li>
+                                        example && <li key={k}>{example}</li>
                                       ))}
                                     </ul>
                                   </div>
@@ -230,16 +254,18 @@ export default function SearchPanel() {
                   <h3 className="text-xl font-semibold">Related Terms:</h3>
                   <ul className="mt-2 space-y-1">
                     {suggestions.map((suggestion, index) => (
-                      <li
-                        key={index}
-                        className="text-lg text-blue-400 hover:underline cursor-pointer"
-                        onClick={() => {
-                          setQuery(suggestion);
-                          handleSearch();
-                        }}
-                      >
-                        {suggestion}
-                      </li>
+                      suggestion && (
+                        <li
+                          key={index}
+                          className="text-lg text-blue-400 hover:underline cursor-pointer"
+                          onClick={() => {
+                            setQuery(suggestion);
+                            handleSearch();
+                          }}
+                        >
+                          {suggestion}
+                        </li>
+                      )
                     ))}
                   </ul>
                 </div>

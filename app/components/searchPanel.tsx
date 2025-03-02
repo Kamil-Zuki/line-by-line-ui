@@ -2,22 +2,43 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+interface VerbForms {
+  presentParticiple: string;
+  pastTense: string;
+  pastParticiple: string;
+}
+
+interface Definition {
+  content: string;
+  lvl: string;
+  translate: string;
+  examples: string[];
+}
+
 interface UseCase {
   content: string;
-  definition: { content: string }[];
+  definition: Definition[];
 }
 
 interface DictionaryResult {
   word: string;
   partOfspeech: string;
+  formality: string;
+  vebForms: VerbForms;
   uk: { transcription: string; audio: string };
   us: { transcription: string; audio: string };
   useCases: UseCase[];
 }
 
+interface ApiResponse {
+  termData: DictionaryResult[];
+  termSuggestions: string[];
+}
+
 export default function SearchPanel() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<DictionaryResult[]>([]);
+  const [suggestions, setSuggestions] = useState<string[]>([]); // Ensure initial empty array
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState<string | null>(null);
 
@@ -32,19 +53,25 @@ export default function SearchPanel() {
 
   const handleSearch = async () => {
     try {
-      const response = await axios.get(
+      const response = await axios.get<ApiResponse>(
         `http://85.175.218.17/api/v1/cambridge-dictionary?term=${query}&isWord=true&isPhrasalVerb=true&isIdiom=true`
       );
-      setResults(response.data.termData);
+      // Add null checks and default values
+      setResults(response.data.termData || []);
+      setSuggestions(response.data.termSuggestions || []);
       setIsModalOpen(true);
     } catch (error) {
       console.error("Error fetching data:", error);
+      // Set empty states on error
+      setResults([]);
+      setSuggestions([]);
     }
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     setResults([]);
+    setSuggestions([]);
   };
 
   const CustomAudioPlayer = ({
@@ -68,7 +95,7 @@ export default function SearchPanel() {
         <span className="text-lg font-medium">{label}:</span>
         <button
           onClick={handlePlay}
-          className={`w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-indigo-700  shadow-lg transition-all duration-200 ${
+          className={`w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-indigo-700 shadow-lg transition-all duration-200 ${
             audioPlaying === id ? "scale-110" : "scale-100"
           }`}
         >
@@ -86,7 +113,7 @@ export default function SearchPanel() {
           placeholder="Search..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-3/4 h-8 p-2  rounded-lg bg-gray-600 text-base text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-md"
+          className="w-3/4 h-8 p-2 rounded-lg bg-gray-600 text-base text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-md"
         />
       </div>
 
@@ -106,63 +133,117 @@ export default function SearchPanel() {
               </button>
             </div>
             <div className="overflow-y-auto space-y-8">
-              {results.map((result, index) => (
-                <div key={index} className="mb-8 border-b pb-4">
-                  <div className="text-center">
-                    <h3 className="text-3xl font-semibold">{result.word}</h3>
-                    <p className="text-xl font-medium text-blue-600 mt-2">
-                      {result.partOfspeech}
-                    </p>
-                  </div>
-
-                  <div className="mt-6 space-y-6">
+              {results.length > 0 ? (
+                results.map((result, index) => (
+                  <div key={index} className="mb-8 border-b pb-4">
                     <div className="text-center">
-                      <span className="text-lg font-medium">
-                        UK Transcription:
-                      </span>
-                      <p className="text-lg ">{result.uk.transcription}</p>
-                      {result.uk.audio && (
-                        <CustomAudioPlayer
-                          src={result.uk.audio}
-                          label="UK Audio"
-                          id={`uk-${index}`}
-                        />
-                      )}
-                    </div>
-                    <div className="text-center">
-                      <span className="text-lg font-medium ">
-                        US Transcription:
-                      </span>
-                      <p className="text-lg ">{result.us.transcription}</p>
-                      {result.us.audio && (
-                        <CustomAudioPlayer
-                          src={result.us.audio}
-                          label="US Audio"
-                          id={`us-${index}`}
-                        />
-                      )}
+                      <h3 className="text-3xl font-semibold">{result.word}</h3>
+                      <p className="text-xl font-medium text-blue-600 mt-2">
+                        {result.partOfspeech}
+                      </p>
+                      <p className="text-lg text-gray-400 mt-1">
+                        Formality: {result.formality}
+                      </p>
                     </div>
 
-                    {result.useCases.map((useCase, i) => (
-                      <div
-                        key={i}
-                        className="bg-gray-800 p-6 rounded-lg shadow-lg"
-                      >
-                        <h4 className="text-xl font-medium  text-center">
-                          {useCase.content}
-                        </h4>
-                        <div className="mt-4 space-y-2">
-                          {useCase.definition.map((def, j) => (
-                            <p key={j} className="text-lg ">
-                              {def.content}
-                            </p>
-                          ))}
-                        </div>
+                    {result.vebForms && (
+                      <div className="mt-4 text-center">
+                        <h4 className="text-xl font-medium">Verb Forms:</h4>
+                        <p>Present Participle: {result.vebForms.presentParticiple}</p>
+                        <p>Past Tense: {result.vebForms.pastTense}</p>
+                        <p>Past Participle: {result.vebForms.pastParticiple}</p>
                       </div>
-                    ))}
+                    )}
+
+                    <div className="mt-6 space-y-6">
+                      <div className="text-center">
+                        <span className="text-lg font-medium">
+                          UK Transcription:
+                        </span>
+                        <p className="text-lg">{result.uk.transcription}</p>
+                        {result.uk.audio && (
+                          <CustomAudioPlayer
+                            src={result.uk.audio}
+                            label="UK Audio"
+                            id={`uk-${index}`}
+                          />
+                        )}
+                      </div>
+                      <div className="text-center">
+                        <span className="text-lg font-medium">
+                          US Transcription:
+                        </span>
+                        <p className="text-lg">{result.us.transcription}</p>
+                        {result.us.audio && (
+                          <CustomAudioPlayer
+                            src={result.us.audio}
+                            label="US Audio"
+                            id={`us-${index}`}
+                          />
+                        )}
+                      </div>
+
+                      {result.useCases.map((useCase, i) => (
+                        <div
+                          key={i}
+                          className="bg-gray-800 p-6 rounded-lg shadow-lg"
+                        >
+                          <h4 className="text-xl font-medium text-center">
+                            {useCase.content}
+                          </h4>
+                          <div className="mt-4 space-y-4">
+                            {useCase.definition.map((def, j) => (
+                              <div key={j} className="space-y-2">
+                                <p className="text-lg">{def.content}</p>
+                                <p className="text-sm text-gray-400">
+                                  Level: {def.lvl}
+                                </p>
+                                <p className="text-sm text-gray-400">
+                                  Translation: {def.translate}
+                                </p>
+                                {def.examples?.length > 0 && (
+                                  <div>
+                                    <p className="text-sm text-gray-400 font-medium">
+                                      Examples:
+                                    </p>
+                                    <ul className="list-disc list-inside text-sm text-gray-300">
+                                      {def.examples.map((example, k) => (
+                                        <li key={k}>{example}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
+                ))
+              ) : (
+                <p className="text-center text-gray-400">No results found</p>
+              )}
+
+              {suggestions?.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="text-xl font-semibold">Related Terms:</h3>
+                  <ul className="mt-2 space-y-1">
+                    {suggestions.map((suggestion, index) => (
+                      <li
+                        key={index}
+                        className="text-lg text-blue-400 hover:underline cursor-pointer"
+                        onClick={() => {
+                          setQuery(suggestion);
+                          handleSearch();
+                        }}
+                      >
+                        {suggestion}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>

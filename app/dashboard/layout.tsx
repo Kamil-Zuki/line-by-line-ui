@@ -14,7 +14,7 @@ export default function DashboardLayout({
       <div className="flex flex-col flex-1 min-h-0">
         <Header />
         <Breadcrumbs />
-        <main className="flex-1 bg-neutral-800 overflow-y-auto min-h-0 mx-3 my-0 p-2 rounded-2xl">
+        <main className="flex-1 bg-neutral-800 overflow-y-auto min-h-0 mx-3 my-0 p-5 rounded-2xl">
           {children}
         </main>
       </div>

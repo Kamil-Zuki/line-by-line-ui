@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { use } from "react";
 import DeckCard from "@/app/components/DeckCard";
+import { Deck } from "@/app/interfaces";
 
 
 export default function DeckPage({
@@ -69,7 +70,7 @@ export default function DeckPage({
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="text-white flex justify-center items-center min-h-screen">
         <p>Loading...</p>
       </div>
     );

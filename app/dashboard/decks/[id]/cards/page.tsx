@@ -269,6 +269,7 @@ export default function CardsPage({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <input
                     type="text"
+                    placeholder="text"
                     value={editingCard.text}
                     onChange={(e) =>
                       setEditingCard({ ...editingCard, text: e.target.value })
@@ -277,6 +278,7 @@ export default function CardsPage({
                   />
                   <input
                     type="text"
+                    placeholder="transcription"
                     value={editingCard.transcription}
                     onChange={(e) =>
                       setEditingCard({
@@ -288,6 +290,7 @@ export default function CardsPage({
                   />
                   <input
                     type="text"
+                    placeholder="meaning"
                     value={editingCard.meaning}
                     onChange={(e) =>
                       setEditingCard({
@@ -299,6 +302,7 @@ export default function CardsPage({
                   />
                   <input
                     type="text"
+                    placeholder="example"
                     value={editingCard.example}
                     onChange={(e) =>
                       setEditingCard({
@@ -310,6 +314,7 @@ export default function CardsPage({
                   />
                   <input
                     type="url"
+                    placeholder="image url"
                     value={editingCard.image}
                     onChange={(e) =>
                       setEditingCard({ ...editingCard, image: e.target.value })

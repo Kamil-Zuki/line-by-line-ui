@@ -99,7 +99,7 @@ export default function LoginPage() {
           {loading ? "Logging in..." : "Login"}
         </button>
 
-        <p className="block text-center mt-4">
+        <p className="text-white block text-center mt-4">
           If you don't have an account yet,{" "}
           <Link href="/auth/register" className="text-blue-500">
             register

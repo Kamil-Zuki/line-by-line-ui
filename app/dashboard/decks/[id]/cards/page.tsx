@@ -9,7 +9,7 @@ import { Card, Deck } from "@/app/interfaces";
 export default function CardsPage({
   params: paramsPromise,
 }: {
-  params: Promise<{ id: string}>;
+  params: Promise<{ id: string }>;
 }) {
   const params = use(paramsPromise);
   const [cards, setCards] = useState<Card[]>([]);
@@ -49,21 +49,17 @@ export default function CardsPage({
     if (!token) return; // Wait for token before fetching cards
 
     const fetchDeck = async () => {
-      try{
-        const response = await fetch(
-          `/api/personal-vocab/decks/${params.id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+      try {
+        const response = await fetch(`/api/personal-vocab/decks/${params.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (!response.ok) throw new Error("Failed to fetch the deck");
         const data = await response.json();
         setDeck(data);
-      }
-      catch(err){
+      } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
       }
-    }
+    };
 
     const fetchCards = async () => {
       try {
@@ -197,11 +193,15 @@ export default function CardsPage({
         Back to Deck
       </Link>
       <h1 className="text-white text-2xl font-bold mb-4">
-        Manage Cards for Deck <p className="text-lime-400">{deck?.title || ""}</p>
+        Manage Cards for Deck{" "}
+        <p className="text-lime-400">{deck?.title || ""}</p>
       </h1>
 
       {/* Create Card Form */}
-      <form onSubmit={createCard} className="mb-8 bg-white p-4 rounded shadow">
+      <form
+        onSubmit={createCard}
+        className="text-black mb-8 bg-white p-4 rounded shadow"
+      >
         <h2 className="text-xl font-semibold mb-2">Add New Card</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input
@@ -256,9 +256,8 @@ export default function CardsPage({
         </button>
       </form>
 
-
       {/* Cards List */}
-      <div className="space-y-4">
+      <div className="text-black space-y-4">
         {cards.map((card) => (
           <div
             key={card.id}
@@ -372,7 +371,6 @@ export default function CardsPage({
           </div>
         ))}
       </div>
-
     </div>
   );
 }

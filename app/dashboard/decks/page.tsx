@@ -1,19 +1,12 @@
 "use client";
 import DeckCard from "@/app/components/DeckCard";
 import DeckModal from "@/app/components/DeckModal";
+import { Deck } from "@/app/interfaces";
 import React, { useEffect, useState } from "react";
-
-interface DeckCardProps {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  groupId: string;
-}
 
 export default function DeckPage() {
   const [token, setToken] = useState<string | null>(null);
-  const [decks, setDecks] = useState<DeckCardProps[]>([]);
+  const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -21,7 +14,7 @@ export default function DeckPage() {
     title: "",
     description: "",
     imageUrl: "",
-    groupId: "ac5fca0a-e675-4244-941c-858b8b7e764d",
+    groupId: "",
   });
 
   useEffect(() => {
@@ -59,7 +52,7 @@ export default function DeckPage() {
 
         const data = await response.json();
         setDecks(
-          data.map((deck: any) => ({
+          data.map((deck: Deck) => ({
             id: deck.id,
             title: deck.title,
             description: deck.description || "No description available",

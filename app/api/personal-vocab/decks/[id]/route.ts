@@ -20,8 +20,8 @@ export async function GET(
       ? authHeader
       : `Bearer ${authHeader}`;
 
-     const paramsData = await params;
-    const { id } = paramsData; 
+    const paramsData = await params;
+    const { id } = paramsData;
     const response = await fetch(`${API_URL}/${id}`, {
       method: "GET",
       headers: {
@@ -53,26 +53,30 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }>}
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const paramsData = await params;
-    const { name, groupId, token } = await req.json();
-    if (!name || !groupId || !token) {
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
       return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
+        { error: "Authorization header is required" },
+        { status: 401 }
       );
     }
+    const body = await req.json();
+    const token = authHeader.startsWith("Bearer ")
+      ? authHeader
+      : `Bearer ${authHeader}`;
 
     const response = await fetch(`${API_URL}/${paramsData.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json-patch+json",
         Accept: "text/plain",
-        Authorization: `Bearer ${token}`,
+        Authorization: `${token}`,
       },
-      body: JSON.stringify({ name, groupId }),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) throw new Error("Failed to update deck");
@@ -90,15 +94,21 @@ export async function DELETE(
 ) {
   try {
     const paramsData = await params;
-    const { token } = await req.json();
-    if (!token)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return NextResponse.json(
+        { error: "Authorization header is required" },
+        { status: 401 }
+      );
+    }
+    const token = authHeader.startsWith("Bearer ")
+      ? authHeader
+      : `Bearer ${authHeader}`;
     const response = await fetch(`${API_URL}/${paramsData.id}`, {
       method: "DELETE",
       headers: {
         Accept: "text/plain",
-        Authorization: `Bearer ${token}`,
+        Authorization: `${token}`,
       },
     });
 

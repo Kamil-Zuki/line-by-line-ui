@@ -49,7 +49,9 @@ export async function POST(req: NextRequest) {
       ? authHeader
       : `Bearer ${authHeader}`;
 
-    const { title, imageUrl, description, groupId } = await req.json();
+    let { title, imageUrl, description, groupId } = await req.json();
+
+    groupId = "ac5fca0a-e675-4244-941c-858b8b7e764d";
 
     if (!title || !groupId) {
       return NextResponse.json(
@@ -57,13 +59,6 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
-    console.log("Sending request to API:", {
-      title,
-      imageUrl,
-      description,
-      groupId,
-    });
 
     const response = await fetch(API_URL, {
       method: "POST",

@@ -26,7 +26,6 @@ export default function CardsPage({
     deckId: params.id,
   });
   const [editingCard, setEditingCard] = useState<Card | null>(null);
-  const router = useRouter();
 
   // Fetch token on mount (your specified logic)
   useEffect(() => {
@@ -174,7 +173,11 @@ export default function CardsPage({
   };
 
   if (loading)
-    return <div className="text-white text-center py-4">Loading...</div>;
+    return (
+      <div className="text-white flex justify-center items-center min-h-screen">
+        Loading...
+      </div>
+    );
   if (error)
     return (
       <div className="text-red-500 text-center py-4">

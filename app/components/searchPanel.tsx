@@ -152,13 +152,18 @@ export default function SearchPanel() {
                       <div className="mt-4 text-center">
                         <h4 className="text-xl font-medium">Verb Forms:</h4>
                         {result.vebForms.presentParticiple && (
-                          <p>Present Participle: {result.vebForms.presentParticiple}</p>
+                          <p>
+                            Present Participle:{" "}
+                            {result.vebForms.presentParticiple}
+                          </p>
                         )}
                         {result.vebForms.pastTense && (
                           <p>Past Tense: {result.vebForms.pastTense}</p>
                         )}
                         {result.vebForms.pastParticiple && (
-                          <p>Past Participle: {result.vebForms.pastParticiple}</p>
+                          <p>
+                            Past Participle: {result.vebForms.pastParticiple}
+                          </p>
                         )}
                       </div>
                     )}
@@ -231,9 +236,10 @@ export default function SearchPanel() {
                                       Examples:
                                     </p>
                                     <ul className="list-disc list-inside text-sm text-gray-300">
-                                      {def.examples.map((example, k) => (
-                                        example && <li key={k}>{example}</li>
-                                      ))}
+                                      {def.examples.map(
+                                        (example, k) =>
+                                          example && <li key={k}>{example}</li>
+                                      )}
                                     </ul>
                                   </div>
                                 )}
@@ -253,20 +259,21 @@ export default function SearchPanel() {
                 <div className="mt-8">
                   <h3 className="text-xl font-semibold">Related Terms:</h3>
                   <ul className="mt-2 space-y-1">
-                    {suggestions.map((suggestion, index) => (
-                      suggestion && (
-                        <li
-                          key={index}
-                          className="text-lg text-blue-400 hover:underline cursor-pointer"
-                          onClick={() => {
-                            setQuery(suggestion);
-                            handleSearch();
-                          }}
-                        >
-                          {suggestion}
-                        </li>
-                      )
-                    ))}
+                    {suggestions.map(
+                      (suggestion, index) =>
+                        suggestion && (
+                          <li
+                            key={index}
+                            className="text-lg text-blue-400 hover:underline cursor-pointer"
+                            onClick={() => {
+                              setQuery(suggestion);
+                              handleSearch();
+                            }}
+                          >
+                            {suggestion}
+                          </li>
+                        )
+                    )}
                   </ul>
                 </div>
               )}

@@ -110,7 +110,7 @@ export default function DeckPage() {
 
   return (
     <div className="flex flex-col">
-      {loading && <p className="text-center text-gray-500">Loading decks...</p>}
+      {loading && <p className="text-center text-white">Loading decks...</p>}
       {error && <p className="text-center text-red-500">{error}</p>}
 
       <button

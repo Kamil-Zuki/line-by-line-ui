@@ -173,7 +173,8 @@ export default function CardsPage({
     }
   };
 
-  if (loading) return <div className="text-center py-4">Loading...</div>;
+  if (loading)
+    return <div className="text-white text-center py-4">Loading...</div>;
   if (error)
     return (
       <div className="text-red-500 text-center py-4">

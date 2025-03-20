@@ -1,6 +1,13 @@
-import { Box, Heading } from "@chakra-ui/react";
+import { Box, Heading, Button, Stack } from "@chakra-ui/react";
+import Link from "next/link";
+import { cookies } from "next/headers";
 
-export default function MainPage() {
+export default async function MainPage() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("authToken");
+
+  const isAuthenticated = !!token;
+
   return (
     <Box
       display="flex"
@@ -12,7 +19,18 @@ export default function MainPage() {
       justifyContent="center"
       alignItems="center"
     >
-      <Heading>Welcome to LineByLine</Heading>
+      <Heading mb={6}>Welcome to LineByLine</Heading>
+
+      {!isAuthenticated && (
+        <Stack direction="row" spacing={4}>
+          <Button as={Link} href="/login" colorScheme="blue" size="lg">
+            Login
+          </Button>
+          <Button as={Link} href="/register" colorScheme="teal" size="lg">
+            Register
+          </Button>
+        </Stack>
+      )}
     </Box>
   );
 }

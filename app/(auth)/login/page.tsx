@@ -1,111 +1,68 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import {
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  VStack,
+  Text,
+  Link as ChakraLink,
+} from "@chakra-ui/react";
+import MainLayout from "@/app/components/layout";
+import { useAuth } from "@/app/hooks/useAuth";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { login, loading } = useAuth();
 
-  useEffect(() => {
-    const checkToken = async () => {
-      try {
-        const response = await fetch("/api/auth/token", {
-          credentials: "include", // Ensures cookies are included
-        });
-
-        if (response.ok) {
-          router.push("/dashboard"); // Redirect to home if already authenticated
-        }
-      } catch (err) {
-        console.error("Error checking auth:", err);
-      }
-    };
-
-    checkToken();
-  }, [router]);
-
-  const handleLogin = async () => {
-    setLoading(true);
-    setError(""); // Reset error message on each attempt
-
-    if (!email || !password) {
-      setError("Please provide both email and password.");
-      setLoading(false);
-      return; // Prevent sending request if fields are empty
-    }
-
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ email, password }),
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // Include cookies in request
-      });
-
-      const data = await response.json();
-      console.log("Login Response:", data);
-
-      if (response.ok) {
-        router.push("/dashboard"); // Redirect to home after successful login
-      } else {
-        setError(data.error || "Login failed"); // Display error if login fails
-      }
-    } catch (error) {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    login(email, password);
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
   return (
-    <div className="flex items-center justify-center h-screen bg-[#2f3136]">
-      <div className="p-8 bg-gray-900 shadow-md rounded-md w-96 max-w-full">
-        <h2 className="text-3xl font-bold mb-6 text-center text-white">
+    <MainLayout>
+      <VStack spacing={6} as="form" onSubmit={handleSubmit}>
+        <Text fontSize="2xl" fontWeight="bold">
           Login
-        </h2>
-
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full text-black mb-4 p-3 border border-gray-300 rounded focus:outline-none"
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full text-black mb-6 p-3 border border-gray-300 rounded focus:outline-none"
-        />
-
-        <button
-          onClick={handleLogin}
-          className="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 focus:outline-none"
-          disabled={loading}
+        </Text>
+        <FormControl isRequired>
+          <FormLabel>Email</FormLabel>
+          <Input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email"
+          />
+        </FormControl>
+        <FormControl isRequired>
+          <FormLabel>Password</FormLabel>
+          <Input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter your password"
+          />
+        </FormControl>
+        <Button
+          type="submit"
+          colorScheme="teal"
+          isLoading={loading}
+          width="full"
         >
-          {loading ? "Logging in..." : "Login"}
-        </button>
-
-        <p className="text-white block text-center mt-4">
-          If you don't have an account yet,{" "}
-          <Link href="/auth/register" className="text-blue-500">
-            register
-          </Link>
-        </p>
-      </div>
-    </div>
+          Login
+        </Button>
+        <Text>
+          Don’t have an account?{" "}
+          <ChakraLink href="/register" color="teal.500">
+            Register
+          </ChakraLink>
+        </Text>
+      </VStack>
+    </MainLayout>
   );
 }

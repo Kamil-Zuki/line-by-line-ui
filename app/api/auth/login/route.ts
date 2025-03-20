@@ -1,50 +1,25 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers"; // Import cookies API
+import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = "http://85.175.218.17/api/v1/auth/login";
+export async function POST(request: NextRequest) {
+  const { email, password } = await request.json();
 
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
+  const res = await fetch("http://85.175.218.17/api/v1/auth/login", {
+    method: "POST",
+    headers: {
+      Accept: "text/plain",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, password }),
+  });
 
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-    if (!response.ok) {
-      const errorData = await response.json();
-      return NextResponse.json(
-        { error: errorData.message || "Invalid credentials" },
-        { status: response.status }
-      );
-    }
-
-    const data = await response.json();
-    const token = typeof data.data === "string" ? data.data : null;
-
-    if (!token) {
-      return NextResponse.json({ error: "No token received" }, { status: 500 });
-    }
-
-    // Set HTTP-only cookie
-    const responseWithCookie = NextResponse.json(
-      { success: true },
-      { status: 200 }
-    );
-
-    responseWithCookie.headers.set(
-      "Set-Cookie",
-      `authToken=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400`
-    );
-    return responseWithCookie;
-  } catch (error) {
+  if (!res.ok) {
+    const error = await res.text();
     return NextResponse.json(
-      { error: "Something went wrong" },
-      { status: 500 }
+      { error: error || "Login failed" },
+      { status: res.status }
     );
   }
+
+  const data = await res.json();
+  return NextResponse.json(data); // { accessToken, refreshToken }
 }

@@ -1,14 +1,16 @@
-import "./globals.css";
+import { ChakraProvider } from "@chakra-ui/react";
+import { ReactNode } from "react";
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export const metadata = {
+  title: "LineByLine",
+  description: "A gamified language learning platform",
+};
+
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="eng">
+    <html lang="en">
       <body>
-        <main>{children}</main>
+        <ChakraProvider>{children}</ChakraProvider>
       </body>
     </html>
   );

@@ -1,38 +1,25 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = "http://85.175.218.17/api/v1/auth/register";
+export async function POST(request: NextRequest) {
+  const { email, password, confirmPassword } = await request.json();
 
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
+  const res = await fetch("http://85.175.218.17/api/v1/auth/register", {
+    method: "POST",
+    headers: {
+      Accept: "*/*",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, password, confirmPassword }),
+  });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      // Return the error message if available, otherwise default to 'Registration failed'
-      return NextResponse.json(
-        { error: data.message || "Registration failed" },
-        { status: response.status }
-      );
-    }
-
-    // Assuming registration is successful, you might want to send a success message or the user's info
+  if (!res.ok) {
+    const error = await res.text();
     return NextResponse.json(
-      { message: "Registration successful", user: data },
-      { status: 200 }
-    );
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Something went wrong" },
-      { status: 500 }
+      { error: error || "Registration failed" },
+      { status: res.status }
     );
   }
+
+  const data = await res.json();
+  return NextResponse.json(data); // { message: "Confirm your email" }
 }

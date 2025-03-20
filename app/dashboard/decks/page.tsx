@@ -20,7 +20,7 @@ interface Deck {
 }
 
 export default function DecksPage() {
-  const { tokens, isAuthenticated, refreshToken } = useAuth();
+  const { tokens, isAuthenticated } = useAuth();
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -34,43 +34,23 @@ export default function DecksPage() {
 
     const fetchDecks = async () => {
       try {
-        const res = await fetch(
-          "http://85.175.218.17/api/v1/personal-vocab/decks",
-          {
-            headers: {
-              Authorization: `Bearer ${tokens.accessToken}`,
-            },
-          }
-        );
-
-        if (!res.ok) {
-          if (res.status === 401) {
-            const refreshed = await refreshToken();
-            if (refreshed) return fetchDecks(); // Retry after refresh
-            throw new Error("Session expired");
-          }
-          throw new Error("Failed to fetch decks");
-        }
-
-        const data = await res.json();
-        setDecks(data); // Adjust based on actual API response structure
-      } catch (error: any) {
-        toast({
-          title: "Error",
-          description: error.message || "Could not load decks",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
+        const res = await fetch("/api/personal-vocab/decks", {
+          headers: { Authorization: `Bearer ${tokens.accessToken}` },
         });
+        if (!res.ok) throw new Error("Failed to fetch decks");
+        const data = await res.json();
+        setDecks(data);
+      } catch (error: any) {
+        toast({ title: "Error", description: error.message, status: "error" });
       } finally {
         setLoading(false);
       }
     };
 
     fetchDecks();
-  }, [isAuthenticated, tokens.accessToken, refreshToken, router, toast]);
+  }, [isAuthenticated, tokens.accessToken, router, toast]);
 
-  if (!isAuthenticated) return null; // Redirect handled in useEffect
+  if (!isAuthenticated) return null;
   if (loading) return <Spinner size="xl" m={8} />;
 
   return (

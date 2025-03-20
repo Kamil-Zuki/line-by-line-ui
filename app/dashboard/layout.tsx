@@ -1,28 +1,16 @@
 "use client";
 
-import { Box } from "@chakra-ui/react";
-import Header from "../components/Header"; // Adjusted case to match convention
-import SideBar from "../components/SideBar"; // Adjusted case to match convention
-import Breadcrumbs from "../components/Breadcrumbs";
+import { Box, Flex } from "@chakra-ui/react";
 import { ReactNode } from "react";
+import SideBar from "@/app/components/SideBar";
 
-interface DashboardLayoutProps {
-  children: ReactNode;
-}
-
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
-    <Box minH="100vh" bg="gray.50">
-      <Header />
-      <Box display={{ base: "block", md: "flex" }}>
-        <SideBar />
-        <Box flex="1" ml={{ base: 0, md: "250px" }} p={4}>
-          <Breadcrumbs />
-          <Box as="main" mt={4}>
-            {children}
-          </Box>
-        </Box>
+    <Flex minH="100vh">
+      <SideBar />
+      <Box flex="1" p={6}>
+        {children}
       </Box>
-    </Box>
+    </Flex>
   );
 }

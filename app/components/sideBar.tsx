@@ -1,31 +1,68 @@
-import Link from "next/link";
+"use client";
+
+import { Box, VStack, Text, Button } from "@chakra-ui/react";
+import { useAuth } from "@/app/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 export default function SideBar() {
+  const { isAuthenticated, logout } = useAuth();
+  const router = useRouter();
+
   return (
-    <aside className="flex flex-col bg-neutral-800 w-28 h-screen p-4 text-white ml-2">
-      <h2 className="text-xl font-bold mb-4">
-        <Link href="/dashboard" className="block p-2 rounded">
+    <Box
+      as="nav"
+      w={{ base: "full", md: "250px" }}
+      h={{ base: "auto", md: "100vh" }}
+      bg="gray.100"
+      p={4}
+      position={{ base: "static", md: "fixed" }}
+      top={0}
+      left={0}
+      borderRight="1px solid"
+      borderColor="gray.200"
+    >
+      <VStack align="start" spacing={4}>
+        <Text fontSize="xl" fontWeight="bold" color="teal.600">
           LBL
-        </Link>
-      </h2>
-      <ul className="space-y-4 text-sm">
-        <li>
-          <Link
-            href="/dashboard/decks"
-            className="block hover:bg-stone-700 p-2 rounded"
-          >
-            Decks
-          </Link>
-        </li>
-        <li>
-          <Link
-            href="/settings"
-            className="block hover:bg-stone-700 p-2 rounded"
-          >
-            Settings
-          </Link>
-        </li>
-      </ul>
-    </aside>
+        </Text>
+        {isAuthenticated && (
+          <>
+            <Button
+              variant="ghost"
+              w="full"
+              justifyContent="start"
+              onClick={() => router.push("/dashboard")}
+            >
+              Dashboard
+            </Button>
+            <Button
+              variant="ghost"
+              w="full"
+              justifyContent="start"
+              onClick={() => router.push("/dashboard/decks")}
+            >
+              My Decks
+            </Button>
+            <Button
+              variant="ghost"
+              w="full"
+              justifyContent="start"
+              onClick={() => router.push("/profile")}
+            >
+              Profile
+            </Button>
+            <Button
+              variant="ghost"
+              w="full"
+              justifyContent="start"
+              colorScheme="red"
+              onClick={logout}
+            >
+              Logout
+            </Button>
+          </>
+        )}
+      </VStack>
+    </Box>
   );
 }

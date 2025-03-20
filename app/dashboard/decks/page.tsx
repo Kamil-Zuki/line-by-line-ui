@@ -1,135 +1,112 @@
 "use client";
-import DeckCard from "@/app/components/DeckCard";
-import DeckModal from "@/app/components/DeckModal";
-import { Deck } from "@/app/interfaces";
-import React, { useEffect, useState } from "react";
 
-export default function DeckPage() {
-  const [token, setToken] = useState<string | null>(null);
+import { useEffect, useState } from "react";
+import {
+  Box,
+  Heading,
+  VStack,
+  Text,
+  Button,
+  Spinner,
+  useToast,
+} from "@chakra-ui/react";
+import { useAuth } from "@/app/hooks/useAuth";
+import { useRouter } from "next/navigation";
+
+interface Deck {
+  id: string;
+  title: string;
+  cardCount: number;
+}
+
+export default function DecksPage() {
+  const { tokens, isAuthenticated, refreshToken } = useAuth();
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newDeck, setNewDeck] = useState({
-    title: "",
-    description: "",
-    imageUrl: "",
-    groupId: "",
-  });
+  const router = useRouter();
+  const toast = useToast();
 
   useEffect(() => {
-    const fetchToken = async () => {
-      try {
-        const response = await fetch("/api/auth/token");
-        if (!response.ok) throw new Error("Unauthorized");
-        const data = await response.json();
-        setToken(data.token);
-      } catch (err) {
-        setError("Authorization token not found. Please log in.");
-      }
-    };
-
-    fetchToken();
-  }, []);
-
-  useEffect(() => {
-    if (!token) return;
+    if (!isAuthenticated) {
+      router.push("/auth/login");
+      return;
+    }
 
     const fetchDecks = async () => {
-      setLoading(true);
-      setError("");
-
       try {
-        const response = await fetch("/api/personal-vocab/decks", {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) throw new Error("Error fetching decks");
-
-        const data = await response.json();
-        setDecks(
-          data.map((deck: Deck) => ({
-            id: deck.id,
-            title: deck.title,
-            description: deck.description || "No description available",
-            imageUrl: deck.imageUrl || "/kakashi.jpg",
-            groupId: deck.groupId,
-          }))
+        const res = await fetch(
+          "http://85.175.218.17/api/v1/personal-vocab/decks",
+          {
+            headers: {
+              Authorization: `Bearer ${tokens.accessToken}`,
+            },
+          }
         );
-      } catch (err) {
-        setError("Failed to fetch decks.");
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            const refreshed = await refreshToken();
+            if (refreshed) return fetchDecks(); // Retry after refresh
+            throw new Error("Session expired");
+          }
+          throw new Error("Failed to fetch decks");
+        }
+
+        const data = await res.json();
+        setDecks(data); // Adjust based on actual API response structure
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Could not load decks",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchDecks();
-  }, [token]);
+  }, [isAuthenticated, tokens.accessToken, refreshToken, router, toast]);
 
-  const handleCreateDeck = async () => {
-    if (!newDeck.title.trim()) {
-      alert("Deck title is required!");
-      return;
-    }
-
-    if (!token) {
-      setError("Authorization token not found. Please log in.");
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/personal-vocab/decks", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(newDeck),
-      });
-
-      if (!response.ok) throw new Error("Failed to create deck");
-
-      const createdDeck = await response.json();
-      setDecks([...decks, createdDeck]);
-      setIsModalOpen(false);
-    } catch (err) {
-      setError("Failed to create deck.");
-    }
-  };
+  if (!isAuthenticated) return null; // Redirect handled in useEffect
+  if (loading) return <Spinner size="xl" m={8} />;
 
   return (
-    <div className="flex flex-col">
-      {loading && <p className="text-center text-white">Loading decks...</p>}
-      {error && <p className="text-center text-red-500">{error}</p>}
-
-      <button
-        className="w-32 mb-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-        onClick={() => setIsModalOpen(true)}
-      >
-        Create Deck
-      </button>
-
-      <DeckModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleCreateDeck}
-        newDeck={newDeck}
-        onChange={(e) =>
-          setNewDeck({ ...newDeck, [e.target.name]: e.target.value })
-        }
-      />
-
-      <div className="flex gap-4 w-auto justify-start items-center flex-wrap">
-        {decks.length > 0
-          ? decks.map((deck) => <DeckCard key={deck.id} {...deck} />)
-          : !loading && (
-              <p className="text-center text-gray-500">No decks available.</p>
-            )}
-      </div>
-    </div>
+    <Box>
+      <Heading size="lg" mb={6}>
+        My Decks
+      </Heading>
+      <VStack align="stretch" spacing={4}>
+        {decks.length > 0 ? (
+          decks.map((deck) => (
+            <Box
+              key={deck.id}
+              p={4}
+              bg="white"
+              borderRadius="md"
+              boxShadow="sm"
+              _hover={{ boxShadow: "md", cursor: "pointer" }}
+              onClick={() => router.push(`/dashboard/decks/${deck.id}`)}
+            >
+              <Text fontSize="lg" fontWeight="bold">
+                {deck.title}
+              </Text>
+              <Text color="gray.600">{deck.cardCount} cards</Text>
+            </Box>
+          ))
+        ) : (
+          <Text>No decks found. Create one to get started!</Text>
+        )}
+        <Button
+          colorScheme="teal"
+          mt={4}
+          onClick={() => router.push("/dashboard/decks/new")}
+        >
+          Create New Deck
+        </Button>
+      </VStack>
+    </Box>
   );
 }

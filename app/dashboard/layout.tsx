@@ -1,23 +1,28 @@
-import Breadcrumbs from "../components/Breadcrumbs";
-import Header from "../components/Header";
-import SideBar from "../components/SideBar";
-import "../globals.css";
+"use client";
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+import { Box } from "@chakra-ui/react";
+import Header from "../components/Header"; // Adjusted case to match convention
+import SideBar from "../components/SideBar"; // Adjusted case to match convention
+import Breadcrumbs from "../components/Breadcrumbs";
+import { ReactNode } from "react";
+
+interface DashboardLayoutProps {
+  children: ReactNode;
+}
+
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="flex h-screen max-w-[2574px] m-auto bg-neutral-900 overflow-hidden">
-      <SideBar />
-      <div className="flex flex-col flex-1 min-h-0">
-        <Header />
-        <Breadcrumbs />
-        <main className="flex-1 bg-neutral-800 overflow-y-auto min-h-0 mx-3 my-0 p-5 rounded-2xl">
-          {children}
-        </main>
-      </div>
-    </div>
+    <Box minH="100vh" bg="gray.50">
+      <Header />
+      <Box display={{ base: "block", md: "flex" }}>
+        <SideBar />
+        <Box flex="1" ml={{ base: 0, md: "250px" }} p={4}>
+          <Breadcrumbs />
+          <Box as="main" mt={4}>
+            {children}
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 }

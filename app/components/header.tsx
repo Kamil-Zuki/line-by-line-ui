@@ -1,24 +1,23 @@
-import Link from "next/link";
-import SearchPanel from "./SearchPanel";
+import { Box, Flex, Heading, useColorMode, Button } from "@chakra-ui/react";
+import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 
 export default function Header() {
-  return (
-    <div className="flex items-center justify-between h-12 bg-neutral-800 w-full px-4 gap-4">
-      <div className="flex-3"></div>
-      <SearchPanel />
+  const { colorMode, toggleColorMode } = useColorMode();
 
-      <div className="flex-none">
-        <Link href="/login">
-          <img
-            src="/ml.jpg"
-            alt="Logo"
-            className="rounded-full w-10 h-10 object-cover cursor-pointer border-2 border-white"
-          />
-        </Link>
-      </div>
-      <button className="text-pink-50 rounded-xl bg-red-600 py-1 px-3 hover:bg-red-700">
-        Quit
-      </button>
-    </div>
+  return (
+    <Flex
+      as="header"
+      bg="teal.500"
+      p={4}
+      color="white"
+      justify="space-between"
+      align="center"
+      boxShadow="md"
+    >
+      <Heading size="md">LineByLine</Heading>
+      <Button onClick={toggleColorMode} variant="ghost" colorScheme="teal">
+        {colorMode === "light" ? <MoonIcon /> : <SunIcon />}
+      </Button>
+    </Flex>
   );
 }

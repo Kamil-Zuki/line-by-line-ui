@@ -12,14 +12,15 @@ export async function POST(request: NextRequest) {
     body: JSON.stringify({ email, password }),
   });
 
+  const data = await res.json(); // Read the body once
+  console.log(data); // Log the parsed JSON
+
   if (!res.ok) {
-    const error = await res.text();
     return NextResponse.json(
-      { error: error || "Login failed" },
+      { error: data.error || "Login failed" }, // Use data.error if available
       { status: res.status }
     );
   }
 
-  const data = await res.json();
   return NextResponse.json(data); // { accessToken, refreshToken }
 }

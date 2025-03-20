@@ -18,7 +18,6 @@ export function useAuth() {
   const router = useRouter();
   const toast = useToast();
 
-  // Load tokens from localStorage on mount
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
     const refreshToken = localStorage.getItem("refreshToken");
@@ -26,7 +25,6 @@ export function useAuth() {
     setLoading(false);
   }, []);
 
-  // Login function
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
@@ -43,8 +41,8 @@ export function useAuth() {
 
       const { accessToken, refreshToken } = await res.json();
       localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
-      setTokens({ accessToken, refreshToken });
+      if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
+      setTokens({ accessToken, refreshToken: refreshToken || null });
       toast({
         title: "Logged in!",
         status: "success",
@@ -65,48 +63,6 @@ export function useAuth() {
     }
   };
 
-  // Register function
-  const register = async (
-    email: string,
-    password: string,
-    confirmPassword: string
-  ) => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, confirmPassword }),
-      });
-
-      if (!res.ok) {
-        const { error } = await res.json();
-        throw new Error(error || "Registration failed");
-      }
-
-      const { message } = await res.json();
-      toast({
-        title: "Registration successful",
-        description: message || "Please confirm your email",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
-      router.push("/auth/login");
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Registration failed",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Logout function
   const logout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
@@ -120,9 +76,18 @@ export function useAuth() {
     router.push("/auth/login");
   };
 
-  // Refresh token function
   const refreshToken = async () => {
-    if (!tokens.refreshToken) return false;
+    if (!tokens.refreshToken) {
+      toast({
+        title: "No refresh token",
+        description: "Please log in again",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+      });
+      logout();
+      return false;
+    }
 
     setLoading(true);
     try {
@@ -138,8 +103,9 @@ export function useAuth() {
 
       const { accessToken, refreshToken: newRefreshToken } = await res.json();
       localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", newRefreshToken);
-      setTokens({ accessToken, refreshToken: newRefreshToken });
+      if (newRefreshToken)
+        localStorage.setItem("refreshToken", newRefreshToken);
+      setTokens({ accessToken, refreshToken: newRefreshToken || null });
       return true;
     } catch (error: any) {
       toast({
@@ -160,7 +126,6 @@ export function useAuth() {
     tokens,
     loading,
     login,
-    register,
     logout,
     refreshToken,
     isAuthenticated: !!tokens.accessToken,

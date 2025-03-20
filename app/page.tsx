@@ -1,15 +1,18 @@
-import Link from "next/link";
+import { Box, Heading } from "@chakra-ui/react";
 
 export default function MainPage() {
   return (
-    <div className="flex text-black flex-col bg-white text-5xl h-screen justify-center items-center">
-      Welcome to LBL service
-      <p className="text-lg">
-        Pass registration process or login to enjoy your learning journey
-      </p>
-      <p className="text-lg text-blue-700">
-        <Link href="/login">Login link</Link>
-      </p>
-    </div>
+    <Box
+      display="flex"
+      flexDirection="column"
+      bg="white"
+      color="black"
+      fontSize="5xl"
+      h="100vh"
+      justifyContent="center"
+      alignItems="center"
+    >
+      <Heading>Welcome to LineByLine</Heading>
+    </Box>
   );
 }

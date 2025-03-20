@@ -17,16 +17,10 @@ export async function POST(req: NextRequest) {
 
   const { userId } = auth;
   const { title } = await req.json();
-  if (!title) {
+  if (!title)
     return NextResponse.json({ error: "Title is required" }, { status: 400 });
-  }
 
-  const newDeck = {
-    id: String(decks.length + 1),
-    title,
-    cardCount: 0,
-    userId,
-  };
+  const newDeck = { id: String(decks.length + 1), title, cardCount: 0, userId };
   decks.push(newDeck);
   return NextResponse.json(newDeck, { status: 201 });
 }

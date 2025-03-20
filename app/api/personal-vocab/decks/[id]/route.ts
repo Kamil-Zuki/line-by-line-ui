@@ -1,121 +1,57 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const API_URL = "http://85.175.218.17/api/v1/deck";
+import { decks } from "@/app/lib/mockData";
+import { authMiddleware } from "@/app/lib/authMiddleware";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: "Authorization header is required" },
-        { status: 401 }
-      );
-    }
+  const auth = authMiddleware(req);
+  if (auth instanceof NextResponse) return auth;
 
-    // Ensure the token is in "Bearer <token>" format
-    const token = authHeader.startsWith("Bearer ")
-      ? authHeader
-      : `Bearer ${authHeader}`;
-
-    const paramsData = await params;
-    const { id } = paramsData;
-    const response = await fetch(`${API_URL}/${id}`, {
-      method: "GET",
-      headers: {
-        Authorization: token,
-      },
-    });
-
-    if (response.status === 401) {
-      return NextResponse.json(
-        { error: "Unauthorized - invalid or expired token" },
-        { status: 401 }
-      );
-    }
-
-    if (!response.ok) {
-      throw new Error(`Deck not found or server error: ${response.status}`);
-    }
-
-    const deck = await response.json();
-    return NextResponse.json(deck);
-  } catch (error: any) {
-    const status = error.message.includes("Deck not found") ? 404 : 500;
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status }
-    );
-  }
+  const { userId } = auth;
+  const deck = decks.find((d) => d.id === params.id && d.userId === userId);
+  if (!deck)
+    return NextResponse.json({ error: "Deck not found" }, { status: 404 });
+  return NextResponse.json(deck);
 }
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  try {
-    const paramsData = await params;
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: "Authorization header is required" },
-        { status: 401 }
-      );
-    }
-    const body = await req.json();
-    const token = authHeader.startsWith("Bearer ")
-      ? authHeader
-      : `Bearer ${authHeader}`;
+  const auth = authMiddleware(req);
+  if (auth instanceof NextResponse) return auth;
 
-    const response = await fetch(`${API_URL}/${paramsData.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json-patch+json",
-        Accept: "text/plain",
-        Authorization: `${token}`,
-      },
-      body: JSON.stringify(body),
-    });
+  const { userId } = auth;
+  const deckIndex = decks.findIndex(
+    (d) => d.id === params.id && d.userId === userId
+  );
+  if (deckIndex === -1)
+    return NextResponse.json({ error: "Deck not found" }, { status: 404 });
 
-    if (!response.ok) throw new Error("Failed to update deck");
+  const { title } = await req.json();
+  if (!title)
+    return NextResponse.json({ error: "Title is required" }, { status: 400 });
 
-    const updatedDeck = await response.json();
-    return NextResponse.json(updatedDeck);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+  decks[deckIndex].title = title;
+  return NextResponse.json(decks[deckIndex]);
 }
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  try {
-    const paramsData = await params;
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: "Authorization header is required" },
-        { status: 401 }
-      );
-    }
-    const token = authHeader.startsWith("Bearer ")
-      ? authHeader
-      : `Bearer ${authHeader}`;
-    const response = await fetch(`${API_URL}/${paramsData.id}`, {
-      method: "DELETE",
-      headers: {
-        Accept: "text/plain",
-        Authorization: `${token}`,
-      },
-    });
+  const auth = authMiddleware(req);
+  if (auth instanceof NextResponse) return auth;
 
-    if (!response.ok) throw new Error("Failed to delete deck");
+  const { userId } = auth;
+  const deckIndex = decks.findIndex(
+    (d) => d.id === params.id && d.userId === userId
+  );
+  if (deckIndex === -1)
+    return NextResponse.json({ error: "Deck not found" }, { status: 404 });
 
-    return NextResponse.json({ message: "Deck deleted successfully" });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+  decks.splice(deckIndex, 1);
+  return NextResponse.json({ message: "Deck deleted" });
 }

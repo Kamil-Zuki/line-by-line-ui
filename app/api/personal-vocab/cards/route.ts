@@ -1,58 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const API_URL = "http://85.175.218.17/api/v1/term";
+import { cards, decks } from "@/app/lib/mockData";
+import { authMiddleware } from "@/app/lib/authMiddleware";
 
 export async function GET(req: NextRequest) {
-  try {
-    const token = req.headers.get("Authorization");
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const auth = authMiddleware(req);
+  if (auth instanceof NextResponse) return auth;
 
-    const response = await fetch(API_URL, {
-      method: "GET",
-      headers: {
-        accept: "text/plain",
-        Authorization: token,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch cards");
-    }
-
-    const cards = await response.json();
-    return NextResponse.json(cards);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+  const { userId } = auth;
+  const userCards = cards.filter((card) => card.userId === userId);
+  return NextResponse.json(userCards);
 }
 
 export async function POST(req: NextRequest) {
-  try {
-    const token = req.headers.get("Authorization");
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const auth = authMiddleware(req);
+  if (auth instanceof NextResponse) return auth;
 
-    const body = await req.json();
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        accept: "text/plain",
-        Authorization: token,
-        "Content-Type": "application/json-patch+json",
-      },
-      body: JSON.stringify(body),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to create card");
-    }
-
-    const card = await response.json();
-    return NextResponse.json(card, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  const { userId } = auth;
+  const { deckId, front, back } = await req.json();
+  if (!deckId || !front || !back) {
+    return NextResponse.json(
+      { error: "deckId, front, and back are required" },
+      { status: 400 }
+    );
   }
+
+  const deck = decks.find((d) => d.id === deckId && d.userId === userId);
+  if (!deck)
+    return NextResponse.json({ error: "Deck not found" }, { status: 404 });
+
+  const newCard = { id: String(cards.length + 1), deckId, front, back, userId };
+  cards.push(newCard);
+  deck.cardCount += 1;
+  return NextResponse.json(newCard, { status: 201 });
 }

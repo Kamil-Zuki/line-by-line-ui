@@ -1,93 +1,62 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const API_URL = "http://85.175.218.17/api/v1/term";
+import { cards, decks } from "@/app/lib/mockData";
+import { authMiddleware } from "@/app/lib/authMiddleware";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  try {
-    const paramsData = await params;
-    const token = req.headers.get("Authorization");
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const auth = authMiddleware(req);
+  if (auth instanceof NextResponse) return auth;
 
-    const response = await fetch(`${API_URL}/${paramsData.id}`, {
-      method: "GET",
-      headers: {
-        accept: "text/plain",
-        Authorization: token,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Card not found");
-    }
-
-    const card = await response.json();
-    return NextResponse.json(card);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 404 });
-  }
+  const { userId } = auth;
+  const card = cards.find((c) => c.id === params.id && c.userId === userId);
+  if (!card)
+    return NextResponse.json({ error: "Card not found" }, { status: 404 });
+  return NextResponse.json(card);
 }
 
 export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  try {
-    const token = req.headers.get("Authorization");
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const auth = authMiddleware(req);
+  if (auth instanceof NextResponse) return auth;
 
-    const body = await req.json();
-    const response = await fetch(`${API_URL}/${params.id}`, {
-      method: "PUT",
-      headers: {
-        accept: "text/plain",
-        Authorization: token,
-        "Content-Type": "application/json-patch+json",
-      },
-      body: JSON.stringify(body),
-    });
+  const { userId } = auth;
+  const cardIndex = cards.findIndex(
+    (c) => c.id === params.id && c.userId === userId
+  );
+  if (cardIndex === -1)
+    return NextResponse.json({ error: "Card not found" }, { status: 404 });
 
-    if (!response.ok) {
-      throw new Error("Failed to update card");
-    }
+  const { front, back } = await req.json();
+  if (!front || !back)
+    return NextResponse.json(
+      { error: "front and back are required" },
+      { status: 400 }
+    );
 
-    const card = await response.json();
-    return NextResponse.json(card);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+  cards[cardIndex] = { ...cards[cardIndex], front, back };
+  return NextResponse.json(cards[cardIndex]);
 }
 
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  try {
-    const token = req.headers.get("Authorization");
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const auth = authMiddleware(req);
+  if (auth instanceof NextResponse) return auth;
 
-    const response = await fetch(`${API_URL}/${params.id}`, {
-      method: "DELETE",
-      headers: {
-        accept: "text/plain",
-        Authorization: token,
-      },
-    });
+  const { userId } = auth;
+  const cardIndex = cards.findIndex(
+    (c) => c.id === params.id && c.userId === userId
+  );
+  if (cardIndex === -1)
+    return NextResponse.json({ error: "Card not found" }, { status: 404 });
 
-    if (!response.ok) {
-      throw new Error("Failed to delete card");
-    }
-
-    return new NextResponse(null, { status: 204 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+  const deck = decks.find((d) => d.id === cards[cardIndex].deckId);
+  if (deck) deck.cardCount -= 1;
+  cards.splice(cardIndex, 1);
+  return NextResponse.json({ message: "Card deleted" });
 }

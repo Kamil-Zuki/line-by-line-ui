@@ -14,7 +14,7 @@ export function useAuth() {
     accessToken: null,
     refreshToken: null,
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const toast = useToast();
 
@@ -22,8 +22,15 @@ export function useAuth() {
     const accessToken = localStorage.getItem("accessToken");
     const refreshToken = localStorage.getItem("refreshToken");
     setTokens({ accessToken, refreshToken });
-    setLoading(false);
   }, []);
+
+  const saveTokens = (accessToken: string, refreshToken?: string | null) => {
+    localStorage.setItem("accessToken", accessToken);
+    if (refreshToken) {
+      localStorage.setItem("refreshToken", refreshToken);
+    }
+    setTokens({ accessToken, refreshToken: refreshToken || null });
+  };
 
   const login = async (email: string, password: string) => {
     setLoading(true);
@@ -33,16 +40,14 @@ export function useAuth() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-
       if (!res.ok) {
         const { error } = await res.json();
         throw new Error(error || "Invalid credentials");
       }
 
       const { accessToken, refreshToken } = await res.json();
-      localStorage.setItem("accessToken", accessToken);
-      if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
-      setTokens({ accessToken, refreshToken: refreshToken || null });
+      saveTokens(accessToken, refreshToken);
+
       toast({
         title: "Logged in!",
         status: "success",
@@ -63,6 +68,46 @@ export function useAuth() {
     }
   };
 
+  const register = async (
+    email: string,
+    password: string,
+    confirmPassword: string
+  ) => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, confirmPassword }),
+      });
+
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error || "Registration failed");
+      }
+
+      toast({
+        title: "Registered successfully!",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+
+      // Optional: Auto-login after registration
+      await login(email, password);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Registration failed",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
@@ -73,7 +118,7 @@ export function useAuth() {
       duration: 3000,
       isClosable: true,
     });
-    router.push("/auth/login");
+    router.push("/login");
   };
 
   const refreshToken = async () => {
@@ -102,10 +147,7 @@ export function useAuth() {
       }
 
       const { accessToken, refreshToken: newRefreshToken } = await res.json();
-      localStorage.setItem("accessToken", accessToken);
-      if (newRefreshToken)
-        localStorage.setItem("refreshToken", newRefreshToken);
-      setTokens({ accessToken, refreshToken: newRefreshToken || null });
+      saveTokens(accessToken, newRefreshToken);
       return true;
     } catch (error: any) {
       toast({
@@ -128,6 +170,7 @@ export function useAuth() {
     login,
     logout,
     refreshToken,
+    register, // Added register here!
     isAuthenticated: !!tokens.accessToken,
   };
 }

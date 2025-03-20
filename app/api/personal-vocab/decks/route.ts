@@ -1,91 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const API_URL = "http://85.175.218.17/api/v1/deck";
+import { decks } from "@/app/lib/mockData";
+import { authMiddleware } from "@/app/lib/authMiddleware";
 
 export async function GET(req: NextRequest) {
-  try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: "Authorization header is required" },
-        { status: 401 }
-      );
-    }
+  const auth = authMiddleware(req);
+  if (auth instanceof NextResponse) return auth;
 
-    const response = await fetch(API_URL, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: authHeader,
-      },
-    });
-    if (response.status === 401) {
-      return NextResponse.json(
-        { error: "Authorization header is required" },
-        { status: 401 }
-      );
-    }
-
-    if (!response.ok) throw new Error("Failed to fetch decks");
-
-    const decks = await response.json();
-    return NextResponse.json(decks);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+  const { userId } = auth;
+  const userDecks = decks.filter((deck) => deck.userId === userId);
+  return NextResponse.json(userDecks);
 }
 
 export async function POST(req: NextRequest) {
-  try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: "Authorization header is required" },
-        { status: 401 }
-      );
-    }
+  const auth = authMiddleware(req);
+  if (auth instanceof NextResponse) return auth;
 
-    const token = authHeader.startsWith("Bearer ")
-      ? authHeader
-      : `Bearer ${authHeader}`;
-
-    let { title, imageUrl, description, groupId } = await req.json();
-
-    groupId = "ac5fca0a-e675-4244-941c-858b8b7e764d";
-
-    if (!title || !groupId) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
-
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json-patch+json",
-        Accept: "text/plain",
-        Authorization: token,
-      },
-      body: JSON.stringify({ title, imageUrl, description, groupId }),
-    });
-
-    if (response.status === 401) {
-      return NextResponse.json(
-        { error: "Authorization header is required" },
-        { status: 401 }
-      );
-    }
-
-    const responseText = await response.text();
-    console.log("Backend response:", responseText);
-
-    if (!response.ok) {
-      throw new Error(`Failed to create deck: ${responseText}`);
-    }
-
-    return NextResponse.json(JSON.parse(responseText), { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  const { userId } = auth;
+  const { title } = await req.json();
+  if (!title) {
+    return NextResponse.json({ error: "Title is required" }, { status: 400 });
   }
+
+  const newDeck = {
+    id: String(decks.length + 1),
+    title,
+    cardCount: 0,
+    userId,
+  };
+  decks.push(newDeck);
+  return NextResponse.json(newDeck, { status: 201 });
 }

@@ -1,46 +1,67 @@
+// Import necessary modules and dependencies
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import jwt from "jsonwebtoken";
 
-// Function to decode JWT (without validating the signature)
-const decodeJwt = (token: string) => {
-  const base64Url = token.split(".")[1];
-  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/"); // Adjust for URL-safe base64
-  const jsonPayload = decodeURIComponent(
-    atob(base64)
-      .split("")
-      .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-      .join("")
-  );
-  return JSON.parse(jsonPayload);
-};
+// JWT configuration from your settings
+const JWT_SECRET = process.env.JWT_SECRET || "";
+const JWT_ISSUER = process.env.JWT_ISSUER || "";
+const JWT_AUDIENCE = process.env.JWT_AUDIENCE || "";
 
+// Middleware function for authentication and authorization
 export async function middleware(req: NextRequest) {
-  const cookieStore = await cookies(); // Get cookies from the request
-  const token = cookieStore.get("authToken")?.value; // Access the token from cookies
-
-  if (!token) {
-    return NextResponse.redirect(new URL("/login", req.url));
-  }
-
   try {
-    const decodedToken = decodeJwt(token);
-    const currentTime = Math.floor(Date.now() / 1000);
-    const tokenExpTime = decodedToken.exp;
+    // Retrieve the auth token from cookies
+    const cookieStore = await cookies();
+    const token = cookieStore.get("authToken")?.value;
 
-    if (tokenExpTime < currentTime) {
+    // Allow public routes to bypass middleware
+    if (
+      req.nextUrl.pathname.startsWith("/login") ||
+      req.nextUrl.pathname.startsWith("/api/auth") ||
+      req.nextUrl.pathname === "/login" // Add any other public routes
+    ) {
+      return NextResponse.next();
+    }
+
+    // Redirect to /login if no token is present
+    if (!token) {
       return NextResponse.redirect(new URL("/login", req.url));
-    } else if (tokenExpTime < currentTime && req.nextUrl.pathname === "/") {
+    }
+
+    // Verify JWT with secret, issuer, and audience
+    const decoded = jwt.verify(token, JWT_SECRET, {
+      issuer: JWT_ISSUER,
+      audience: JWT_AUDIENCE,
+    }) as { exp: number; userId: string };
+
+    const currentTime = Math.floor(Date.now() / 1000);
+
+    // Redirect to /login if token is expired
+    if (decoded.exp < currentTime) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+
+    // Redirect root (/) to /dashboard for valid tokens
+    if (req.nextUrl.pathname === "/" && decoded.exp > currentTime) {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
+
+    // Pass userId to downstream requests (e.g., API routes)
+    const response = NextResponse.next();
+    response.headers.set("x-user-id", decoded.userId);
+    return response;
   } catch (err) {
+    console.error("JWT validation error:", err);
     return NextResponse.redirect(new URL("/login", req.url));
   }
-
-  // If everything is valid, continue with the request
-  return NextResponse.next();
 }
 
-// Apply middleware to protected routes
+// Configuration to protect specific routes
 export const config = {
-  matcher: ["/dashboard/:path*", "/:path*"], // Protect all routes except login page
+  matcher: [
+    "/dashboard/:path*", // Dashboard pages
+    "/api/personal-vocab/:path*", // Vocab API routes
+    "/", // Root path
+  ],
 };

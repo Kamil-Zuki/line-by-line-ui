@@ -20,24 +20,29 @@ interface Deck {
 }
 
 export default function DecksPage() {
-  const { tokens, isAuthenticated } = useAuth();
+  const { tokens, isAuthenticated, refreshToken } = useAuth();
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const toast = useToast();
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/auth/login");
-      return;
-    }
+    if (!isAuthenticated) return;
 
     const fetchDecks = async () => {
       try {
         const res = await fetch("/api/personal-vocab/decks", {
           headers: { Authorization: `Bearer ${tokens.accessToken}` },
+          credentials: "include",
         });
-        if (!res.ok) throw new Error("Failed to fetch decks");
+        if (!res.ok) {
+          if (res.status === 401) {
+            const refreshed = await refreshToken();
+            if (refreshed) return fetchDecks();
+            throw new Error("Session expired");
+          }
+          throw new Error("Failed to fetch decks");
+        }
         const data = await res.json();
         setDecks(data);
       } catch (error: any) {
@@ -48,7 +53,7 @@ export default function DecksPage() {
     };
 
     fetchDecks();
-  }, [isAuthenticated, tokens.accessToken, router, toast]);
+  }, [isAuthenticated, tokens.accessToken, refreshToken, toast]);
 
   if (!isAuthenticated) return null;
   if (loading) return <Spinner size="xl" m={8} />;

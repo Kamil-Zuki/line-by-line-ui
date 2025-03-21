@@ -19,18 +19,19 @@ export function useAuth() {
   const toast = useToast();
 
   useEffect(() => {
-    const accessToken = localStorage.getItem("accessToken");
-    const refreshToken = localStorage.getItem("refreshToken");
-    setTokens({ accessToken, refreshToken });
+    const fetchTokens = async () => {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" });
+        if (res.ok) {
+          const { accessToken, refreshToken } = await res.json();
+          setTokens({ accessToken, refreshToken });
+        }
+      } catch {
+        // Middleware will redirect if tokens are invalid
+      }
+    };
+    fetchTokens();
   }, []);
-
-  const saveTokens = (accessToken: string, refreshToken?: string | null) => {
-    localStorage.setItem("accessToken", accessToken);
-    if (refreshToken) {
-      localStorage.setItem("refreshToken", refreshToken);
-    }
-    setTokens({ accessToken, refreshToken: refreshToken || null });
-  };
 
   const login = async (email: string, password: string) => {
     setLoading(true);
@@ -46,8 +47,7 @@ export function useAuth() {
       }
 
       const { accessToken, refreshToken } = await res.json();
-      saveTokens(accessToken, refreshToken);
-
+      setTokens({ accessToken, refreshToken });
       toast({
         title: "Logged in!",
         status: "success",
@@ -80,7 +80,6 @@ export function useAuth() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, confirmPassword }),
       });
-
       if (!res.ok) {
         const { error } = await res.json();
         throw new Error(error || "Registration failed");
@@ -92,9 +91,7 @@ export function useAuth() {
         duration: 3000,
         isClosable: true,
       });
-
-      // Optional: Auto-login after registration
-      await login(email, password);
+      await login(email, password); // Auto-login after registration
     } catch (error: any) {
       toast({
         title: "Error",
@@ -108,17 +105,26 @@ export function useAuth() {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    setTokens({ accessToken: null, refreshToken: null });
-    toast({
-      title: "Logged out",
-      status: "info",
-      duration: 3000,
-      isClosable: true,
-    });
-    router.push("/login");
+  const logout = async () => {
+    setLoading(true);
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+      setTokens({ accessToken: null, refreshToken: null });
+      toast({
+        title: "Logged out",
+        status: "info",
+        duration: 3000,
+        isClosable: true,
+      });
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const refreshToken = async () => {
@@ -140,14 +146,12 @@ export function useAuth() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken: tokens.refreshToken }),
+        credentials: "include",
       });
-
-      if (!res.ok) {
-        throw new Error("Token refresh failed");
-      }
+      if (!res.ok) throw new Error("Token refresh failed");
 
       const { accessToken, refreshToken: newRefreshToken } = await res.json();
-      saveTokens(accessToken, newRefreshToken);
+      setTokens({ accessToken, refreshToken: newRefreshToken });
       return true;
     } catch (error: any) {
       toast({
@@ -170,7 +174,7 @@ export function useAuth() {
     login,
     logout,
     refreshToken,
-    register, // Added register here!
+    register,
     isAuthenticated: !!tokens.accessToken,
   };
 }

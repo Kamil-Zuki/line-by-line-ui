@@ -7,10 +7,9 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const res = await fetch("http://localhost:5027/api/v1/auth/me", {
+    const res = await fetch("http://85.175.218.17/api/v1/auth/me", {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
-
     if (!res.ok) {
       return NextResponse.json(
         { error: "Failed to fetch user info" },

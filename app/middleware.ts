@@ -32,6 +32,8 @@ export async function middleware(req: NextRequest) {
       audience: JWT_AUDIENCE || undefined, // Optional
     }) as { exp: number; sub: string; name: string };
 
+
+    console.log(decoded);
     const currentTime = Math.floor(Date.now() / 1000);
 
     if (decoded.exp < currentTime) {

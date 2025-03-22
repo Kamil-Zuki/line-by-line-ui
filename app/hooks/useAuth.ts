@@ -21,7 +21,7 @@ export function useAuth() {
   useEffect(() => {
     const fetchTokens = async () => {
       try {
-        const res = await fetch("/api/auth/me", { credentials: "include" });
+        const res = await fetch("/api/auth/login", { credentials: "include" });
         if (res.ok) {
           const { accessToken, refreshToken } = await res.json();
           setTokens({ accessToken, refreshToken });

@@ -12,9 +12,9 @@ import {
   Link as ChakraLink,
   FormErrorMessage,
 } from "@chakra-ui/react";
-import MainLayout from "@/app/components/layout";
 import { useAuth } from "@/app/hooks/useAuth";
 import NextLink from "next/link";
+import MainLayout from "@/app/components/Layout";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");

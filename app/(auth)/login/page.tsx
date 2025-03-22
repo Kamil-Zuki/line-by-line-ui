@@ -11,8 +11,8 @@ import {
   Text,
   Link as ChakraLink,
 } from "@chakra-ui/react";
-import MainLayout from "@/app/components/layout";
 import { useAuth } from "@/app/hooks/useAuth";
+import MainLayout from "@/app/components/Layout";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");

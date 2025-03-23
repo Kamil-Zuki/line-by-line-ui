@@ -2,28 +2,31 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BASE_URL = "http://85.175.218.17/api/v1";
 
-export async function GET(req: NextRequest, { params }: { params: { deckId: string } }) {
+export async function POST(req: NextRequest) {
   const accessToken = req.cookies.get("accessToken")?.value;
   if (!accessToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const res = await fetch(`${BASE_URL}/card/due?deckId=${params.deckId}`, {
-      method: "GET",
+    const body = await req.json();
+    const res = await fetch(`${BASE_URL}/contribution`, {
+      method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify(body),
     });
 
     if (!res.ok) {
-      return NextResponse.json({ error: "Failed to fetch cards" }, { status: res.status });
+      return NextResponse.json({ error: "Failed to create contribution" }, { status: res.status });
     }
 
-    const cards = await res.json();
-    return NextResponse.json(cards);
+    const contribution = await res.json();
+    return NextResponse.json(contribution);
   } catch (error) {
-    console.error("Error fetching cards:", error);
+    console.error("Error creating contribution:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

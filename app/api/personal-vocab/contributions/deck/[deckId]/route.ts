@@ -9,7 +9,7 @@ export async function GET(req: NextRequest, { params }: { params: { deckId: stri
   }
 
   try {
-    const res = await fetch(`${BASE_URL}/card/due?deckId=${params.deckId}`, {
+    const res = await fetch(`${BASE_URL}/contribution/deck/${params.deckId}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -17,13 +17,13 @@ export async function GET(req: NextRequest, { params }: { params: { deckId: stri
     });
 
     if (!res.ok) {
-      return NextResponse.json({ error: "Failed to fetch cards" }, { status: res.status });
+      return NextResponse.json({ error: "Failed to fetch contributions" }, { status: res.status });
     }
 
-    const cards = await res.json();
-    return NextResponse.json(cards);
+    const contributions = await res.json();
+    return NextResponse.json(contributions);
   } catch (error) {
-    console.error("Error fetching cards:", error);
+    console.error("Error fetching contributions:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

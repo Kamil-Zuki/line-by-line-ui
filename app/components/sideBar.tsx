@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, VStack, Text, Button } from "@chakra-ui/react";
+import { Box, VStack, Text, Button, Divider } from "@chakra-ui/react";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useRouter } from "next/navigation";
 
@@ -21,11 +21,11 @@ export default function SideBar() {
       borderRight="1px solid"
       borderColor="gray.200"
     >
-      <VStack align="start" spacing={4}>
-        <Text fontSize="xl" fontWeight="bold" color="teal.600">
+      <VStack align="start" spacing={6}>
+        <Text fontSize="2xl" fontWeight="bold" color="teal.600">
           LBL
         </Text>
-        {isAuthenticated && (
+        {isAuthenticated ? (
           <>
             <Button
               variant="ghost"
@@ -47,6 +47,23 @@ export default function SideBar() {
               variant="ghost"
               w="full"
               justifyContent="start"
+              onClick={() => router.push("/dashboard/decks/new")}
+            >
+              Create New Deck
+            </Button>
+            <Button
+              variant="ghost"
+              w="full"
+              justifyContent="start"
+              onClick={() => router.push("/dashboard/decks/search")}
+            >
+              Search Decks
+            </Button>
+            <Divider />
+            <Button
+              variant="ghost"
+              w="full"
+              justifyContent="start"
               onClick={() => router.push("/profile")}
             >
               Profile
@@ -61,6 +78,15 @@ export default function SideBar() {
               Logout
             </Button>
           </>
+        ) : (
+          <Button
+            variant="ghost"
+            w="full"
+            justifyContent="start"
+            onClick={() => router.push("/login")}
+          >
+            Login
+          </Button>
         )}
       </VStack>
     </Box>

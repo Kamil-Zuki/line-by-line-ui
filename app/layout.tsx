@@ -10,7 +10,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <ChakraWrapper>{children}</ChakraWrapper>
+        <ChakraWrapper>
+          {children}
+        </ChakraWrapper>
       </body>
     </html>
   );

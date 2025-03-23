@@ -27,33 +27,49 @@ export default function DecksPage() {
   const toast = useToast();
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
 
     const fetchDecks = async () => {
+      setLoading(true);
       try {
-        const res = await fetch("/api/personal-vocab/decks", {
-          headers: { Authorization: `Bearer ${tokens.accessToken}` },
+        const res = await fetch("/api/personal-vocab/decks/my-decks", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${tokens.accessToken}`,
+          },
           credentials: "include",
         });
+
         if (!res.ok) {
           if (res.status === 401) {
             const refreshed = await refreshToken();
             if (refreshed) return fetchDecks();
-            throw new Error("Session expired");
+            throw new Error("Session expired, please log in again");
           }
-          throw new Error("Failed to fetch decks");
+          throw new Error(`Failed to fetch decks: ${res.statusText}`);
         }
+
         const data = await res.json();
+        console.log("Decks fetched:", data); // Debug log
         setDecks(data);
       } catch (error: any) {
-        toast({ title: "Error", description: error.message, status: "error" });
+        toast({
+          title: "Error",
+          description: error.message,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchDecks();
-  }, [isAuthenticated, tokens.accessToken, refreshToken, toast]);
+  }, [isAuthenticated, tokens.accessToken, refreshToken, router, toast]);
 
   if (!isAuthenticated) return null;
   if (loading) return <Spinner size="xl" m={8} />;

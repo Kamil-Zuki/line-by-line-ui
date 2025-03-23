@@ -2,15 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   const accessToken = req.cookies.get("accessToken")?.value;
+  console.log("Cookies received:", req.cookies);
+  console.log("AccessToken:", accessToken);
+
   if (!accessToken) {
+    console.log("No accessToken in request cookies");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const res = await fetch("http://85.175.218.17/api/v1/auth/me", {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
     });
+
     if (!res.ok) {
+      console.log(`Auth service responded with status: ${res.status}`);
       return NextResponse.json(
         { error: "Failed to fetch user info" },
         { status: res.status }
@@ -20,9 +29,7 @@ export async function GET(req: NextRequest) {
     const user = await res.json();
     return NextResponse.json(user);
   } catch (error) {
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error("Error fetching user info:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

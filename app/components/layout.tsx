@@ -1,5 +1,8 @@
-import { Box, Flex, Heading, Container } from "@chakra-ui/react";
+"use client";
+
+import { Box, Container, Heading } from "@chakra-ui/react";
 import { ReactNode } from "react";
+import Link from "next/link";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -8,10 +11,12 @@ interface MainLayoutProps {
 export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <Box minH="100vh" bg="gray.50">
-      <Flex as="header" bg="teal.500" p={4} color="white" justify="center">
-        <Heading size="lg">LineByLine</Heading>
-      </Flex>
-      <Container maxW="container.md" py={8}>
+      <Box as="header" bg="teal.500" p={4} color="white" textAlign="center">
+        <Heading size="lg">
+          <Link href="/">LineByLine</Link>
+        </Heading>
+      </Box>
+      <Container maxW="container.lg" py={8}>
         {children}
       </Container>
     </Box>

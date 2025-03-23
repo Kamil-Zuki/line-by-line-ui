@@ -6,9 +6,9 @@ import SideBar from "@/app/components/SideBar";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
-    <Flex minH="100vh">
+    <Flex minH="100vh" bg="gray.50">
       <SideBar />
-      <Box flex="1" p={6}>
+      <Box flex="1" p={{ base: 4, md: 6 }} ml={{ base: 0, md: "250px" }}>
         {children}
       </Box>
     </Flex>

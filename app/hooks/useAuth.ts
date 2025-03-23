@@ -9,28 +9,45 @@ interface AuthTokens {
   refreshToken: string | null;
 }
 
+interface User {
+  id: string;
+  userName: string;
+  email: string;
+  emailConfirmed: boolean;
+}
+
 export function useAuth() {
   const [tokens, setTokens] = useState<AuthTokens>({
     accessToken: null,
     refreshToken: null,
   });
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const toast = useToast();
 
   useEffect(() => {
-    const fetchTokens = async () => {
+    const checkAuth = async () => {
+      setLoading(true);
       try {
-        const res = await fetch("/api/auth/login", { credentials: "include" });
+        const res = await fetch("/api/auth/me", { credentials: "include" });
         if (res.ok) {
-          const { accessToken, refreshToken } = await res.json();
-          setTokens({ accessToken, refreshToken });
+          const userData: User = await res.json();
+          setUser(userData);
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+          setUser(null);
         }
       } catch {
-        // Middleware will redirect if tokens are invalid
+        setIsAuthenticated(false);
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchTokens();
+    checkAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -48,6 +65,11 @@ export function useAuth() {
 
       const { accessToken, refreshToken } = await res.json();
       setTokens({ accessToken, refreshToken });
+      setIsAuthenticated(true);
+      // Fetch user info after login
+      const meRes = await fetch("/api/auth/me", { credentials: "include" });
+      if (meRes.ok) setUser(await meRes.json());
+      
       toast({
         title: "Logged in!",
         status: "success",
@@ -68,17 +90,13 @@ export function useAuth() {
     }
   };
 
-  const register = async (
-    email: string,
-    password: string,
-    confirmPassword: string
-  ) => {
+  const register = async (email: string, password: string, name: string) => {
     setLoading(true);
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, confirmPassword }),
+        body: JSON.stringify({ email, password, name }),
       });
       if (!res.ok) {
         const { error } = await res.json();
@@ -91,7 +109,7 @@ export function useAuth() {
         duration: 3000,
         isClosable: true,
       });
-      await login(email, password); // Auto-login after registration
+      await login(email, password); // Auto-login
     } catch (error: any) {
       toast({
         title: "Error",
@@ -113,6 +131,8 @@ export function useAuth() {
         credentials: "include",
       });
       setTokens({ accessToken: null, refreshToken: null });
+      setUser(null);
+      setIsAuthenticated(false);
       toast({
         title: "Logged out",
         status: "info",
@@ -128,7 +148,8 @@ export function useAuth() {
   };
 
   const refreshToken = async () => {
-    if (!tokens.refreshToken) {
+    const refreshTokenValue = tokens.refreshToken;
+    if (!refreshTokenValue) {
       toast({
         title: "No refresh token",
         description: "Please log in again",
@@ -145,13 +166,17 @@ export function useAuth() {
       const res = await fetch("/api/auth/token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken: tokens.refreshToken }),
+        body: JSON.stringify({ refreshToken: refreshTokenValue }),
         credentials: "include",
       });
       if (!res.ok) throw new Error("Token refresh failed");
 
       const { accessToken, refreshToken: newRefreshToken } = await res.json();
       setTokens({ accessToken, refreshToken: newRefreshToken });
+      setIsAuthenticated(true);
+      // Refresh user info
+      const meRes = await fetch("/api/auth/me", { credentials: "include" });
+      if (meRes.ok) setUser(await meRes.json());
       return true;
     } catch (error: any) {
       toast({
@@ -170,11 +195,12 @@ export function useAuth() {
 
   return {
     tokens,
+    user,
     loading,
     login,
     logout,
     refreshToken,
     register,
-    isAuthenticated: !!tokens.accessToken,
+    isAuthenticated,
   };
 }

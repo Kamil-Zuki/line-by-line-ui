@@ -2,16 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BASE_URL = "http://85.175.218.17/api/v1";
 
-export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function GET(req: NextRequest) {
   const accessToken = req.cookies.get("accessToken")?.value;
   if (!accessToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const params = await context.params; // Await params to access id
-
   try {
-    const res = await fetch(`${BASE_URL}/deck/${params.id}`, {
+    const res = await fetch(`${BASE_URL}/deck/public`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -19,40 +17,42 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
     });
 
     if (!res.ok) {
-      return NextResponse.json({ error: "Deck not found" }, { status: res.status });
+      return NextResponse.json({ error: "Failed to fetch public decks" }, { status: res.status });
     }
 
-    const deck = await res.json();
-    return NextResponse.json(deck);
+    const decks = await res.json();
+    return NextResponse.json(decks);
   } catch (error) {
-    console.error("Error fetching deck:", error);
+    console.error("Error fetching public decks:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
-export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function POST(req: NextRequest) {
   const accessToken = req.cookies.get("accessToken")?.value;
   if (!accessToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const params = await context.params; // Await params to access id
-
   try {
-    const res = await fetch(`${BASE_URL}/deck/${params.id}`, {
-      method: "DELETE",
+    const body = await req.json();
+    const res = await fetch(`${BASE_URL}/deck`, {
+      method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify(body),
     });
 
     if (!res.ok) {
-      return NextResponse.json({ error: "Failed to delete deck" }, { status: res.status });
+      return NextResponse.json({ error: "Failed to create deck" }, { status: res.status });
     }
 
-    return NextResponse.json({ message: "Deck deleted" });
+    const deck = await res.json();
+    return NextResponse.json(deck);
   } catch (error) {
-    console.error("Error deleting deck:", error);
+    console.error("Error creating deck:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

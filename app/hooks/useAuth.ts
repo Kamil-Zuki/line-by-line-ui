@@ -9,23 +9,28 @@ interface Tokens {
 }
 
 export function useAuth() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [tokens, setTokens] = useState<Tokens>({
-    accessToken: "",
-    refreshToken: "",
-  });
-  const [loading, setLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [tokens, setTokens] = useState<Tokens>({ accessToken: "", refreshToken: "" });
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+
+  const getCookie = (name: string): string | undefined =>
+    document.cookie
+      .split("; ")
+      .find((row) => row.startsWith(`${name}=`))
+      ?.split("=")[1];
 
   useEffect(() => {
     const checkAuth = async () => {
-      const accessToken = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("accessToken="))
-        ?.split("=")[1];
+      const accessToken = getCookie("accessToken");
+      console.log("Initial cookies:", document.cookie);
+      console.log("Checking auth, accessToken:", accessToken || "none");
 
       if (!accessToken) {
+        console.log("No accessToken found, unauthenticated");
         setIsAuthenticated(false);
+        setLoading(false);
         return;
       }
 
@@ -36,18 +41,24 @@ export function useAuth() {
         if (res.ok) {
           const user = await res.json();
           console.log("User from /me:", user);
-          const refreshToken = document.cookie
-            .split("; ")
-            .find((row) => row.startsWith("refreshToken="))
-            ?.split("=")[1];
+          const refreshToken = getCookie("refreshToken");
           setTokens({ accessToken, refreshToken });
           setIsAuthenticated(true);
+        } else if (res.status === 401) {
+          console.log("Access token expired, attempting refresh");
+          const refreshed = await refreshToken();
+          if (!refreshed) {
+            setIsAuthenticated(false);
+          }
         } else {
+          console.log(`Fetch /api/auth/me failed with status: ${res.status}`);
           setIsAuthenticated(false);
         }
       } catch (error) {
         console.error("Error checking auth:", error);
         setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -55,6 +66,7 @@ export function useAuth() {
   }, [router]);
 
   const login = async (email: string, password: string) => {
+    setLoading(true);
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
@@ -64,75 +76,38 @@ export function useAuth() {
       });
 
       if (!res.ok) {
-        throw new Error("Invalid credentials");
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Invalid credentials");
       }
 
       const { accessToken, refreshToken } = await res.json();
-      document.cookie = `accessToken=${accessToken}; path=/; max-age=${
-        60 * 60 * 24
-      }`;
-      document.cookie = `refreshToken=${refreshToken}; path=/; max-age=${
-        60 * 60 * 24 * 7
-      }`;
+      document.cookie = `accessToken=${accessToken}; path=/; max-age=${60 * 60 * 24}`;
+      document.cookie = `refreshToken=${refreshToken}; path=/; max-age=${60 * 60 * 24 * 7}`;
       setTokens({ accessToken, refreshToken });
       setIsAuthenticated(true);
+      console.log("Login successful, tokens set:", { accessToken, refreshToken });
       router.push("/dashboard");
     } catch (error: any) {
-      console.error("Login failed:", error);
+      console.error("Login failed:", error.message);
       throw error;
-    }
-  };
-
-  const register = async (
-    email: string,
-    password: string,
-    confirmPassword: string
-  ) => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: email, password, confirmPassword }), // Adjust fields
-      });
-
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Registration failed");
-      }
-
-      const { accessToken, refreshToken } = await res.json();
-      document.cookie = `accessToken=${accessToken}; path=/; max-age=${
-        60 * 60 * 24
-      }`;
-      if (refreshToken) {
-        document.cookie = `refreshToken=${refreshToken}; path=/; max-age=${
-          60 * 60 * 24 * 30
-        }`;
-      }
-      setTokens({ accessToken, refreshToken });
-      setIsAuthenticated(true);
-      router.push("/dashboard");
-    } catch (error: any) {
-      throw error; // Let the page handle the error
     } finally {
       setLoading(false);
     }
   };
 
   const logout = () => {
-    document.cookie =
-      "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-    document.cookie =
-      "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+    document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+    document.cookie = "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
     setIsAuthenticated(false);
     setTokens({ accessToken: "", refreshToken: "" });
+    console.log("Logged out, tokens cleared");
     router.push("/login");
   };
 
-  const refreshToken = async () => {
-    const refresh = tokens.refreshToken;
+  const refreshToken = async (): Promise<boolean> => {
+    const refresh = getCookie("refreshToken");
     if (!refresh) {
+      console.log("No refresh token available, logging out");
       logout();
       return false;
     }
@@ -141,21 +116,23 @@ export function useAuth() {
     try {
       const res = await fetch("/api/auth/refresh", {
         method: "POST",
-        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken: refresh }),
+        credentials: "include",
       });
-      if (res.ok) {
-        const { accessToken } = await res.json();
-        document.cookie = `accessToken=${accessToken}; path=/; max-age=${
-          60 * 60 * 24
-        }`;
-        setTokens((prev) => ({ ...prev, accessToken }));
-        setIsAuthenticated(true);
-        return true;
+
+      if (!res.ok) {
+        console.log(`Refresh failed with status: ${res.status}`);
+        logout();
+        return false;
       }
-      logout();
-      return false;
+
+      const { accessToken } = await res.json();
+      document.cookie = `accessToken=${accessToken}; path=/; max-age=${60 * 60 * 24}`;
+      setTokens((prev) => ({ ...prev, accessToken }));
+      setIsAuthenticated(true);
+      console.log("Token refreshed successfully:", accessToken);
+      return true;
     } catch (error) {
       console.error("Refresh token failed:", error);
       logout();
@@ -165,13 +142,5 @@ export function useAuth() {
     }
   };
 
-  return {
-    isAuthenticated,
-    tokens,
-    login,
-    register,
-    logout,
-    refreshToken,
-    loading,
-  };
+  return { isAuthenticated, tokens, login, logout, refreshToken, loading };
 }

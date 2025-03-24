@@ -24,13 +24,19 @@ export async function GET(req: NextRequest) {
     });
 
     if (!res.ok) {
-      return NextResponse.json({ error: "Search failed" }, { status: res.status });
+      return NextResponse.json(
+        { error: "Search failed" },
+        { status: res.status }
+      );
     }
 
     const results = await res.json();
     return NextResponse.json(results);
   } catch (error) {
     console.error("Error searching:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

@@ -2,190 +2,162 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useToast } from "@chakra-ui/react";
 
-interface AuthTokens {
-  accessToken: string | null;
-  refreshToken: string | null;
-}
-
-interface User {
-  id: string;
-  userName: string;
-  email: string;
-  emailConfirmed: boolean;
+interface Tokens {
+  accessToken: string;
+  refreshToken?: string;
 }
 
 export function useAuth() {
-  const [tokens, setTokens] = useState<AuthTokens>({
-    accessToken: null,
-    refreshToken: null,
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [tokens, setTokens] = useState<Tokens>({
+    accessToken: "",
+    refreshToken: "",
   });
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const toast = useToast();
 
   useEffect(() => {
     const checkAuth = async () => {
-      setLoading(true);
+      const accessToken = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("accessToken="))
+        ?.split("=")[1];
+
+      if (!accessToken) {
+        setIsAuthenticated(false);
+        return;
+      }
+
       try {
-        const res = await fetch("/api/auth/me", { credentials: "include" });
+        const res = await fetch("/api/auth/me", {
+          credentials: "include",
+        });
         if (res.ok) {
-          const userData: User = await res.json();
-          setUser(userData);
+          const user = await res.json();
+          console.log("User from /me:", user);
+          const refreshToken = document.cookie
+            .split("; ")
+            .find((row) => row.startsWith("refreshToken="))
+            ?.split("=")[1];
+          setTokens({ accessToken, refreshToken });
           setIsAuthenticated(true);
         } else {
           setIsAuthenticated(false);
-          setUser(null);
         }
-      } catch {
+      } catch (error) {
+        console.error("Error checking auth:", error);
         setIsAuthenticated(false);
-        setUser(null);
-      } finally {
-        setLoading(false);
       }
     };
+
     checkAuth();
-  }, []);
+  }, [router]);
 
   const login = async (email: string, password: string) => {
-    setLoading(true);
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
+        credentials: "include",
       });
+
       if (!res.ok) {
-        const { error } = await res.json();
-        throw new Error(error || "Invalid credentials");
+        throw new Error("Invalid credentials");
       }
 
       const { accessToken, refreshToken } = await res.json();
+      document.cookie = `accessToken=${accessToken}; path=/; max-age=${
+        60 * 60 * 24
+      }`;
+      document.cookie = `refreshToken=${refreshToken}; path=/; max-age=${
+        60 * 60 * 24 * 7
+      }`;
       setTokens({ accessToken, refreshToken });
       setIsAuthenticated(true);
-      // Fetch user info after login
-      const meRes = await fetch("/api/auth/me", { credentials: "include" });
-      if (meRes.ok) setUser(await meRes.json());
-      
-      toast({
-        title: "Logged in!",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
       router.push("/dashboard");
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Login failed",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    } finally {
-      setLoading(false);
+      console.error("Login failed:", error);
+      throw error;
     }
   };
 
-  const register = async (email: string, password: string, name: string) => {
+  const register = async (
+    email: string,
+    password: string,
+    confirmPassword: string
+  ) => {
     setLoading(true);
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name }),
+        body: JSON.stringify({ username: email, password, confirmPassword }), // Adjust fields
       });
+
       if (!res.ok) {
-        const { error } = await res.json();
-        throw new Error(error || "Registration failed");
+        const error = await res.json();
+        throw new Error(error.message || "Registration failed");
       }
 
-      toast({
-        title: "Registered successfully!",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
-      await login(email, password); // Auto-login
+      const { accessToken, refreshToken } = await res.json();
+      document.cookie = `accessToken=${accessToken}; path=/; max-age=${
+        60 * 60 * 24
+      }`;
+      if (refreshToken) {
+        document.cookie = `refreshToken=${refreshToken}; path=/; max-age=${
+          60 * 60 * 24 * 30
+        }`;
+      }
+      setTokens({ accessToken, refreshToken });
+      setIsAuthenticated(true);
+      router.push("/dashboard");
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Registration failed",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      throw error; // Let the page handle the error
     } finally {
       setLoading(false);
     }
   };
 
-  const logout = async () => {
-    setLoading(true);
-    try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-      setTokens({ accessToken: null, refreshToken: null });
-      setUser(null);
-      setIsAuthenticated(false);
-      toast({
-        title: "Logged out",
-        status: "info",
-        duration: 3000,
-        isClosable: true,
-      });
-      router.push("/login");
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      setLoading(false);
-    }
+  const logout = () => {
+    document.cookie =
+      "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+    document.cookie =
+      "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+    setIsAuthenticated(false);
+    setTokens({ accessToken: "", refreshToken: "" });
+    router.push("/login");
   };
 
   const refreshToken = async () => {
-    const refreshTokenValue = tokens.refreshToken;
-    if (!refreshTokenValue) {
-      toast({
-        title: "No refresh token",
-        description: "Please log in again",
-        status: "warning",
-        duration: 5000,
-        isClosable: true,
-      });
+    const refresh = tokens.refreshToken;
+    if (!refresh) {
       logout();
       return false;
     }
 
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/token", {
+      const res = await fetch("/api/auth/refresh", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken: refreshTokenValue }),
         credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: refresh }),
       });
-      if (!res.ok) throw new Error("Token refresh failed");
-
-      const { accessToken, refreshToken: newRefreshToken } = await res.json();
-      setTokens({ accessToken, refreshToken: newRefreshToken });
-      setIsAuthenticated(true);
-      // Refresh user info
-      const meRes = await fetch("/api/auth/me", { credentials: "include" });
-      if (meRes.ok) setUser(await meRes.json());
-      return true;
-    } catch (error: any) {
-      toast({
-        title: "Session expired",
-        description: "Please log in again",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      if (res.ok) {
+        const { accessToken } = await res.json();
+        document.cookie = `accessToken=${accessToken}; path=/; max-age=${
+          60 * 60 * 24
+        }`;
+        setTokens((prev) => ({ ...prev, accessToken }));
+        setIsAuthenticated(true);
+        return true;
+      }
+      logout();
+      return false;
+    } catch (error) {
+      console.error("Refresh token failed:", error);
       logout();
       return false;
     } finally {
@@ -194,13 +166,12 @@ export function useAuth() {
   };
 
   return {
+    isAuthenticated,
     tokens,
-    user,
-    loading,
     login,
+    register,
     logout,
     refreshToken,
-    register,
-    isAuthenticated,
+    loading,
   };
 }

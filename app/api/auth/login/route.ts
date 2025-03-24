@@ -2,37 +2,41 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const backendRes = await fetch("http://85.175.218.17/api/v1/auth/login", {
+    const { email, password } = await req.json();
+
+    const res = await fetch("http://85.175.218.17/api/v1/auth/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "text/plain", // Match your curl
+      },
+      body: JSON.stringify({ email, password }),
     });
 
-    if (!backendRes.ok) {
-      const errorData = await backendRes.json();
-      console.log(errorData);
+    if (!res.ok) {
       return NextResponse.json(
-        { error: errorData.error || "Login failed" },
-        { status: backendRes.status }
+        { error: "Invalid credentials" },
+        { status: res.status }
       );
     }
 
-    const { accessToken, refreshToken } = await backendRes.json();
+    const { accessToken, refreshToken } = await res.json();
 
-    // Set cookies
-    const cookieOptions = "Path=/; HttpOnly; SameSite=Strict";
-    return NextResponse.json(
-      { accessToken, refreshToken },
-      {
-        headers: {
-          "Set-Cookie": [
-            `accessToken=${accessToken}; ${cookieOptions}; Max-Age=900`, // 15 minutes
-            `refreshToken=${refreshToken}; ${cookieOptions}; Max-Age=604800`, // 7 days
-          ].join(","),
-        },
-      }
-    );
+    const response = NextResponse.json({ message: "Login successful" });
+    response.cookies.set("accessToken", accessToken, {
+      path: "/",
+      maxAge: 60 * 60 * 24, // 1 day
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    });
+    response.cookies.set("refreshToken", refreshToken, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    });
+
+    return response;
   } catch (error) {
     console.error("Login proxy error:", error);
     return NextResponse.json(

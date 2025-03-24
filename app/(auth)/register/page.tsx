@@ -11,33 +11,52 @@ import {
   Text,
   Link as ChakraLink,
   FormErrorMessage,
+  useToast,
 } from "@chakra-ui/react";
 import { useAuth } from "@/app/hooks/useAuth";
-import NextLink from "next/link";
-import MainLayout from "@/app/components/Layout";
+import MainLayout from "@/app/components/MainLayout"; // Fixed import path
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { register, loading } = useAuth();
+  const { register } = useAuth();
+  const toast = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Clear previous errors
     setError("");
+    setLoading(true);
 
-    // Password match check
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+      setLoading(false);
       return;
     }
 
-    register(email, password, confirmPassword).catch((err: any) => {
-      setError(err.message || "Registration failed");
-    });
+    try {
+      await register(email, password, confirmPassword);
+      toast({
+        title: "Registration Successful",
+        description: "You can now log in!",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error: any) {
+      setError(error.message || "Registration failed");
+      toast({
+        title: "Registration Failed",
+        description: error.message || "Something went wrong",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -53,11 +72,7 @@ export default function RegisterPage() {
         <Text fontSize="2xl" fontWeight="bold">
           Register
         </Text>
-
-        <FormControl
-          isRequired
-          isInvalid={!!error && password !== confirmPassword}
-        >
+        <FormControl isRequired isInvalid={!!error}>
           <FormLabel>Email</FormLabel>
           <Input
             type="email"
@@ -66,8 +81,7 @@ export default function RegisterPage() {
             placeholder="Enter your email"
           />
         </FormControl>
-
-        <FormControl isRequired>
+        <FormControl isRequired isInvalid={!!error}>
           <FormLabel>Password</FormLabel>
           <Input
             type="password"
@@ -76,11 +90,7 @@ export default function RegisterPage() {
             placeholder="Enter your password"
           />
         </FormControl>
-
-        <FormControl
-          isRequired
-          isInvalid={!!error && password !== confirmPassword}
-        >
+        <FormControl isRequired isInvalid={!!error}>
           <FormLabel>Confirm Password</FormLabel>
           <Input
             type="password"
@@ -88,11 +98,8 @@ export default function RegisterPage() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Confirm your password"
           />
-          {error && password !== confirmPassword && (
-            <FormErrorMessage>{error}</FormErrorMessage>
-          )}
+          {error && <FormErrorMessage>{error}</FormErrorMessage>}
         </FormControl>
-
         <Button
           type="submit"
           colorScheme="teal"
@@ -101,16 +108,9 @@ export default function RegisterPage() {
         >
           Register
         </Button>
-
-        {error && password === confirmPassword && (
-          <Text color="red.500" fontSize="sm">
-            {error}
-          </Text>
-        )}
-
         <Text>
           Already have an account?{" "}
-          <ChakraLink as={NextLink} href="/login" color="teal.500">
+          <ChakraLink href="/login" color="teal.500">
             Login
           </ChakraLink>
         </Text>

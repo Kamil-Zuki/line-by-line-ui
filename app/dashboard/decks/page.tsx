@@ -27,6 +27,8 @@ export default function DecksPage() {
   const toast = useToast();
 
   useEffect(() => {
+    console.log("isAuthenticated in useEffect:", isAuthenticated); // Debug log
+    if (isAuthenticated === null) return; // Wait for auth check
     if (!isAuthenticated) {
       router.push("/login");
       return;
@@ -53,7 +55,7 @@ export default function DecksPage() {
         }
 
         const data = await res.json();
-        console.log("Decks fetched:", data); // Debug log
+        console.log("Decks fetched:", data); // Already present
         setDecks(data);
       } catch (error: any) {
         toast({
@@ -71,7 +73,8 @@ export default function DecksPage() {
     fetchDecks();
   }, [isAuthenticated, tokens.accessToken, refreshToken, router, toast]);
 
-  if (!isAuthenticated) return null;
+  if (isAuthenticated === null) return <Spinner size="xl" m={8} />; // Loading state
+  if (!isAuthenticated) return null; // Redirect handled in useEffect
   if (loading) return <Spinner size="xl" m={8} />;
 
   return (

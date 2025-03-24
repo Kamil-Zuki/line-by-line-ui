@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BASE_URL = "http://85.175.218.17/api/v1";
 
-export async function GET(req: NextRequest, { params }: { params: { deckId: string } }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { deckId: string } }
+) {
   const accessToken = req.cookies.get("accessToken")?.value;
   if (!accessToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -17,13 +20,19 @@ export async function GET(req: NextRequest, { params }: { params: { deckId: stri
     });
 
     if (!res.ok) {
-      return NextResponse.json({ error: "Failed to fetch contributions" }, { status: res.status });
+      return NextResponse.json(
+        { error: "Failed to fetch contributions" },
+        { status: res.status }
+      );
     }
 
     const contributions = await res.json();
     return NextResponse.json(contributions);
   } catch (error) {
     console.error("Error fetching contributions:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

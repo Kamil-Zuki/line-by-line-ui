@@ -20,13 +20,19 @@ export async function POST(req: NextRequest) {
     });
 
     if (!res.ok) {
-      return NextResponse.json({ error: "Failed to create contribution" }, { status: res.status });
+      return NextResponse.json(
+        { error: "Failed to create contribution" },
+        { status: res.status }
+      );
     }
 
     const contribution = await res.json();
     return NextResponse.json(contribution);
   } catch (error) {
     console.error("Error creating contribution:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

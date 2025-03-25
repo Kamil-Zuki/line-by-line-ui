@@ -1,105 +1,83 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Box,
   Heading,
   Input,
   Button,
   VStack,
+  HStack,
   Text,
-  useToast,
+  Badge,
 } from "@chakra-ui/react";
-import { useAuth } from "@/app/hooks/useAuth";
-import { useRouter } from "next/navigation";
+import { useApi } from "@/app/lib/api";
 
 interface Deck {
   id: string;
   title: string;
-  cardCount: number;
+  description?: string;
+  tags: string[];
+  subscribers: number;
 }
 
-export default function SearchDecksPage() {
-  const { tokens, isAuthenticated } = useAuth();
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Deck[]>([]);
-  const [loading, setLoading] = useState(false);
+export default function SearchDecks() {
   const router = useRouter();
-  const toast = useToast();
+  const api = useApi();
+  const [query, setQuery] = useState("");
+  const [decks, setDecks] = useState<Deck[]>([]);
 
-  const handleSearch = async () => {
-    if (!isAuthenticated) {
-      router.push("/login");
-      return;
-    }
-
-    setLoading(true);
+  const search = async () => {
     try {
-      const res = await fetch(`/api/personal-vocab/search?query=${encodeURIComponent(query)}`, {
-        headers: { Authorization: `Bearer ${tokens.accessToken}` },
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        throw new Error(`Search failed: ${res.statusText}`);
-      }
-
-      const data = await res.json();
-      setResults(data);
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    } finally {
-      setLoading(false);
+      const results = await api.get<Deck[]>(
+        `/search/decks?query=${encodeURIComponent(query)}`
+      );
+      setDecks(results);
+    } catch (error) {
+      console.error("Search failed:", error);
     }
   };
 
+  useEffect(() => {
+    search(); // Initial load of public decks
+  }, []);
+
   return (
-    <Box>
-      <Heading size="lg" mb={6}>
-        Search Decks
-      </Heading>
-      <VStack align="stretch" spacing={4}>
-        <Box display="flex" gap={2}>
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search for decks..."
-            onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-          />
-          <Button
-            colorScheme="teal"
-            onClick={handleSearch}
-            isLoading={loading}
-          >
-            Search
-          </Button>
-        </Box>
-        {results.length > 0 ? (
-          results.map((deck) => (
-            <Box
-              key={deck.id}
-              p={4}
-              bg="white"
-              borderRadius="md"
-              boxShadow="sm"
-              _hover={{ boxShadow: "md", cursor: "pointer" }}
-              onClick={() => router.push(`/dashboard/decks/${deck.id}`)}
-            >
-              <Text fontSize="lg" fontWeight="bold">
-                {deck.title}
+    <Box p={6}>
+      <Heading mb={4}>Discover Decks</Heading>
+      <HStack mb={6}>
+        <Input
+          placeholder="Search public decks..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <Button onClick={search} colorScheme="teal">
+          Search
+        </Button>
+      </HStack>
+      <VStack spacing={4} align="stretch">
+        {decks.map((deck) => (
+          <HStack key={deck.id} p={4} borderWidth={1} borderRadius="md">
+            <VStack align="start" flex={1}>
+              <Text fontWeight="bold">{deck.title}</Text>
+              <Text fontSize="sm" color="gray.500">
+                {deck.description || "No description"}
               </Text>
-              <Text color="gray.600">{deck.cardCount} cards</Text>
-            </Box>
-          ))
-        ) : (
-          <Text>No results found.</Text>
-        )}
+              <HStack>
+                {deck.tags.map((tag) => (
+                  <Badge key={tag} colorScheme="purple">
+                    {tag}
+                  </Badge>
+                ))}
+              </HStack>
+            </VStack>
+            <Text>Subscribers: {deck.subscribers}</Text>
+            <Button onClick={() => router.push(`/dashboard/decks/${deck.id}`)}>
+              View
+            </Button>
+          </HStack>
+        ))}
       </VStack>
     </Box>
   );

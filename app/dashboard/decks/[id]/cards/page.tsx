@@ -1,167 +1,129 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+
 import {
   Box,
   Heading,
-  VStack,
-  Text,
-  Button,
+  FormControl,
+  FormLabel,
   Input,
-  useToast,
+  Button,
+  VStack,
+  HStack,
+  Select,
+  Text as ChakraText, // Alias to avoid collision with DOM Text
+  Badge,
 } from "@chakra-ui/react";
 import { useAuth } from "@/app/hooks/useAuth";
-import { useRouter, useParams } from "next/navigation";
+import { useApi } from "@/app/lib/api";
 
 interface Card {
   id: string;
-  deckId: string;
   front: string;
   back: string;
+  skill: "Reading" | "Writing" | "Speaking" | "Listening";
 }
 
-export default function DeckCardsPage() {
-  const { tokens, isAuthenticated } = useAuth();
-  const [cards, setCards] = useState<Card[]>([]);
-  const [front, setFront] = useState("");
-  const [back, setBack] = useState("");
-  const [loading, setLoading] = useState(true);
+export default function DeckCards() {
+  const { id } = useParams();
+  const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
-  const { id: deckId } = useParams();
-  const toast = useToast();
+  const api = useApi();
+  const [cards, setCards] = useState<Card[]>([]);
+  const [newCard, setNewCard] = useState({
+    front: "",
+    back: "",
+    skill: "Reading" as const,
+  });
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/auth/login");
-      return;
+    if (!loading && !isAuthenticated) {
+      router.push("/login");
+    } else if (!loading) {
+      fetchCards();
     }
+  }, [isAuthenticated, loading, id, router]);
 
-    const fetchCards = async () => {
-      try {
-        const res = await fetch(`/api/personal-vocab/cards/deck/${deckId}`, {
-          headers: { Authorization: `Bearer ${tokens.accessToken}` },
-        });
-        if (!res.ok) throw new Error("Failed to fetch cards");
-        const data = await res.json();
-        setCards(data);
-      } catch (error: any) {
-        toast({ title: "Error", description: error.message, status: "error" });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCards();
-  }, [isAuthenticated, tokens.accessToken, deckId, router, toast]);
-
-  const handleAddCard = async () => {
-    if (!front.trim() || !back.trim()) {
-      toast({
-        title: "Error",
-        description: "Front and back are required",
-        status: "error",
-      });
-      return;
-    }
-
-    setLoading(true);
+  const fetchCards = async () => {
     try {
-      const res = await fetch("/api/personal-vocab/cards", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${tokens.accessToken}`,
-        },
-        body: JSON.stringify({ deckId, front, back }),
-      });
-      if (!res.ok) throw new Error("Failed to add card");
-      const newCard = await res.json();
-      setCards([...cards, newCard]);
-      setFront("");
-      setBack("");
-      toast({ title: "Success", description: "Card added", status: "success" });
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, status: "error" });
-    } finally {
-      setLoading(false);
+      const data = await api.get<Card[]>(`/cards/deck/${id}`);
+      setCards(data);
+    } catch (error) {
+      console.error("Failed to fetch cards:", error);
     }
   };
 
-  const handleDeleteCard = async (cardId: string) => {
-    setLoading(true);
+  const handleAddCard = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      const res = await fetch(`/api/personal-vocab/cards/${cardId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${tokens.accessToken}` },
-      });
-      if (!res.ok) throw new Error("Failed to delete card");
-      setCards(cards.filter((c) => c.id !== cardId));
-      toast({
-        title: "Success",
-        description: "Card deleted",
-        status: "success",
-      });
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, status: "error" });
-    } finally {
-      setLoading(false);
+      const card = await api.post<Card>("/cards", { ...newCard, deckId: id });
+      setCards([...cards, card]);
+      setNewCard({ front: "", back: "", skill: "Reading" });
+    } catch (error) {
+      console.error("Failed to add card:", error);
     }
   };
 
-  if (!isAuthenticated) return null;
   if (loading) return <Box>Loading...</Box>;
 
   return (
-    <Box>
-      <Heading size="lg" mb={6}>
-        Cards
-      </Heading>
-      <VStack align="stretch" spacing={4}>
-        <Box>
-          <Input
-            placeholder="Front"
-            value={front}
-            onChange={(e) => setFront(e.target.value)}
-            mb={2}
-          />
-          <Input
-            placeholder="Back"
-            value={back}
-            onChange={(e) => setBack(e.target.value)}
-            mb={2}
-          />
-          <Button
-            colorScheme="teal"
-            onClick={handleAddCard}
-            isLoading={loading}
-          >
+    <Box p={6}>
+      <Heading mb={4}>Edit Cards</Heading>
+      <form onSubmit={handleAddCard}>
+        <VStack spacing={4} mb={6}>
+          <FormControl isRequired>
+            <FormLabel>Front</FormLabel>
+            <Input
+              value={newCard.front}
+              onChange={(e) =>
+                setNewCard({ ...newCard, front: e.target.value })
+              }
+            />
+          </FormControl>
+          <FormControl isRequired>
+            <FormLabel>Back</FormLabel>
+            <Input
+              value={newCard.back}
+              onChange={(e) => setNewCard({ ...newCard, back: e.target.value })}
+            />
+          </FormControl>
+          <FormControl>
+            <FormLabel>Skill</FormLabel>
+            <Select
+              value={newCard.skill}
+              onChange={(e) =>
+                setNewCard({ ...newCard, skill: e.target.value as any })
+              }
+            >
+              <option value="Reading">Reading</option>
+              <option value="Writing">Writing</option>
+              <option value="Speaking">Speaking</option>
+              <option value="Listening">Listening</option>
+            </Select>
+          </FormControl>
+          <Button type="submit" colorScheme="teal">
             Add Card
           </Button>
-        </Box>
-        {cards.length > 0 ? (
-          cards.map((card) => (
-            <Box
-              key={card.id}
-              p={4}
-              bg="white"
-              borderRadius="md"
-              boxShadow="sm"
-            >
-              <Text fontWeight="bold">{card.front}</Text>
-              <Text>{card.back}</Text>
-              <Button
-                colorScheme="red"
-                size="sm"
-                mt={2}
-                onClick={() => handleDeleteCard(card.id)}
-              >
-                Delete
-              </Button>
-            </Box>
-          ))
-        ) : (
-          <Text>No cards in this deck yet.</Text>
-        )}
+        </VStack>
+      </form>
+      <VStack spacing={4}>
+        {cards.map((card) => (
+          <HStack
+            key={card.id}
+            p={4}
+            borderWidth={1}
+            borderRadius="md"
+            w="full"
+          >
+            <VStack align="start" flex={1}>
+              <ChakraText>Front: {card.front}</ChakraText>
+              <ChakraText>Back: {card.back}</ChakraText>
+            </VStack>
+            <Badge>{card.skill}</Badge>
+          </HStack>
+        ))}
       </VStack>
     </Box>
   );

@@ -1,26 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
-import { decks } from "@/app/lib/mockData";
-import { authMiddleware } from "@/app/lib/authMiddleware";
-
-export async function GET(req: NextRequest) {
-  const auth = authMiddleware(req);
-  if (auth instanceof NextResponse) return auth;
-
-  const { userId } = auth;
-  const userDecks = decks.filter((deck) => deck.userId === userId);
-  return NextResponse.json(userDecks);
-}
 
 export async function POST(req: NextRequest) {
-  const auth = authMiddleware(req);
-  if (auth instanceof NextResponse) return auth;
+  const body = await req.json();
+  console.log("Received deck creation request:", body);
 
-  const { userId } = auth;
-  const { title } = await req.json();
-  if (!title)
-    return NextResponse.json({ error: "Title is required" }, { status: 400 });
+  const accessToken = req.cookies.get("accessToken")?.value;
+  if (!accessToken) {
+    console.log("No accessToken in cookies");
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-  const newDeck = { id: String(decks.length + 1), title, cardCount: 0, userId };
-  decks.push(newDeck);
-  return NextResponse.json(newDeck, { status: 201 });
+  try {
+    const res = await fetch("http://85.175.218.17/api/v1/deck", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.log(`Backend responded with ${res.status}: ${errorText}`);
+      return NextResponse.json(
+        { error: errorText || "Backend error" },
+        { status: res.status }
+      );
+    }
+
+    const deck = await res.json();
+    console.log("Deck created on backend:", deck);
+    return NextResponse.json(deck);
+  } catch (error: any) {
+    console.error("Proxy error:", error.message);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }

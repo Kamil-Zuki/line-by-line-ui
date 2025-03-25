@@ -1,101 +1,78 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 import {
   Box,
   Heading,
   FormControl,
   FormLabel,
   Input,
+  Textarea,
+  Checkbox,
   Button,
   VStack,
-  useToast,
 } from "@chakra-ui/react";
 import { useAuth } from "@/app/hooks/useAuth";
-import { useRouter } from "next/navigation";
+import { useApi } from "@/app/lib/api";
 
-export default function NewDeckPage() {
-  const { tokens, isAuthenticated } = useAuth();
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(false);
+export default function NewDeck() {
+  const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
-  const toast = useToast();
+  const api = useApi();
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    isPublic: false,
+  });
+
+  if (loading) return <Box>Loading...</Box>;
+  if (!isAuthenticated) {
+    router.push("/login");
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isAuthenticated) {
-      router.push("/login");
-      return;
-    }
-
-    setLoading(true);
     try {
-      const res = await fetch("/api/personal-vocab", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${tokens.accessToken}`,
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ title, description, isPublic: false }),
-      });
-
-      if (!res.ok) {
-        throw new Error(`Failed to create deck: ${res.statusText}`);
-      }
-
-      const newDeck = await res.json();
-      toast({
-        title: "Deck Created",
-        description: `${newDeck.title} has been added!`,
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
-      router.push(`/dashboard/decks/${newDeck.id}`);
+      console.log("Submitting deck creation:", form);
+      const deck = await api.post<{ id: string }>("/decks", form);
+      console.log("Deck created successfully:", deck);
+      router.push(`/dashboard/decks/${deck.id}`);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    } finally {
-      setLoading(false);
+      console.error("Error creating deck:", error.message);
     }
   };
 
   return (
-    <Box>
-      <Heading size="lg" mb={6}>
-        Create a New Deck
-      </Heading>
+    <Box p={6}>
+      <Heading mb={4}>Create a New Deck</Heading>
       <form onSubmit={handleSubmit}>
-        <VStack spacing={4} align="stretch">
+        <VStack spacing={4}>
           <FormControl isRequired>
             <FormLabel>Title</FormLabel>
             <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter deck title"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
             />
           </FormControl>
           <FormControl>
             <FormLabel>Description</FormLabel>
-            <Input
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter deck description (optional)"
+            <Textarea
+              value={form.description}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
+              }
             />
           </FormControl>
-          <Button
-            type="submit"
-            colorScheme="teal"
-            isLoading={loading}
-            loadingText="Creating..."
+          <Checkbox
+            isChecked={form.isPublic}
+            onChange={(e) => setForm({ ...form, isPublic: e.target.checked })}
           >
+            Make Public
+          </Checkbox>
+          <Button type="submit" colorScheme="teal">
             Create Deck
           </Button>
         </VStack>

@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-SECRET-here";
-const JWT_ISSUER = process.env.JWT_SECRET || "your-ISSUER-here";
-const JWT_AUDIENCE = process.env.JWT_SECRET || "your-AUDIENCE-here";
 
 export async function middleware(req: NextRequest) {
   const token = req.cookies.get("accessToken")?.value;
-
   console.log(`Middleware processing: ${req.nextUrl.pathname}`);
 
   const publicRoutes = ["/login", "/register", "/api/auth"];
@@ -22,23 +16,24 @@ export async function middleware(req: NextRequest) {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET, {
-      issuer: JWT_ISSUER,
-      audience: JWT_AUDIENCE,
-    }) as { exp: number; sub: string; name: string; jti: string };
-
-    console.log("Token decoded:", {
-      sub: decoded.sub,
-      name: decoded.name,
-      exp: decoded.exp,
-      jti: decoded.jti,
+    // Delegate token validation to the backend
+    const res = await fetch("http://85.175.218.17/api/v1/auth/me", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
 
-    const currentTime = Math.floor(Date.now() / 1000);
-    if (decoded.exp < currentTime) {
-      console.log("Token expired, redirecting to login");
+    if (!res.ok) {
+      console.log(`Backend /auth/me rejected token with status: ${res.status}`);
       return NextResponse.redirect(new URL("/login", req.url));
     }
+
+    const user = await res.json();
+    console.log("Token validated by backend:", {
+      id: user.id,
+      name: user.userName,
+    });
 
     if (req.nextUrl.pathname === "/") {
       console.log("Root accessed, redirecting to /dashboard");
@@ -46,12 +41,12 @@ export async function middleware(req: NextRequest) {
     }
 
     const response = NextResponse.next();
-    response.headers.set("x-user-id", decoded.sub);
-    response.headers.set("x-user-name", decoded.name);
+    response.headers.set("x-user-id", user.id);
+    response.headers.set("x-user-name", user.userName);
     console.log("Token valid, proceeding with request");
     return response;
   } catch (err) {
-    console.error("JWT validation error:", err);
+    console.error("Error validating token with backend:", err);
     return NextResponse.redirect(new URL("/login", req.url));
   }
 }

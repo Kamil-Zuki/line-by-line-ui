@@ -16,7 +16,6 @@ import {
 export default function SideBar() {
   const { isAuthenticated, logout } = useAuth();
   const router = useRouter();
-  console.log(isAuthenticated);
   const handleNavigation = (path: string) => {
     router.push(path);
   };

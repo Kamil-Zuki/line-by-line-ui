@@ -1,29 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BASE_URL = "http://85.175.218.17/api/v1";
+export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest, { params }: { params: { deckId: string } }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { deckId: string } }
+) {
   const accessToken = req.cookies.get("accessToken")?.value;
   if (!accessToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const res = await fetch(`${BASE_URL}/card/due?deckId=${params.deckId}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-
+    console.log("Fetching cards for deckId:", params.deckId);
+    const res = await fetch(
+      `http://85.175.218.17/api/v1/deck/${params.deckId}/cards`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
     if (!res.ok) {
-      return NextResponse.json({ error: "Failed to fetch cards" }, { status: res.status });
+      const errorText = await res.text();
+      console.error(`Backend responded with ${res.status}: ${errorText}`);
+      return NextResponse.json(
+        { error: "Failed to fetch cards", details: errorText },
+        { status: res.status }
+      );
     }
-
-    const cards = await res.json();
-    return NextResponse.json(cards);
+    return NextResponse.json(await res.json());
   } catch (error) {
     console.error("Error fetching cards:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

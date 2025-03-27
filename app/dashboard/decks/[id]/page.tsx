@@ -2,123 +2,118 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-
 import {
   Box,
   Heading,
   Text,
-  Button,
   VStack,
+  Button,
   HStack,
-  Badge,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
+  useToast,
 } from "@chakra-ui/react";
 import { useAuth } from "@/app/hooks/useAuth";
-import { useApi } from "@/app/lib/api";
+import { fetchApi, DeckResponse } from "@/app/lib/api";
 
-interface Deck {
+interface CardResponse {
   id: string;
-  title: string;
-  description?: string;
-  isPublic: boolean;
-  tags: string[];
-  cards: { id: string; front: string; back: string }[];
+  front: string;
+  back: string;
+  hint?: string;
+  skill: "Reading" | "Writing" | "Speaking" | "Listening";
+  createdDate: string;
 }
 
-export default function DeckPage() {
-  const { id } = useParams();
-  const { isAuthenticated, loading } = useAuth();
+export default function DeckDetailPage() {
+  const { isAuthenticated, user, loading: authLoading } = useAuth();
+  const [deck, setDeck] = useState<DeckResponse | null>(null);
+  const [cards, setCards] = useState<CardResponse[]>([]);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const api = useApi();
-  const [deck, setDeck] = useState<Deck | null>(null);
+  const params = useParams();
+  const deckId = params.id as string;
+  const toast = useToast();
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.push("/login");
-    } else if (!loading) {
-      fetchDeck();
-    }
-  }, [isAuthenticated, loading, id, router]);
+    if (!isAuthenticated || authLoading || !deckId) return;
 
-  const fetchDeck = async () => {
-    try {
-      const data = await api.get<Deck>(`/decks/${id}`);
-      setDeck(data);
-    } catch (error) {
-      console.error("Failed to fetch deck:", error);
-      router.push("/dashboard");
-    }
+    const fetchDeckAndCards = async () => {
+      try {
+        const deckData: DeckResponse = await fetchApi(`/decks/${deckId}`);
+        const cardData: CardResponse[] = await fetchApi(
+          `/cards/deck/${deckId}`
+        );
+        setDeck(deckData);
+        setCards(cardData);
+      } catch (error: any) {
+        console.error("Error fetching deck/cards:", error.message, {
+          status: error.status,
+        });
+        toast({
+          title: "Error",
+          description: "Failed to load deck or cards.",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDeckAndCards();
+  }, [isAuthenticated, authLoading, deckId, toast]);
+
+  const handleLearn = () => {
+    router.push(`/dashboard/decks/${deckId}/learn`);
   };
 
-  const handleFork = async () => {
-    try {
-      const forked = await api.post<{ id: string }>(`/decks/${id}/fork`, {});
-      router.push(`/dashboard/decks/${forked.id}`);
-    } catch (error) {
-      console.error("Fork failed:", error);
-    }
-  };
-
-  if (loading || !deck) return <Box>Loading...</Box>;
+  if (authLoading || !isAuthenticated) return null;
+  if (loading) return <Text>Loading deck...</Text>;
+  if (!deck) return <Text>Deck not found.</Text>;
 
   return (
     <Box p={6}>
-      <Heading mb={4}>{deck.title}</Heading>
-      <Text mb={2}>{deck.description || "No description"}</Text>
-      <HStack mb={4}>
-        {deck.tags.map((tag) => (
-          <Badge key={tag} colorScheme="purple">
-            {tag}
-          </Badge>
-        ))}
-        <Badge colorScheme={deck.isPublic ? "green" : "red"}>
-          {deck.isPublic ? "Public" : "Private"}
-        </Badge>
-      </HStack>
-      <HStack mb={6}>
-        <Button onClick={() => router.push(`/dashboard/decks/${id}/learn`)}>
+      <Heading size="lg">{deck.title}</Heading>
+      <Text mt={2}>{deck.description || "No description"}</Text>
+      <Text fontSize="sm" color="gray.500">
+        Cards: {deck.cardCount} • Created:{" "}
+        {new Date(deck.createdDate).toLocaleDateString()}
+        {deck.isSubscribed ? " • Subscribed" : ""}
+      </Text>
+      <HStack mt={4} spacing={4}>
+        <Button colorScheme="teal" onClick={handleLearn}>
           Learn
         </Button>
-        <Button onClick={() => router.push(`/dashboard/decks/${id}/cards`)}>
-          Edit Cards
-        </Button>
-        {deck.isPublic && (
-          <Button onClick={handleFork} colorScheme="yellow">
-            Fork
+        {deck.ownerId === user?.id && (
+          <Button
+            variant="outline"
+            onClick={() => router.push(`/dashboard/decks/${deckId}/edit`)}
+          >
+            Edit Deck
           </Button>
         )}
       </HStack>
-      <Tabs>
-        <TabList>
-          <Tab>Cards</Tab>
-          <Tab>Stats</Tab>
-        </TabList>
-        <TabPanels>
-          <TabPanel>
-            <VStack spacing={4}>
-              {deck.cards.map((card) => (
-                <Box
-                  key={card.id}
-                  p={4}
-                  borderWidth={1}
-                  borderRadius="md"
-                  w="full"
-                >
-                  <Text>Front: {card.front}</Text>
-                  <Text>Back: {card.back}</Text>
-                </Box>
-              ))}
-            </VStack>
-          </TabPanel>
-          <TabPanel>
-            <Text>Stats coming soon...</Text>
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
+      <VStack mt={6} spacing={4} align="stretch">
+        <Heading size="md">Cards</Heading>
+        {cards.length > 0 ? (
+          cards.map((card) => (
+            <Box key={card.id} p={4} borderWidth="1px" borderRadius="md">
+              <Text fontWeight="bold">{card.front}</Text>
+              <Text>{card.back}</Text>
+              {card.hint && (
+                <Text fontSize="sm" color="gray.500">
+                  Hint: {card.hint}
+                </Text>
+              )}
+              <Text fontSize="sm" color="gray.500">
+                Skill: {card.skill}
+              </Text>
+            </Box>
+          ))
+        ) : (
+          <Text>No cards in this deck yet.</Text>
+        )}
+      </VStack>
     </Box>
   );
 }

@@ -121,9 +121,12 @@ export interface DeckResponse {
   id: string;
   title: string;
   description?: string;
+  imageUrl?: string;
   isPublic: boolean;
-  tags: string[];
   ownerId: string;
   createdDate: string;
+  lastReviewedDate: string;
   cardCount?: number; // Optional, pending backend confirmation
+  tags: string[];
+  isSubscribed: boolean;
 }

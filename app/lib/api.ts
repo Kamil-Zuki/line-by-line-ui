@@ -1,20 +1,18 @@
+// app/lib/api.ts
 import { useAuth } from "../hooks/useAuth";
 
-// Utility to fetch data from the personal_vocab microservice via Next.js API routes
+// Utility to fetch data from Next.js API routes
 export async function fetchApi<T>(
   endpoint: string,
   options: RequestInit = {},
-  token?: string
+  basePath: string = "/api/personal-vocab" // Default to personal_vocab
 ): Promise<T> {
-  // Base headers with Content-Type and optional Authorization
   const headers: HeadersInit = {
     "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
 
-  // Construct the full URL (relative to Next.js API proxy)
-  const url = `/api/personal-vocab${
+  const url = `${basePath}${
     endpoint.startsWith("/") ? endpoint : `/${endpoint}`
   }`;
 
@@ -23,19 +21,17 @@ export async function fetchApi<T>(
       ...options,
       headers,
       credentials: "include", // Include httpOnly cookies (e.g., accessToken)
-      cache: "no-store", // Ensure fresh data for authenticated requests
+      cache: "no-store", // Ensure fresh data
     });
 
     if (!res.ok) {
-      // Attempt to parse error body (could be JSON or plain text)
       let errorBody: string;
       try {
         errorBody = await res.text();
-      } catch (textError) {
+      } catch {
         errorBody = "Unable to read error response";
       }
 
-      // Log detailed error info for debugging
       console.error(`API request failed: ${res.status} ${res.statusText}`, {
         url,
         method: options.method || "GET",
@@ -44,7 +40,6 @@ export async function fetchApi<T>(
         errorBody,
       });
 
-      // Customize error message based on status
       let errorMessage: string;
       switch (res.status) {
         case 400:
@@ -72,14 +67,13 @@ export async function fetchApi<T>(
             : `API request failed with status ${res.status}`;
       }
 
-      throw new Error(errorMessage);
+      const error = new Error(errorMessage);
+      (error as any).status = res.status; // Add status to error object
+      throw error;
     }
 
-    // Parse and return JSON response
-    const data = await res.json();
-    return data as T;
+    return (await res.json()) as T;
   } catch (error: any) {
-    // Handle network errors or fetch failures
     console.error("Network or fetch error:", {
       url,
       method: options.method || "GET",
@@ -93,38 +87,33 @@ export async function fetchApi<T>(
 }
 
 // Hook-based API client for authenticated requests
-export function useApi() {
-  const { tokens } = useAuth(); // Assumes useAuth provides tokens
+export function useApi(basePath: string = "/api/personal-vocab") {
+  const { loading } = useAuth(); // Only use loading to delay calls if auth isn’t ready
 
   return {
     get: <T>(endpoint: string) =>
-      fetchApi<T>(endpoint, { method: "GET" }, tokens.accessToken),
+      fetchApi<T>(endpoint, { method: "GET" }, basePath),
     post: <T>(endpoint: string, body: any) =>
       fetchApi<T>(
         endpoint,
-        {
-          method: "POST",
-          body: JSON.stringify(body),
-        },
-        tokens.accessToken
+        { method: "POST", body: JSON.stringify(body) },
+        basePath
       ),
     put: <T>(endpoint: string, body: any) =>
       fetchApi<T>(
         endpoint,
-        {
-          method: "PUT",
-          body: JSON.stringify(body),
-        },
-        tokens.accessToken
+        { method: "PUT", body: JSON.stringify(body) },
+        basePath
       ),
     delete: <T>(endpoint: string) =>
-      fetchApi<T>(endpoint, { method: "DELETE" }, tokens.accessToken),
+      fetchApi<T>(endpoint, { method: "DELETE" }, basePath),
   };
 }
 
-// Optional: Type definitions for common API responses
+// Type definitions for common API responses
 export interface ApiError {
   error: string;
+  status?: number; // Added for status code access
   details?: Record<string, any>;
 }
 
@@ -136,4 +125,5 @@ export interface DeckResponse {
   tags: string[];
   ownerId: string;
   createdDate: string;
+  cardCount?: number; // Optional, assuming backend might include it
 }

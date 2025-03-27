@@ -16,24 +16,19 @@ export async function middleware(req: NextRequest) {
   }
 
   try {
-    // Delegate token validation to the backend
-    const res = await fetch("http://85.175.218.17/api/v1/auth/me", {
+    // Use Next.js API proxy instead of direct backend call
+    const res = await fetch(new URL("/api/auth/me", req.url), {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Cookie: `accessToken=${token}` }, // Pass cookie explicitly
     });
 
     if (!res.ok) {
-      console.log(`Backend /auth/me rejected token with status: ${res.status}`);
+      console.log(`Token validation failed with status: ${res.status}`);
       return NextResponse.redirect(new URL("/login", req.url));
     }
 
     const user = await res.json();
-    console.log("Token validated by backend:", {
-      id: user.id,
-      name: user.userName,
-    });
+    console.log("Token validated:", { id: user.id, name: user.userName });
 
     if (req.nextUrl.pathname === "/") {
       console.log("Root accessed, redirecting to /dashboard");
@@ -46,7 +41,7 @@ export async function middleware(req: NextRequest) {
     console.log("Token valid, proceeding with request");
     return response;
   } catch (err) {
-    console.error("Error validating token with backend:", err);
+    console.error("Error validating token:", err);
     return NextResponse.redirect(new URL("/login", req.url));
   }
 }

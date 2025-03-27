@@ -5,7 +5,14 @@ import { useRouter } from "next/navigation";
 
 interface Tokens {
   accessToken: string; // Placeholder, not stored client-side
-  refreshToken?: string; // Stored client-side for refresh
+  refreshToken?: string;
+}
+
+interface User {
+  id: string;
+  userName: string;
+  email: string;
+  emailConfirmed: boolean;
 }
 
 export function useAuth() {
@@ -14,7 +21,8 @@ export function useAuth() {
     accessToken: "",
     refreshToken: "",
   });
-  const [loading, setLoading] = useState<boolean>(true); // Start as true
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
 
   const getCookie = (name: string): string | undefined =>
@@ -23,53 +31,42 @@ export function useAuth() {
       .find((row) => row.startsWith(`${name}=`))
       ?.split("=")[1];
 
-  // Check authentication status on mount or route change
   useEffect(() => {
     const checkAuth = async () => {
       setLoading(true);
-      console.log(
-        "checkAuth starting, client-visible cookies:",
-        document.cookie
-      );
-
       try {
-        const res = await fetch("/api/auth/me", {
-          method: "GET",
-          credentials: "include", // Send httpOnly accessToken
-        });
-
+        const res = await fetch("/api/auth/me", { credentials: "include" });
         if (res.ok) {
-          const user = await res.json();
-          console.log("User authenticated via /api/auth/me:", user);
+          const userData: User = await res.json();
           const refreshToken = getCookie("refreshToken");
           setTokens({ accessToken: "", refreshToken });
+          setUser(userData);
           setIsAuthenticated(true);
         } else if (res.status === 401) {
           console.log("Access token invalid or expired, attempting refresh");
           const refreshed = await refreshToken();
           if (!refreshed) {
-            console.log("Refresh failed, user unauthenticated");
             setIsAuthenticated(false);
-            router.push("/login");
+            setUser(null);
+            // Middleware will redirect, no need to push here
           }
         } else {
           console.log(`Unexpected status from /api/auth/me: ${res.status}`);
           setIsAuthenticated(false);
-          router.push("/login");
+          setUser(null);
         }
       } catch (error) {
         console.error("Error in checkAuth:", error);
         setIsAuthenticated(false);
-        router.push("/login");
+        setUser(null);
       } finally {
         setLoading(false);
       }
     };
 
     checkAuth();
-  }, [router]);
+  }, []);
 
-  // Login function
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
@@ -85,12 +82,16 @@ export function useAuth() {
         throw new Error(errorData.message || "Invalid credentials");
       }
 
-      const { refreshToken } = await res.json(); // accessToken set as httpOnly by server
+      const { refreshToken } = await res.json();
       document.cookie = `refreshToken=${refreshToken}; path=/; max-age=${
         60 * 60 * 24 * 7
       }; sameSite=lax`;
       setTokens({ accessToken: "", refreshToken });
-      setIsAuthenticated(true);
+      const meRes = await fetch("/api/auth/me", { credentials: "include" });
+      if (meRes.ok) {
+        setUser(await meRes.json());
+        setIsAuthenticated(true);
+      }
       console.log("Login successful, refreshToken set:", refreshToken);
       router.push("/dashboard");
     } catch (error: any) {
@@ -101,17 +102,16 @@ export function useAuth() {
     }
   };
 
-  // Logout function
   const logout = () => {
     document.cookie =
       "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
     setIsAuthenticated(false);
     setTokens({ accessToken: "", refreshToken: "" });
+    setUser(null);
     console.log("Logged out, tokens cleared");
     router.push("/login");
   };
 
-  // Refresh token function
   const refreshToken = async (): Promise<boolean> => {
     const refresh = getCookie("refreshToken");
     if (!refresh) {
@@ -135,12 +135,16 @@ export function useAuth() {
         return false;
       }
 
-      const { refreshToken: newRefreshToken } = await res.json(); // Server updates accessToken
+      const { refreshToken: newRefreshToken } = await res.json();
       document.cookie = `refreshToken=${newRefreshToken}; path=/; max-age=${
         60 * 60 * 24 * 7
       }; sameSite=lax`;
       setTokens({ accessToken: "", refreshToken: newRefreshToken });
-      setIsAuthenticated(true);
+      const meRes = await fetch("/api/auth/me", { credentials: "include" });
+      if (meRes.ok) {
+        setUser(await meRes.json());
+        setIsAuthenticated(true);
+      }
       console.log(
         "Token refreshed successfully, new refreshToken:",
         newRefreshToken
@@ -155,5 +159,13 @@ export function useAuth() {
     }
   };
 
-  return { isAuthenticated, tokens, login, logout, refreshToken, loading };
+  return {
+    isAuthenticated,
+    tokens,
+    user,
+    login,
+    logout,
+    refreshToken,
+    loading,
+  };
 }

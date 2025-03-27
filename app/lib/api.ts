@@ -20,7 +20,7 @@ export async function fetchApi<T>(
     const res = await fetch(url, {
       ...options,
       headers,
-      credentials: "include", // Include httpOnly cookies (e.g., accessToken)
+      credentials: "include", // Rely on httpOnly accessToken cookie
       cache: "no-store", // Ensure fresh data
     });
 
@@ -68,7 +68,7 @@ export async function fetchApi<T>(
       }
 
       const error = new Error(errorMessage);
-      (error as any).status = res.status; // Add status to error object
+      (error as any).status = res.status; // Attach status for downstream handling
       throw error;
     }
 
@@ -88,7 +88,7 @@ export async function fetchApi<T>(
 
 // Hook-based API client for authenticated requests
 export function useApi(basePath: string = "/api/personal-vocab") {
-  const { loading } = useAuth(); // Only use loading to delay calls if auth isn’t ready
+  const { loading } = useAuth(); // Use loading to delay calls until auth is ready
 
   return {
     get: <T>(endpoint: string) =>
@@ -113,7 +113,7 @@ export function useApi(basePath: string = "/api/personal-vocab") {
 // Type definitions for common API responses
 export interface ApiError {
   error: string;
-  status?: number; // Added for status code access
+  status?: number; // For status code access
   details?: Record<string, any>;
 }
 
@@ -125,5 +125,5 @@ export interface DeckResponse {
   tags: string[];
   ownerId: string;
   createdDate: string;
-  cardCount?: number; // Optional, assuming backend might include it
+  cardCount?: number; // Optional, pending backend confirmation
 }

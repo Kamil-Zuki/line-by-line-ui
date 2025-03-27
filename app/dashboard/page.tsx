@@ -1,25 +1,59 @@
-// Test component
 "use client";
 
-import { useEffect } from "react";
-import { useApi } from "@/app/lib/api";
+import { useEffect, useState } from "react";
+import { Box, Heading, Text } from "@chakra-ui/react";
+import { useAuth } from "@/app/hooks/useAuth";
+import { fetchApi, DeckResponse } from "@/app/lib/api";
 
-export default function TestApi() {
-  const api = useApi();
+interface Stats {
+  deckCount: number;
+  totalCards: number; // Placeholder until backend provides cardCount
+}
+
+export default function DashboardPage() {
+  const { isAuthenticated, user, loading: authLoading } = useAuth();
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const testFetch = async () => {
+    if (!isAuthenticated || authLoading) return;
+
+    const fetchStats = async () => {
       try {
-        const decks = await api.get<any>("/decks/my-decks");
-        console.log("Decks fetched:", decks);
+        const decks: DeckResponse[] = await fetchApi("/decks/my-decks");
+        const deckCount = decks.length;
+        // Note: cardCount isn’t in DeckResponse yet; assuming 0 for now
+        const totalCards = decks.reduce((sum) => sum, 0); // Placeholder
+        setStats({ deckCount, totalCards });
       } catch (error: any) {
-        console.error("Test fetch failed:", error.message, {
+        console.error("Error fetching stats:", error.message, {
           status: error.status,
         });
+      } finally {
+        setLoading(false);
       }
     };
-    testFetch();
-  }, []);
 
-  return <div>Check console for API test</div>;
+    fetchStats();
+  }, [isAuthenticated, authLoading]);
+
+  if (authLoading || !isAuthenticated) return null; // Middleware redirects to /login
+  if (loading) return <Text>Loading dashboard...</Text>;
+
+  return (
+    <Box p={6}>
+      <Heading size="lg">Welcome, {user?.userName}!</Heading>
+      {stats ? (
+        <Box mt={4}>
+          <Text fontSize="xl" fontWeight="bold">
+            Your Stats
+          </Text>
+          <Text>Decks: {stats.deckCount}</Text>
+          <Text>Total Cards: {stats.totalCards} (Pending backend update)</Text>
+        </Box>
+      ) : (
+        <Text mt={4}>No stats available yet.</Text>
+      )}
+    </Box>
+  );
 }

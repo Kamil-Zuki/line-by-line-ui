@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"; // Handle dynamic rendering
 
 export async function GET(
   req: NextRequest,
@@ -14,7 +14,7 @@ export async function GET(
   try {
     console.log("Fetching cards for deckId:", params.deckId);
     const res = await fetch(
-      `http://85.175.218.17/api/v1/deck/${params.deckId}/cards`,
+      `http://85.175.218.17/api/v1/card/${params.deckId}/cards`,
       {
         headers: { Authorization: `Bearer ${accessToken}` },
       }

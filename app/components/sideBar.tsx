@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, VStack, Text, Button, Divider, Icon } from "@chakra-ui/react";
+import { Box, VStack, Text, Button, Divider, Icon, Center } from "@chakra-ui/react";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import {
@@ -39,6 +39,7 @@ export default function SideBar() {
       <VStack align="stretch" spacing={4}>
         {/* Logo/Title */}
         <Text
+        textAlign="center"
           fontSize="2xl"
           fontWeight="bold"
           color="teal.300"

@@ -11,6 +11,7 @@ import {
   IconButton,
   Select,
   useToast,
+  Wrap,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { EditIcon, DeleteIcon } from "@chakra-ui/icons";
@@ -118,7 +119,7 @@ export default function MyDecksPage() {
         </Button>
       </HStack>
       {filteredDecks.length > 0 ? (
-        <HStack mt={4} spacing={4} align="stretch">
+        <Wrap mt={4} spacing={4} align="stretch">
           {filteredDecks.map((deck) => (
             <Box
               key={deck.id}
@@ -162,7 +163,7 @@ export default function MyDecksPage() {
               </HStack>
             </Box>
           ))}
-        </HStack>
+        </Wrap>
       ) : (
         <Box mt={4}>
           <Text>No decks match your filter.</Text>

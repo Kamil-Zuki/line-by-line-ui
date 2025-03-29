@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import { Box, Heading, Text } from "@chakra-ui/react";
 import { useAuth } from "@/app/hooks/useAuth";
-import { fetchApi, DeckResponse } from "@/app/lib/api";
+import { fetchApi,useApi, DeckResponse } from "@/app/lib/api";
 
 interface Stats {
   deckCount: number;
-  totalCards: number; // Placeholder until backend provides cardCount
+  totalCards: number; 
 }
 
 export default function DashboardPage() {

@@ -102,6 +102,32 @@ export function useAuth() {
     }
   };
 
+  const register = async (email: string, password: string, confirmPassword: string) => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, confirmPassword }),
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Invalid credentials");
+      }
+
+      const { message } = await res.json();
+
+      return message;
+    } catch (error: any) {
+      console.error("Login failed:", error.message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     document.cookie =
       "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
@@ -166,6 +192,7 @@ export function useAuth() {
     login,
     logout,
     refreshToken,
+    register,
     loading,
   };
 }

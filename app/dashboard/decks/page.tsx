@@ -118,7 +118,7 @@ export default function MyDecksPage() {
         </Button>
       </HStack>
       {filteredDecks.length > 0 ? (
-        <VStack mt={4} spacing={4} align="stretch">
+        <HStack mt={4} spacing={4} align="stretch">
           {filteredDecks.map((deck) => (
             <Box
               key={deck.id}
@@ -162,7 +162,7 @@ export default function MyDecksPage() {
               </HStack>
             </Box>
           ))}
-        </VStack>
+        </HStack>
       ) : (
         <Box mt={4}>
           <Text>No decks match your filter.</Text>

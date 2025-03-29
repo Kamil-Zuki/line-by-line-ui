@@ -11,7 +11,8 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const res = await fetch(`http://85.175.218.17/api/v1/deck/${params.id}`, {
+    const {id} = await params;
+    const res = await fetch(`http://85.175.218.17/api/v1/deck/${id}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (!res.ok)

@@ -37,9 +37,9 @@ export default function RegisterPage() {
     }
 
     try {
-      await register(email, password, confirmPassword);
+      let message = await register(email, password, confirmPassword);
       toast({
-        title: "Registration Successful",
+        title: `Registration Successful. ${message}`,
         description: "You can now log in!",
         status: "success",
         duration: 3000,

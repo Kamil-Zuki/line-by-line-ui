@@ -12,9 +12,9 @@ export async function GET(
   }
 
   try {
-    console.log("Fetching cards for deckId:", params.deckId);
+    const {deckId} = await params;
     const res = await fetch(
-      `http://85.175.218.17/api/v1/card/${params.deckId}/cards`,
+      `http://85.175.218.17/api/v1/card/${deckId}/cards`,
       {
         headers: { Authorization: `Bearer ${accessToken}` },
       }

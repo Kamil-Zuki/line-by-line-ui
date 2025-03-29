@@ -74,17 +74,6 @@ export default function SideBar() {
               My Decks
             </Button>
             <Button
-              leftIcon={<Icon as={FaPlus} />}
-              variant="ghost"
-              justifyContent="start"
-              w="full"
-              color="gray.200"
-              _hover={{ bg: "gray.700", color: "teal.300" }}
-              onClick={() => handleNavigation("/dashboard/decks/new")}
-            >
-              Create Deck
-            </Button>
-            <Button
               leftIcon={<Icon as={FaSearch} />}
               variant="ghost"
               justifyContent="start"

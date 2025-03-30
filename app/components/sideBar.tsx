@@ -12,6 +12,7 @@ import {
   FaSignOutAlt,
   FaSignInAlt,
 } from "react-icons/fa";
+import ProfileMenu from "./ProfileMenu";
 
 export default function SideBar() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -20,10 +21,15 @@ export default function SideBar() {
     router.push(path);
   };
 
+  const actions = [
+    { label: "Open Profile", onClick: () =>  handleNavigation("/profile"), color: "black" },
+    { label: "Logout", onClick: () => logout(), color: "red" },
+  ];
+
   return (
     <Box
       as="nav"
-      w={{ base: "full", md: "250px" }}
+      w={{ base: "full", md: "257px" }}
       h={{ base: "auto", md: "100vh" }}
       bg="#171717"
       color="white"
@@ -52,17 +58,8 @@ export default function SideBar() {
         {/* Navigation Items */}
         {isAuthenticated ? (
           <>
-            <Button
-              leftIcon={<Icon as={FaUser} />}
-              variant="ghost"
-              justifyContent="start"
-              w="full"
-              color="gray.200"
-              _hover={{ bg: "gray.700", color: "teal.300" }}
-              onClick={() => handleNavigation("/profile")}
-            >
-              {user?.userName}
-            </Button>
+            <ProfileMenu userName={user!.userName} actions={actions}/>
+            <Divider borderColor="gray.600" />
             <Button
               leftIcon={<Icon as={FaHome} />}
               variant="ghost"
@@ -81,32 +78,9 @@ export default function SideBar() {
               w="full"
               color="gray.200"
               _hover={{ bg: "gray.700", color: "teal.300" }}
-              onClick={() => handleNavigation("/dashboard/decks")}
+              onClick={() => handleNavigation("/dashboard/library")}
             >
-              My Decks
-            </Button>
-            <Button
-              leftIcon={<Icon as={FaSearch} />}
-              variant="ghost"
-              justifyContent="start"
-              w="full"
-              color="gray.200"
-              _hover={{ bg: "gray.700", color: "teal.300" }}
-              onClick={() => handleNavigation("/dashboard/decks/search")}
-            >
-              Search Decks
-            </Button>
-            <Divider borderColor="gray.600" />
-            <Button
-              leftIcon={<Icon as={FaSignOutAlt} />}
-              variant="ghost"
-              justifyContent="start"
-              w="full"
-              color="red.400"
-              _hover={{ bg: "gray.700", color: "red.300" }}
-              onClick={logout}
-            >
-              Logout
+              Library
             </Button>
           </>
         ) : (

@@ -13,6 +13,7 @@ interface User {
   userName: string;
   email: string;
   emailConfirmed: boolean;
+  avatarUrl: string
 }
 
 export function useAuth() {

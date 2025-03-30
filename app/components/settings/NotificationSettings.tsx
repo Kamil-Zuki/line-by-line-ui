@@ -22,4 +22,4 @@ const NotificationSettings = () => {
   );
 };
 
-export default NotificationSettings;
+export default NotificationSettings;    

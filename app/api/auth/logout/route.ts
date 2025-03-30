@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-export async function POST(request: Request) {
-  // Await cookies() to get the ReadonlyRequestCookies object
+export async function POST() {
+  
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
   const refreshToken = cookieStore.get("refreshToken")?.value;
@@ -15,7 +15,6 @@ export async function POST(request: Request) {
   }
 
   try {
-    // Call backend logout endpoint
     const backendResponse = await fetch("http://85.175.218.17/api/v1/auth/logout", {
       method: "POST",
       headers: {
@@ -46,7 +45,6 @@ export async function POST(request: Request) {
       }
     );
   } catch (error) {
-    console.error("Logout error:", error);
     return NextResponse.json(
       { error: "Internal server error during logout" },
       { status: 500 }

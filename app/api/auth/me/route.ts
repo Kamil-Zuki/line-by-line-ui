@@ -1,9 +1,9 @@
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
-  const accessToken = req.cookies.get("accessToken")?.value;
-  console.log("Cookies received:", req.cookies);
-  console.log("AccessToken:", accessToken);
+export async function GET() {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get("accessToken")?.value;
 
   if (!accessToken) {
     console.log("No accessToken in request cookies");
@@ -19,7 +19,6 @@ export async function GET(req: NextRequest) {
     });
 
     if (!res.ok) {
-      console.log(`Auth service responded with status: ${res.status}`);
       return NextResponse.json(
         { error: "Failed to fetch user info" },
         { status: res.status }
@@ -29,7 +28,6 @@ export async function GET(req: NextRequest) {
     const user = await res.json();
     return NextResponse.json(user);
   } catch (error) {
-    console.error("Error fetching user info:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

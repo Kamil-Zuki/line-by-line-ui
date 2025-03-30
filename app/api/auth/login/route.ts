@@ -4,8 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
-    console.log("Login attempt:", { email });
-
+    
     const res = await fetch("http://85.175.218.17/api/v1/auth/login", {
       method: "POST",
       headers: {
@@ -16,7 +15,6 @@ export async function POST(req: NextRequest) {
     });
 
     if (!res.ok) {
-      console.log("Backend login failed:", res.status);
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: res.status }
@@ -24,7 +22,6 @@ export async function POST(req: NextRequest) {
     }
 
     const { accessToken, refreshToken } = await res.json();
-    console.log("Backend login success:", { accessToken, refreshToken });
 
     const response = NextResponse.json({
       message: "Login successful",
@@ -47,7 +44,6 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error: any) {
-    console.error("Login proxy error:", error.message);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

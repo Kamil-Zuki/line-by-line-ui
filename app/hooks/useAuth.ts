@@ -4,8 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 interface Tokens {
-  accessToken: string; // Placeholder, not stored client-side
-  refreshToken?: string;
+  refreshToken?: string; // Only refresh token is stored client-side
 }
 
 interface User {
@@ -13,19 +12,17 @@ interface User {
   userName: string;
   email: string;
   emailConfirmed: boolean;
-  avatarUrl: string
+  avatarUrl: string;
 }
 
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [tokens, setTokens] = useState<Tokens>({
-    accessToken: "",
-    refreshToken: "",
-  });
+  const [tokens, setTokens] = useState<Tokens>({ refreshToken: "" });
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
 
+  // Helper to get non-HttpOnly cookie
   const getCookie = (name: string): string | undefined =>
     document.cookie
       .split("; ")
@@ -36,11 +33,11 @@ export function useAuth() {
     const checkAuth = async () => {
       setLoading(true);
       try {
-        const res = await fetch("/api/auth/me", { credentials: "include" });
+        const res = await fetch("/api/auth/me", { credentials: "include" }); // Access token is HttpOnly
         if (res.ok) {
           const userData: User = await res.json();
-          const refreshToken = getCookie("refreshToken");
-          setTokens({ accessToken: "", refreshToken });
+          const refreshToken = getCookie("refreshToken"); // Refresh token is not HttpOnly
+          setTokens({ refreshToken });
           setUser(userData);
           setIsAuthenticated(true);
         } else if (res.status === 401) {
@@ -49,7 +46,6 @@ export function useAuth() {
           if (!refreshed) {
             setIsAuthenticated(false);
             setUser(null);
-            // Middleware will redirect, no need to push here
           }
         } else {
           console.log(`Unexpected status from /api/auth/me: ${res.status}`);
@@ -75,29 +71,30 @@ export function useAuth() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
-        credentials: "include",
+        credentials: "include", // Server sets HttpOnly access token
       });
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || "Invalid credentials");
+        return { success: false, error: errorData.message || "Invalid credentials" };
       }
 
-      const { refreshToken } = await res.json();
+      const { refreshToken } = await res.json(); // Server returns refresh token
       document.cookie = `refreshToken=${refreshToken}; path=/; max-age=${
         60 * 60 * 24 * 7
-      }; sameSite=lax`;
-      setTokens({ accessToken: "", refreshToken });
+      }; sameSite=lax`; // Store refresh token client-side
+      setTokens({ refreshToken });
+
       const meRes = await fetch("/api/auth/me", { credentials: "include" });
       if (meRes.ok) {
         setUser(await meRes.json());
         setIsAuthenticated(true);
       }
-      console.log("Login successful, refreshToken set:", refreshToken);
       router.push("/dashboard");
+      return { success: true };
     } catch (error: any) {
       console.error("Login failed:", error.message);
-      throw error;
+      return { success: false, error: error.message };
     } finally {
       setLoading(false);
     }
@@ -110,84 +107,49 @@ export function useAuth() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, confirmPassword }),
-        credentials: "include",
+        credentials: "include", // Server might set access token
       });
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || "Invalid credentials");
+        return { success: false, error: errorData.message || "Registration failed" };
       }
 
       const { message } = await res.json();
-
-      return message;
+      return { success: true, message };
     } catch (error: any) {
-      console.error("Login failed:", error.message);
-      throw error;
+      console.error("Registration failed:", error.message);
+      return { success: false, error: error.message };
     } finally {
       setLoading(false);
     }
   };
 
   const logout = async () => {
-    console.log("Logout initiated", { tokens });
-
-    if (!tokens.accessToken || !tokens.refreshToken) {
-      console.log("No tokens available for logout");
-      setIsAuthenticated(false);
-      setTokens({ accessToken: "", refreshToken: "" });
-      setUser(null);
-      router.push("/login");
-      return;
-    }
-
     try {
-      const response = await fetch("/api/logout", {
+      const res = await fetch("/api/auth/logout", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${tokens.accessToken}`,
-        },
-        body: JSON.stringify(tokens.refreshToken), // Send as string-wrapped value
+        credentials: "include", // Server invalidates HttpOnly access token
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: tokens.refreshToken }), // Send refresh token if needed
       });
 
-      console.log("Logout API response status:", response.status);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Logout API error response:", errorData);
-        throw new Error(errorData.error || `Logout failed with status ${response.status}`);
+      if (!res.ok) {
+        throw new Error("Logout failed");
       }
 
-      const data = await response.json();
-      console.log("Logout API success response:", data);
-
       setIsAuthenticated(false);
-      setTokens({ accessToken: "", refreshToken: "" });
+      setTokens({ refreshToken: "" });
       setUser(null);
-
-      toast({
-        title: "Logged out successfully",
-        status: "info",
-        duration: 3000,
-        isClosable: true,
-      });
-
-      console.log("Logged out, state cleared");
+      document.cookie = "refreshToken=; path=/; max-age=0; sameSite=lax"; // Clear refresh token
       router.push("/login");
-    } catch (error: any) {
-      console.error("Logout error:", error.message);
-      toast({
-        title: "Logout failed",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
+    } catch (error) {
+      console.error("Logout error:", error);
     }
   };
 
   const refreshToken = async (): Promise<boolean> => {
-    const refresh = getCookie("refreshToken");
+    const refresh = tokens.refreshToken || getCookie("refreshToken");
     if (!refresh) {
       console.log("No refresh token available, cannot refresh");
       logout();
@@ -196,11 +158,11 @@ export function useAuth() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/refresh", {
+      const res = await fetch("/api/auth/refresh-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken: refresh }),
-        credentials: "include",
+        credentials: "include", // Server sets new HttpOnly access token
       });
 
       if (!res.ok) {
@@ -209,20 +171,17 @@ export function useAuth() {
         return false;
       }
 
-      const { refreshToken: newRefreshToken } = await res.json();
+      const { refreshToken: newRefreshToken } = await res.json(); // Server returns new refresh token
       document.cookie = `refreshToken=${newRefreshToken}; path=/; max-age=${
         60 * 60 * 24 * 7
       }; sameSite=lax`;
-      setTokens({ accessToken: "", refreshToken: newRefreshToken });
+      setTokens({ refreshToken: newRefreshToken });
+
       const meRes = await fetch("/api/auth/me", { credentials: "include" });
       if (meRes.ok) {
         setUser(await meRes.json());
         setIsAuthenticated(true);
       }
-      console.log(
-        "Token refreshed successfully, new refreshToken:",
-        newRefreshToken
-      );
       return true;
     } catch (error) {
       console.error("Refresh token failed:", error);
@@ -235,7 +194,7 @@ export function useAuth() {
 
   return {
     isAuthenticated,
-    tokens,
+    tokens, // Only contains refreshToken
     user,
     login,
     logout,
@@ -244,7 +203,3 @@ export function useAuth() {
     loading,
   };
 }
-function toast(arg0: { title: string; status: string; duration: number; isClosable: boolean; }) {
-  throw new Error("Function not implemented.");
-}
-

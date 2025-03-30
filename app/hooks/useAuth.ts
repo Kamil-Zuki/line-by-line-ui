@@ -129,14 +129,61 @@ export function useAuth() {
     }
   };
 
-  const logout = () => {
-    document.cookie =
-      "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-    setIsAuthenticated(false);
-    setTokens({ accessToken: "", refreshToken: "" });
-    setUser(null);
-    console.log("Logged out, tokens cleared");
-    router.push("/login");
+  const logout = async () => {
+    console.log("Logout initiated", { tokens });
+
+    if (!tokens.accessToken || !tokens.refreshToken) {
+      console.log("No tokens available for logout");
+      setIsAuthenticated(false);
+      setTokens({ accessToken: "", refreshToken: "" });
+      setUser(null);
+      router.push("/login");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokens.accessToken}`,
+        },
+        body: JSON.stringify(tokens.refreshToken), // Send as string-wrapped value
+      });
+
+      console.log("Logout API response status:", response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Logout API error response:", errorData);
+        throw new Error(errorData.error || `Logout failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Logout API success response:", data);
+
+      setIsAuthenticated(false);
+      setTokens({ accessToken: "", refreshToken: "" });
+      setUser(null);
+
+      toast({
+        title: "Logged out successfully",
+        status: "info",
+        duration: 3000,
+        isClosable: true,
+      });
+
+      console.log("Logged out, state cleared");
+      router.push("/login");
+    } catch (error: any) {
+      console.error("Logout error:", error.message);
+      toast({
+        title: "Logout failed",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   };
 
   const refreshToken = async (): Promise<boolean> => {
@@ -197,3 +244,7 @@ export function useAuth() {
     loading,
   };
 }
+function toast(arg0: { title: string; status: string; duration: number; isClosable: boolean; }) {
+  throw new Error("Function not implemented.");
+}
+

@@ -78,9 +78,9 @@ export default function SideBar() {
               w="full"
               color="gray.200"
               _hover={{ bg: "gray.700", color: "teal.300" }}
-              onClick={() => handleNavigation("/dashboard/library")}
+              onClick={() => handleNavigation("/dashboard/decks")}
             >
-              Library
+              Decks
             </Button>
           </>
         ) : (

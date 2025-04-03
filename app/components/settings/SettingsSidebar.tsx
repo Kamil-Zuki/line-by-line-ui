@@ -24,7 +24,7 @@ const SettingsSidebar = ({
     <Text fontSize="xl" fontWeight="bold" mb={6} px={2} color="white">
       User Settings
     </Text>
-    
+
     <VStack align="stretch" spacing={1}>
       <Button
         variant={activeTab === "profile" ? "solid" : "ghost"}
@@ -37,14 +37,35 @@ const SettingsSidebar = ({
       >
         My Account
       </Button>
-      {/* Other tabs... */}
+      <Button
+        variant={activeTab === "privacy" ? "solid" : "ghost"}
+        justifyContent="flex-start"
+        leftIcon={<FiShield color="white" />}
+        onClick={() => onTabChange?.("privacy")}
+        bg={activeTab === "privacy" ? "#404249" : "transparent"}
+        _hover={{ bg: "#404249" }}
+        color="white"
+      >
+        Privacy
+      </Button>
+      <Button
+        variant={activeTab === "notifications" ? "solid" : "ghost"}
+        justifyContent="flex-start"
+        leftIcon={<FiBell color="white" />}
+        onClick={() => onTabChange?.("notifications")}
+        bg={activeTab === "notifications" ? "#404249" : "transparent"}
+        _hover={{ bg: "#404249" }}
+        color="white"
+      >
+        Notifications
+      </Button>
       <Divider borderColor="whiteAlpha.100" my={2} />
       <Button
         variant="ghost"
         justifyContent="flex-start"
         leftIcon={<FiLogOut color="red.300" />}
         color="red.300"
-        onClick={onLogout}
+        onClick={() => onLogout?.()}
         _hover={{ bg: "red.900" }}
       >
         Log Out

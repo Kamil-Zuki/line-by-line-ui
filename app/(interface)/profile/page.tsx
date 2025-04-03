@@ -12,7 +12,7 @@ import NotificationSettings from "@/app/components/settings/NotificationSettings
 import { useToast } from "@chakra-ui/react";
 
 const SettingsPage = () => {
-  const { user, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const router = useRouter();
   const toast = useToast();
   const [activeTab, setActiveTab] = useState("profile");
@@ -41,7 +41,7 @@ const SettingsPage = () => {
   };
 
   if (!user) {
-    return null; // or redirect to login
+    return null;
   }
 
   return (

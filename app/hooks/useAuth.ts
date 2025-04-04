@@ -245,8 +245,8 @@ export function useAuth() {
 
   const updateUsername = async (username: string) => {
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
+      const res = await fetch("/api/auth/username", {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username }),
         credentials: "include",

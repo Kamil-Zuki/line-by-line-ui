@@ -1,7 +1,8 @@
+// app/components/settings/AccountProfile.tsx
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@/app/hooks/useAuth"; // Adjust import path as needed
+import { useAuth } from "@/app/hooks/useAuth";
 import {
   Box,
   Button,
@@ -28,12 +29,22 @@ import {
 } from "@chakra-ui/react";
 import { FiKey, FiUser, FiEye, FiEyeOff } from "react-icons/fi";
 
-const AccountSettingsPage = () => {
-  const { user, updatePassword, updateUsername, loading } = useAuth();
+interface AccountProfileProps {
+  user: {
+    id: string;
+    userName: string;
+    email: string;
+    emailConfirmed: boolean;
+    avatarUrl?: string;
+  };
+}
+
+const AccountProfile = ({ user }: AccountProfileProps) => {
+  const { updatePassword, updateUsername, loading } = useAuth();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [newUsername, setNewUsername] = useState(user?.userName || "");
+  const [newUsername, setNewUsername] = useState(user.userName);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({
     currentPassword: "",
@@ -113,11 +124,15 @@ const AccountSettingsPage = () => {
       setConfirmPassword("");
       passwordModal.onClose();
     } else {
+      let errorMessage = result.error || "Failed to update password";
+      if (result.error?.includes("405")) {
+        errorMessage = "Password update method not allowed. Contact support.";
+      }
       toast({
         title: "Error",
-        description: result.error || "Failed to update password",
+        description: errorMessage,
         status: "error",
-        duration: 3000,
+        duration: 5000,
       });
     }
   };
@@ -146,63 +161,70 @@ const AccountSettingsPage = () => {
   };
 
   return (
-    <Box bg="#36393f" minH="100vh" color="white" p={4}>
-      <Flex>
-        {/* Main Content */}
-        <Box flex={1} p={4}>
-          <Text fontSize="2xl" fontWeight="bold" mb={6}>
-            User Settings
+    <Box bg="#2f3136" borderRadius="md" p={4} color="white">
+      <Text fontSize="xl" fontWeight="semibold" mb={4}>
+        Account
+      </Text>
+
+      {/* Username Section */}
+      <Flex
+        justify="space-between"
+        align="center"
+        mb={4}
+        pb={4}
+        borderBottom="1px"
+        borderColor="gray.700"
+      >
+        <Box>
+          <Text fontSize="sm" color="gray.400">
+            USERNAME
           </Text>
-
-          <Box bg="#2f3136" borderRadius="md" p={4}>
-            <Text fontSize="xl" fontWeight="semibold" mb={4}>
-              Account
-            </Text>
-
-            {/* Username Section */}
-            <Flex
-              justify="space-between"
-              align="center"
-              mb={4}
-              pb={4}
-              borderBottom="1px"
-              borderColor="gray.700"
-            >
-              <Box>
-                <Text fontSize="sm" color="gray.400">
-                  USERNAME
-                </Text>
-                <Text>{user?.userName}</Text>
-              </Box>
-              <Button
-                size="sm"
-                bg="#5865f2"
-                _hover={{ bg: "#4752c4" }}
-                onClick={usernameModal.onOpen}
-              >
-                Edit
-              </Button>
-            </Flex>
-
-            {/* Password Section */}
-            <Flex justify="space-between" align="center" mb={4}>
-              <Box>
-                <Text fontSize="sm" color="gray.400">
-                  PASSWORD
-                </Text>
-                <Text>••••••••</Text>
-              </Box>
-              <Button
-                size="sm"
-                bg="#5865f2"
-                _hover={{ bg: "#4752c4" }}
-                onClick={passwordModal.onOpen}
-              >
-                Change Password
-              </Button>
-            </Flex>
-          </Box>
+          <Text>{user.userName}</Text>
         </Box>
+        <Button
+          size="sm"
+          bg="#5865f2"
+          _hover={{ bg: "#4752c4" }}
+          onClick={usernameModal.onOpen}
+        >
+          Edit
+        </Button>
+      </Flex>
+
+      {/* Email Section */}
+      <Flex
+        justify="space-between"
+        align="center"
+        mb={4}
+        pb={4}
+        borderBottom="1px"
+        borderColor="gray.700"
+      >
+        <Box>
+          <Text fontSize="sm" color="gray.400">
+            EMAIL
+          </Text>
+          <Text>{user.email}</Text>
+        </Box>
+        {/* Add edit button if email editing is desired */}
+      </Flex>
+
+      {/* Password Section */}
+      <Flex justify="space-between" align="center" mb={4}>
+        <Box>
+          <Text fontSize="sm" color="gray.400">
+            PASSWORD
+          </Text>
+          <Text>••••••••</Text>
+        </Box>
+        <Button
+          size="sm"
+          bg="#5865f2"
+          _hover={{ bg: "#4752c4" }}
+          onClick={passwordModal.onOpen}
+        >
+          Change Password
+        </Button>
       </Flex>
 
       {/* Password Modal */}
@@ -324,4 +346,4 @@ const AccountSettingsPage = () => {
   );
 };
 
-export default AccountSettingsPage;
+export default AccountProfile;

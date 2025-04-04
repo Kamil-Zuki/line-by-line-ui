@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const API_URL = "http://85.175.218.17/api/v1";
 
-export async function POST(req: NextRequest) {
+export async function PUT(req: NextRequest) {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
 
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const res = await fetch(`${API_URL}/auth/username`, {
-      method: "POST",
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",

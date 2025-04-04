@@ -4,9 +4,10 @@ import { DeckResponse } from "@/app/lib/api";
 
 interface DeckCardProps {
   deck: DeckResponse;
+  onClick: () => void;
 }
 
-export function DeckCard({ deck }: DeckCardProps) {
+export function DeckCard({ deck, onClick }: DeckCardProps) {
   return (
     <Box
       w="300px"
@@ -15,6 +16,10 @@ export function DeckCard({ deck }: DeckCardProps) {
       borderRadius="lg"
       boxShadow="md"
       position="relative"
+      cursor="pointer"
+      onClick={onClick}
+      _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
+      transition="all 0.2s"
     >
       {deck.imageUrl ? (
         <Image

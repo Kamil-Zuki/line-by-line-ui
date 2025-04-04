@@ -117,7 +117,7 @@ export interface ApiError {
   details?: Record<string, any>;
 }
 
-interface DeckResponse {
+export interface DeckResponse {
   id: string;
   title: string;
   description?: string;
@@ -131,4 +131,8 @@ interface DeckResponse {
   subscriberCount: number;
   isSubscribed: boolean;
   averageDifficulty: number;
+  authorNickname?: string; // New
+  authorAvatar?: string; // New
+  generationPrompt?: string; // New
+  llmModel?: string; // New
 }

@@ -1,11 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Box, Text, Heading, Flex } from "@chakra-ui/react";
+import {
+  Box,
+  Heading,
+  Text,
+  Flex,
+  Select,
+  HStack,
+  Button,
+} from "@chakra-ui/react";
 import { useAuth } from "@/app/hooks/useAuth";
 import { fetchApi, DeckResponse } from "@/app/lib/api";
 import { DeckCard } from "@/app/components/ui/DeckCard";
 import { FilterControls } from "@/app/components/ui/FilterControls";
+import { DeckDetailsModal } from "@/app/components/ui/DeckDetailsModal";
 
 interface Stats {
   deckCount: number;
@@ -21,6 +30,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [languageFilter, setLanguageFilter] = useState<string>("all");
   const [sortOption, setSortOption] = useState<SortOption>("trending");
+  const [selectedDeck, setSelectedDeck] = useState<DeckResponse | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated || authLoading) return;
@@ -81,9 +91,20 @@ export default function DashboardPage() {
       />
       <Flex wrap="wrap" justify="flex-start" gap={6}>
         {filteredDecks.map((deck) => (
-          <DeckCard key={deck.id} deck={deck} />
+          <DeckCard
+            key={deck.id}
+            deck={deck}
+            onClick={() => setSelectedDeck(deck)}
+          />
         ))}
       </Flex>
+      {selectedDeck && (
+        <DeckDetailsModal
+          deck={selectedDeck}
+          isOpen={!!selectedDeck}
+          onClose={() => setSelectedDeck(null)}
+        />
+      )}
     </Box>
   );
 }

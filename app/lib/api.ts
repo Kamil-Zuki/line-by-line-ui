@@ -117,7 +117,7 @@ export interface ApiError {
   details?: Record<string, any>;
 }
 
-export interface DeckResponse {
+interface DeckResponse {
   id: string;
   title: string;
   description?: string;
@@ -125,8 +125,10 @@ export interface DeckResponse {
   isPublic: boolean;
   ownerId: string;
   createdDate: string;
-  lastReviewedDate: string;
-  cardCount?: number; // Optional, pending backend confirmation
+  lastReviewedDate?: string;
   tags: string[];
+  cardCount: number;
+  subscriberCount: number;
   isSubscribed: boolean;
+  averageDifficulty: number;
 }

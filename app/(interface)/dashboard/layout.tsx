@@ -1,8 +1,8 @@
 "use client";
 
+import SideBar from "@/app/components/sideBar";
 import { Box, Flex } from "@chakra-ui/react";
 import { ReactNode } from "react";
-import SideBar from "@/app/components/SideBar";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (

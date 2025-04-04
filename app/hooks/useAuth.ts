@@ -76,7 +76,10 @@ export function useAuth() {
 
       if (!res.ok) {
         const errorData = await res.json();
-        return { success: false, error: errorData.message || "Invalid credentials" };
+        return {
+          success: false,
+          error: errorData.message || "Invalid credentials",
+        };
       }
 
       const { refreshToken } = await res.json(); // Server returns refresh token
@@ -100,7 +103,11 @@ export function useAuth() {
     }
   };
 
-  const register = async (email: string, password: string, confirmPassword: string) => {
+  const register = async (
+    email: string,
+    password: string,
+    confirmPassword: string
+  ) => {
     setLoading(true);
     try {
       const res = await fetch("/api/auth/register", {
@@ -112,7 +119,10 @@ export function useAuth() {
 
       if (!res.ok) {
         const errorData = await res.json();
-        return { success: false, error: errorData.message || "Registration failed" };
+        return {
+          success: false,
+          error: errorData.message || "Registration failed",
+        };
       }
 
       const { message } = await res.json();
@@ -192,6 +202,59 @@ export function useAuth() {
     }
   };
 
+  const updatePassword = async (
+    currentPassword: string,
+    newPassword: string
+  ) => {
+    try {
+      const res = await fetch("/api/auth/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword }),
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        return {
+          success: false,
+          error: errorData.message,
+        };
+      }
+
+      const { message } = await res.json();
+      return { success: true, message };
+    } catch (error: any) {
+      console.error("Registration failed:", error.message);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const updateUsername = async (username: string) => {
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        return {
+          success: false,
+          error: errorData.message,
+        };
+      }
+
+      const { message } = await res.json();
+      return { success: true, message };
+    } catch (error: any) {
+      console.error("Registration failed:", error.message);
+      return { success: false, error: error.message };
+    }
+  };
+
   return {
     isAuthenticated,
     tokens, // Only contains refreshToken
@@ -200,6 +263,8 @@ export function useAuth() {
     logout,
     refreshToken,
     register,
+    updatePassword,
+    updateUsername,
     loading,
   };
 }

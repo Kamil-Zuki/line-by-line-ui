@@ -22,12 +22,23 @@ export function useAuth() {
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
 
-  // Helper to get non-HttpOnly cookie
-  const getCookie = (name: string): string | undefined =>
-    document.cookie
-      .split("; ")
-      .find((row) => row.startsWith(`${name}=`))
-      ?.split("=")[1];
+  const getCookie = (name: string): string | undefined => {
+    // Get the full cookie string
+    const cookieString = document.cookie;
+    if (!cookieString) return undefined;
+
+    // Split into individual cookie entries
+    const cookies = cookieString.split("; ");
+
+    // Find the cookie with the matching name
+    const cookie = cookies.find((row) => row.startsWith(`${name}=`));
+    if (!cookie) return undefined;
+
+    // Extract the value after the first '='
+    const value = cookie.substring(name.length + 1); // +1 for the '='
+
+    return value;
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -166,6 +177,8 @@ export function useAuth() {
       return false;
     }
 
+    console.log("Refresh token method:", refresh);
+
     setLoading(true);
     try {
       const res = await fetch("/api/auth/refresh-token", {
@@ -208,7 +221,7 @@ export function useAuth() {
   ) => {
     try {
       const res = await fetch("/api/auth/password", {
-        method: "POST",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ currentPassword, newPassword }),
         credentials: "include",

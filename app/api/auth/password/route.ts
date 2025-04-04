@@ -3,26 +3,32 @@ import { NextRequest, NextResponse } from "next/server";
 
 const API_URL = "http://85.175.218.17/api/v1";
 
-export async function POST(req: NextRequest) {
+export async function PUT(req: NextRequest) {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
 
-  const { currentPassword } = await req.json();
-  const { newPassword } = await req.json();
+  console.log(accessToken);
+  //   const { currentPassword, newPassword } = await req.json();
+
+  const body = await req.json();
+
+  //   console.log("Password endpoint:", currentPassword, newPassword);
+  console.log("Password endpoint:", body);
 
   if (!accessToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const res = await fetch(`${API_URL}/auth/password`, {
-      method: "POST",
+    const res = await fetch("http://85.175.218.17/api/v1/auth/password", {
+      method: "PUT",
       headers: {
+        accept: "*/*",
         "Content-Type": "application/json",
         Accept: "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({ currentPassword, newPassword }),
+      body: JSON.stringify(body),
     });
 
     if (!res.ok) {

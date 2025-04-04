@@ -1,172 +1,327 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "@/app/hooks/useAuth"; // Adjust import path as needed
 import {
-  VStack,
-  HStack,
-  Avatar,
-  Text,
-  Divider,
-  Card,
-  CardBody,
+  Box,
+  Button,
+  Flex,
+  FormControl,
+  FormLabel,
+  FormErrorMessage,
   Input,
   InputGroup,
   InputLeftElement,
   InputRightElement,
   IconButton,
-  Badge,
-  Box,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  Text,
+  VStack,
+  useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
-import { FiUser, FiMail, FiKey, FiEdit2, FiEye, FiEyeOff } from "react-icons/fi";
+import { FiKey, FiUser, FiEye, FiEyeOff } from "react-icons/fi";
 
-interface AccountProfileProps {
-  user: {
-    userName: string;
-    email: string;
-    emailConfirmed: boolean;
-    avatarUrl?: string;
-    id: string;
-  };
-}
-
-const AccountProfile = ({ user }: AccountProfileProps) => {
+const AccountSettingsPage = () => {
+  const { user, updatePassword, updateUsername, loading } = useAuth();
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [newUsername, setNewUsername] = useState(user?.userName || "");
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+    username: "",
+  });
+
+  const passwordModal = useDisclosure();
+  const usernameModal = useDisclosure();
+  const toast = useToast();
+
+  const validatePasswordForm = () => {
+    let isValid = true;
+    const newErrors = {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+      username: "",
+    };
+
+    if (!currentPassword) {
+      newErrors.currentPassword = "Current password is required";
+      isValid = false;
+    }
+    if (!newPassword) {
+      newErrors.newPassword = "New password is required";
+      isValid = false;
+    } else if (newPassword.length < 8) {
+      newErrors.newPassword = "Password must be at least 8 characters";
+      isValid = false;
+    }
+    if (newPassword !== confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const validateUsernameForm = () => {
+    let isValid = true;
+    const newErrors = {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+      username: "",
+    };
+
+    if (!newUsername) {
+      newErrors.username = "Username is required";
+      isValid = false;
+    } else if (newUsername.length < 3) {
+      newErrors.username = "Username must be at least 3 characters";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const handlePasswordUpdate = async () => {
+    if (!validatePasswordForm()) return;
+
+    const result = await updatePassword(currentPassword, newPassword);
+
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: result.message || "Password updated successfully",
+        status: "success",
+        duration: 3000,
+      });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      passwordModal.onClose();
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to update password",
+        status: "error",
+        duration: 3000,
+      });
+    }
+  };
+
+  const handleUsernameUpdate = async () => {
+    if (!validateUsernameForm()) return;
+
+    const result = await updateUsername(newUsername);
+
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: result.message || "Username updated successfully",
+        status: "success",
+        duration: 3000,
+      });
+      usernameModal.onClose();
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to update username",
+        status: "error",
+        duration: 3000,
+      });
+    }
+  };
 
   return (
-    <>
-      <Text fontSize="20px" fontWeight="bold" mb={6} color="white">
-        My Account
-      </Text>
+    <Box bg="#36393f" minH="100vh" color="white" p={4}>
+      <Flex>
+        {/* Main Content */}
+        <Box flex={1} p={4}>
+          <Text fontSize="2xl" fontWeight="bold" mb={6}>
+            User Settings
+          </Text>
 
-      <Card bg="#383a40" mb={6} color="white">
-        <CardBody>
-          <VStack spacing={4} align="stretch">
-            <HStack spacing={4}>
-              <Box position="relative">
-                <Avatar
-                  size="xl"
-                  name={user.userName}
-                  src={user.avatarUrl}
-                  bg="#5865f2"
-                  border="4px solid"
-                  borderColor="#313338"
-                />
-                <IconButton
-                  aria-label="Edit avatar"
-                  icon={<FiEdit2 size="14px" color="white" />}
-                  size="sm"
-                  position="absolute"
-                  bottom={0}
-                  right={0}
-                  bg="#5865f2"
-                  borderRadius="full"
-                  _hover={{ bg: "#4752c4" }}
-                  color="white"
-                />
-              </Box>
-              <VStack align="start" spacing={1}>
-                <Text fontSize="lg" fontWeight="bold" color="white">
-                  {user.userName}
+          <Box bg="#2f3136" borderRadius="md" p={4}>
+            <Text fontSize="xl" fontWeight="semibold" mb={4}>
+              Account
+            </Text>
+
+            {/* Username Section */}
+            <Flex
+              justify="space-between"
+              align="center"
+              mb={4}
+              pb={4}
+              borderBottom="1px"
+              borderColor="gray.700"
+            >
+              <Box>
+                <Text fontSize="sm" color="gray.400">
+                  USERNAME
                 </Text>
-                <Badge
-                  colorScheme={user.emailConfirmed ? "green" : "orange"}
-                  px={2}
-                  borderRadius="md"
-                  fontSize="xs"
-                >
-                  {user.emailConfirmed ? "Verified" : "Unverified"}
-                </Badge>
-              </VStack>
-            </HStack>
+                <Text>{user?.userName}</Text>
+              </Box>
+              <Button
+                size="sm"
+                bg="#5865f2"
+                _hover={{ bg: "#4752c4" }}
+                onClick={usernameModal.onOpen}
+              >
+                Edit
+              </Button>
+            </Flex>
 
-            <Divider borderColor="whiteAlpha.100" />
+            {/* Password Section */}
+            <Flex justify="space-between" align="center" mb={4}>
+              <Box>
+                <Text fontSize="sm" color="gray.400">
+                  PASSWORD
+                </Text>
+                <Text>••••••••</Text>
+              </Box>
+              <Button
+                size="sm"
+                bg="#5865f2"
+                _hover={{ bg: "#4752c4" }}
+                onClick={passwordModal.onOpen}
+              >
+                Change Password
+              </Button>
+            </Flex>
+          </Box>
+        </Box>
+      </Flex>
 
-            <VStack spacing={4} align="stretch">
-              <EditableField
-                label="USERNAME"
-                icon={<FiUser />}
-                value={user.userName}
-              />
-              <EditableField
-                label="EMAIL"
-                icon={<FiMail />}
-                value={user.email}
-              />
-              <PasswordField
-                showPassword={showPassword}
-                onToggleVisibility={() => setShowPassword(!showPassword)}
-              />
+      {/* Password Modal */}
+      <Modal isOpen={passwordModal.isOpen} onClose={passwordModal.onClose}>
+        <ModalOverlay />
+        <ModalContent bg="#36393f" color="white">
+          <ModalHeader>Change Your Password</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <VStack spacing={4}>
+              <FormControl isInvalid={!!errors.currentPassword}>
+                <FormLabel>Current Password</FormLabel>
+                <InputGroup>
+                  <InputLeftElement pointerEvents="none">
+                    <FiKey color="gray" />
+                  </InputLeftElement>
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    bg="#202225"
+                    border="none"
+                  />
+                  <InputRightElement>
+                    <IconButton
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                      icon={showPassword ? <FiEyeOff /> : <FiEye />}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowPassword(!showPassword)}
+                    />
+                  </InputRightElement>
+                </InputGroup>
+                <FormErrorMessage>{errors.currentPassword}</FormErrorMessage>
+              </FormControl>
+
+              <FormControl isInvalid={!!errors.newPassword}>
+                <FormLabel>New Password</FormLabel>
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  bg="#202225"
+                  border="none"
+                />
+                <FormErrorMessage>{errors.newPassword}</FormErrorMessage>
+              </FormControl>
+
+              <FormControl isInvalid={!!errors.confirmPassword}>
+                <FormLabel>Confirm New Password</FormLabel>
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  bg="#202225"
+                  border="none"
+                />
+                <FormErrorMessage>{errors.confirmPassword}</FormErrorMessage>
+              </FormControl>
             </VStack>
-          </VStack>
-        </CardBody>
-      </Card>
-    </>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={passwordModal.onClose}>
+              Cancel
+            </Button>
+            <Button
+              bg="#5865f2"
+              _hover={{ bg: "#4752c4" }}
+              onClick={handlePasswordUpdate}
+              isLoading={loading}
+            >
+              Save Changes
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Username Modal */}
+      <Modal isOpen={usernameModal.isOpen} onClose={usernameModal.onClose}>
+        <ModalOverlay />
+        <ModalContent bg="#36393f" color="white">
+          <ModalHeader>Change Your Username</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <FormControl isInvalid={!!errors.username}>
+              <FormLabel>Username</FormLabel>
+              <InputGroup>
+                <InputLeftElement pointerEvents="none">
+                  <FiUser color="gray" />
+                </InputLeftElement>
+                <Input
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                  bg="#202225"
+                  border="none"
+                />
+              </InputGroup>
+              <FormErrorMessage>{errors.username}</FormErrorMessage>
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={usernameModal.onClose}>
+              Cancel
+            </Button>
+            <Button
+              bg="#5865f2"
+              _hover={{ bg: "#4752c4" }}
+              onClick={handleUsernameUpdate}
+              isLoading={loading}
+            >
+              Save Changes
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </Box>
   );
 };
 
-const EditableField = ({ label, icon, value }: { label: string; icon: React.ReactElement; value: string }) => (
-  <Box>
-    <Text fontSize="sm" fontWeight="bold" mb={2} color="whiteAlpha.800">
-      {label}
-    </Text>
-    <InputGroup>
-      <InputLeftElement pointerEvents="none">
-        {icon}
-      </InputLeftElement>
-      <Input
-        value={value}
-        bg="#313338"
-        border="none"
-        readOnly
-        color="white"
-      />
-      <InputRightElement>
-        <IconButton
-          aria-label={`Edit ${label}`}
-          icon={<FiEdit2 size="14px" color="white" />}
-          size="sm"
-          variant="ghost"
-          color="white"
-        />
-      </InputRightElement>
-    </InputGroup>
-  </Box>
-);
-
-const PasswordField = ({ showPassword, onToggleVisibility }: { 
-  showPassword: boolean; 
-  onToggleVisibility: () => void 
-}) => (
-  <Box>
-    <Text fontSize="sm" fontWeight="bold" mb={2} color="whiteAlpha.800">
-      PASSWORD
-    </Text>
-    <InputGroup>
-      <InputLeftElement pointerEvents="none">
-        <FiKey color="gray" />
-      </InputLeftElement>
-      <Input
-        type={showPassword ? "text" : "password"}
-        value="••••••••"
-        bg="#313338"
-        border="none"
-        readOnly
-        color="white"
-      />
-      <InputRightElement>
-        <IconButton
-          aria-label={showPassword ? "Hide password" : "Show password"}
-          icon={showPassword ? 
-            <FiEyeOff size="14px" color="white" /> : 
-            <FiEye size="14px" color="white" />}
-          size="sm"
-          variant="ghost"
-          onClick={onToggleVisibility}
-          color="white"
-        />
-      </InputRightElement>
-    </InputGroup>
-  </Box>
-);
-
-export default AccountProfile;
+export default AccountSettingsPage;

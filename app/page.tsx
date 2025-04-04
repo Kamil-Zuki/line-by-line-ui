@@ -5,9 +5,9 @@ import { redirect } from "next/navigation";
 
 export default async function MainPage() {
   const cookieStore = await cookies();
-  const token = cookieStore.get("authToken");
+  const accessToken = cookieStore.get("accessToken")?.value;
 
-  const isAuthenticated = !!token;
+  const isAuthenticated = !!accessToken;
 
   // Redirect authenticated users to dashboard
   if (isAuthenticated) {
@@ -30,7 +30,8 @@ export default async function MainPage() {
         Welcome to LineByLine
       </Heading>
       <Text fontSize="xl" mb={6} color="gray.600">
-        Learn languages through gamified decks, collaboration, and AI-powered progress tracking.
+        Learn languages through gamified decks, collaboration, and AI-powered
+        progress tracking.
       </Text>
       <Stack direction={{ base: "column", md: "row" }} spacing={4}>
         <Button as={Link} href="/login" colorScheme="blue" size="lg">

@@ -154,8 +154,9 @@ export function useAuth() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken: tokens.refreshToken }), // Send refresh token if needed
       });
-
+      console.log("Tokens", tokens);
       if (!res.ok) {
+        console.log(res);
         throw new Error("Logout failed");
       }
 

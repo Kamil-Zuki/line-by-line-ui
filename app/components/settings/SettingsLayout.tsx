@@ -13,16 +13,16 @@ interface SettingsLayoutProps {
   onLogout?: () => void;
 }
 
-const SettingsLayout = ({ 
-  children, 
+const SettingsLayout = ({
+  children,
   isMobile,
   activeTab,
   onTabChange,
-  onLogout
+  onLogout,
 }: SettingsLayoutProps) => (
   <Flex minH="100vh" bg="#313338" color="white">
     {!isMobile && (
-      <SettingsSidebar 
+      <SettingsSidebar
         activeTab={activeTab}
         onTabChange={onTabChange}
         onLogout={onLogout}

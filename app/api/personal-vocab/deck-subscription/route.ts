@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = "http://85.175.218.17/api/v1";
+const API_URL = "http://85.175.218.17/api/v1/deck-subscription";
 
 export async function GET(req: NextRequest) {
   const accessToken = req.cookies.get("accessToken")?.value;
 
-  if (!accessToken) throw new Error("There is no access token");
+  if (!accessToken)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
-    const res = await fetch("/deck-subscription", {
+    const res = await fetch(`${API_URL}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,

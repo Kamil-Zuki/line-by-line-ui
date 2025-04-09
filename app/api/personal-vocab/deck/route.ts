@@ -17,14 +17,20 @@ export async function GET(req: NextRequest) {
     });
 
     if (!res.ok) {
-      return NextResponse.json({ error: "Failed to fetch public decks" }, { status: res.status });
+      return NextResponse.json(
+        { error: "Failed to fetch public decks" },
+        { status: res.status }
+      );
     }
 
     const decks = await res.json();
     return NextResponse.json(decks);
   } catch (error) {
     console.error("Error fetching public decks:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -46,13 +52,19 @@ export async function POST(req: NextRequest) {
     });
 
     if (!res.ok) {
-      return NextResponse.json({ error: "Failed to create deck" }, { status: res.status });
+      return NextResponse.json(
+        { error: "Failed to create deck" },
+        { status: res.status }
+      );
     }
 
     const deck = await res.json();
     return NextResponse.json(deck);
   } catch (error) {
     console.error("Error creating deck:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

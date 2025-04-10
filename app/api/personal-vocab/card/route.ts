@@ -1,35 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cards, decks } from "@/app/lib/mockData";
-import { authMiddleware } from "@/app/lib/authMiddleware";
 
-export async function GET(req: NextRequest) {
-  const auth = authMiddleware(req);
-  if (auth instanceof NextResponse) return auth;
-
-  const { userId } = auth;
-  const userCards = cards.filter((card) => card.userId === userId);
-  return NextResponse.json(userCards);
-}
+const API_URL = "http://85.175.218.17/api/v1/card";
 
 export async function POST(req: NextRequest) {
-  const auth = authMiddleware(req);
-  if (auth instanceof NextResponse) return auth;
+  const accessToken = req.cookies.get("accessToken")?.value;
 
-  const { userId } = auth;
-  const { deckId, front, back } = await req.json();
-  if (!deckId || !front || !back) {
+  if (!accessToken)
+    return NextResponse.json({ error: "Falled to authorize" }, { status: 401 });
+
+  const body = await req.json();
+
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-type": "application/json",
+      Body: JSON.stringify(body),
+    },
+  });
+
+  if (!response.ok)
     return NextResponse.json(
-      { error: "deckId, front, and back are required" },
-      { status: 400 }
+      { error: "Failed to create a card" },
+      { status: 500 }
     );
-  }
 
-  const deck = decks.find((d) => d.id === deckId && d.userId === userId);
-  if (!deck)
-    return NextResponse.json({ error: "Deck not found" }, { status: 404 });
+  const newCard = await response.json();
 
-  const newCard = { id: String(cards.length + 1), deckId, front, back, userId };
-  cards.push(newCard);
-  deck.cardCount += 1;
   return NextResponse.json(newCard, { status: 201 });
 }

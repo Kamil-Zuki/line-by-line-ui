@@ -1,62 +1,57 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cards, decks } from "@/app/lib/mockData";
-import { authMiddleware } from "@/app/lib/authMiddleware";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const auth = authMiddleware(req);
-  if (auth instanceof NextResponse) return auth;
+const API_URL = "http://85.175.218.17/api/v1/card";
 
-  const { userId } = auth;
-  const card = cards.find((c) => c.id === params.id && c.userId === userId);
-  if (!card)
-    return NextResponse.json({ error: "Card not found" }, { status: 404 });
-  return NextResponse.json(card);
-}
+export async function GET(req: NextRequest) {
+  //#region Access token
+  const accessToken = req?.cookies.get("accessToken")?.value;
+  if (!accessToken)
+    return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
+  //#endregion
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const auth = authMiddleware(req);
-  if (auth instanceof NextResponse) return auth;
+  const { cardId } = await req.json();
 
-  const { userId } = auth;
-  const cardIndex = cards.findIndex(
-    (c) => c.id === params.id && c.userId === userId
-  );
-  if (cardIndex === -1)
-    return NextResponse.json({ error: "Card not found" }, { status: 404 });
+  const response = await fetch(`${API_URL}/${cardId}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-type": "application/json",
+    },
+  });
 
-  const { front, back } = await req.json();
-  if (!front || !back)
+  if (!response.ok)
     return NextResponse.json(
-      { error: "front and back are required" },
-      { status: 400 }
+      { error: "Failed to create a card" },
+      { status: 500 }
     );
 
-  cards[cardIndex] = { ...cards[cardIndex], front, back };
-  return NextResponse.json(cards[cardIndex]);
+  const card = await response.json();
+
+  return NextResponse.json(card, { status: 200 });
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const auth = authMiddleware(req);
-  if (auth instanceof NextResponse) return auth;
+export async function DELETE(req: NextRequest) {
+  //#region Access token
+  const accessToken = req?.cookies.get("accessToken")?.value;
+  if (!accessToken)
+    return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
+  //#endregion
 
-  const { userId } = auth;
-  const cardIndex = cards.findIndex(
-    (c) => c.id === params.id && c.userId === userId
-  );
-  if (cardIndex === -1)
-    return NextResponse.json({ error: "Card not found" }, { status: 404 });
+  const { cardId } = await req.json();
 
-  const deck = decks.find((d) => d.id === cards[cardIndex].deckId);
-  if (deck) deck.cardCount -= 1;
-  cards.splice(cardIndex, 1);
-  return NextResponse.json({ message: "Card deleted" });
+  const response = await fetch(`${API_URL}/${cardId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-type": "application/json",
+    },
+  });
+
+  if (!response.ok)
+    return NextResponse.json(
+      { error: "Failed to create a card" },
+      { status: 500 }
+    );
+
+  return NextResponse.json({ message: "Success" }, { status: 201 });
 }

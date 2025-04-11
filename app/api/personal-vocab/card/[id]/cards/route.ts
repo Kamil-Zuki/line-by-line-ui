@@ -4,7 +4,7 @@ const API_URL = "http://85.175.218.17/api/v1/card";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { deckId: string } }
+  { params }: { params: { id: string } }
 ) {
   //#region Access token
   const accessToken = req?.cookies.get("accessToken")?.value;
@@ -12,7 +12,7 @@ export async function GET(
     return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
   //#endregion
 
-  const response = await fetch(`${API_URL}/${params.deckId}/cards`, {
+  const response = await fetch(`${API_URL}/${params.id}/cards`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,

@@ -12,6 +12,8 @@ export async function POST(
     return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
   //#endregion
 
+  const body = await req.json();
+
   const response = await fetch(`${API_URL}/review/${params.id}`, {
     method: "POST",
     headers: {
@@ -22,11 +24,11 @@ export async function POST(
 
   if (!response.ok)
     return NextResponse.json(
-      { error: "Failed to create a card" },
+      { error: "Failed to review a card" },
       { status: 500 }
     );
 
-  const dueCards = await response.json();
+  const result = await response.json();
 
-  return NextResponse.json(dueCards, { status: 200 });
+  return NextResponse.json(result, { status: 200 });
 }

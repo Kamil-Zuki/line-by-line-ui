@@ -11,7 +11,6 @@ export async function POST(
   if (!accessToken)
     return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
   //#endregion
-
   const body = await req.json();
 
   const response = await fetch(`${API_URL}/review/${params.id}`, {
@@ -20,6 +19,7 @@ export async function POST(
       Authorization: `Bearer ${accessToken}`,
       "Content-type": "application/json",
     },
+    body: JSON.stringify(body),
   });
 
   if (!response.ok)

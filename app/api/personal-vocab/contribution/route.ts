@@ -3,8 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const API_URL = "http://85.175.218.17/api/v1/contribution";
 
 export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
+  req: NextRequest
 ) {
   //#region Access token
   const accessToken = req?.cookies.get("accessToken")?.value;

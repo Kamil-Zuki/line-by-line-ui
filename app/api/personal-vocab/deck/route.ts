@@ -1,48 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BASE_URL = "http://85.175.218.17/api/v1";
+const BASE_URL = "http://85.175.218.17/api/v1/deck";
 
-export async function GET(req: NextRequest) {
-  const accessToken = req.cookies.get("accessToken")?.value;
-  if (!accessToken) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  try {
-    const res = await fetch(`${BASE_URL}/deck/public`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-
-    if (!res.ok) {
-      return NextResponse.json(
-        { error: "Failed to fetch public decks" },
-        { status: res.status }
-      );
-    }
-
-    const decks = await res.json();
-    return NextResponse.json(decks);
-  } catch (error) {
-    console.error("Error fetching public decks:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
 
 export async function POST(req: NextRequest) {
-  const accessToken = req.cookies.get("accessToken")?.value;
-  if (!accessToken) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+   //#region Access token
+   const accessToken = req?.cookies.get("accessToken")?.value;
+   if (!accessToken)
+     return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
+   //#endregion
 
   try {
     const body = await req.json();
-    const res = await fetch(`${BASE_URL}/deck`, {
+
+    const res = await fetch(`${BASE_URL}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -53,15 +24,15 @@ export async function POST(req: NextRequest) {
 
     if (!res.ok) {
       return NextResponse.json(
-        { error: "Failed to create deck" },
+        { error: "Failed" },
         { status: res.status }
       );
     }
 
-    const deck = await res.json();
-    return NextResponse.json(deck);
+    const result = await res.json();
+    return NextResponse.json(result, { status: 200 });
   } catch (error) {
-    console.error("Error creating deck:", error);
+    console.error("Error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

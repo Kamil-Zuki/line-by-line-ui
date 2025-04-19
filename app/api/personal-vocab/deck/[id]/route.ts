@@ -2,25 +2,37 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic"; // Mark as dynamic
 
+const API_URL = 'http://85.175.218.17/api/v1/deck'
+
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  //#region Access token
   const accessToken = req.cookies.get("accessToken")?.value;
   if (!accessToken)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+   //#endregion
 
   try {
-    const {id} = await params;
-    const res = await fetch(`http://85.175.218.17/api/v1/deck/${id}`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
+    const response = await fetch(`${API_URL}/${params.id}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      }
     });
-    if (!res.ok)
+
+    if (!response.ok) {
       return NextResponse.json(
-        { error: "Failed to fetch deck" },
-        { status: res.status }
+        { error: "Failed" },
+        { status: response.status }
       );
-    return NextResponse.json(await res.json());
+    }
+
+    const result = await response.json();
+
+    return NextResponse.json(result, {status: 200});
   } catch (error) {
     console.error("Error fetching deck:", error);
     return NextResponse.json(
@@ -34,14 +46,15 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+    //#region Access token
   const accessToken = req.cookies.get("accessToken")?.value;
   if (!accessToken)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+ //#endregion
 
   try {
     const body = await req.json();
-    console.log("PUT request body for deckId:", params.id, body);
-    const res = await fetch(`http://85.175.218.17/api/v1/deck/${params.id}`, {
+    const response = await fetch(`http://85.175.218.17/api/v1/deck/${params.id}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -49,17 +62,16 @@ export async function PUT(
       },
       body: JSON.stringify(body),
     });
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error(`Backend responded with ${res.status}: ${errorText}`);
+    if (!response.ok) {
       return NextResponse.json(
         { error: "Failed to update deck" },
-        { status: res.status }
+        { status: response.status }
       );
     }
-    return NextResponse.json(await res.json());
+    const result = await response.json();
+    return NextResponse.json(result, {status: 200});
   } catch (error) {
-    console.error("Error updating deck:", error);
+    console.error("Error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -76,16 +88,19 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const res = await fetch(`http://85.175.218.17/api/v1/deck/${params.id}`, {
-      method: "DELETE",
+    const response = await fetch(`http://85.175.218.17/api/v1/deck/${params.id}`, {
+    method: "DELETE",
       headers: { Authorization: `Bearer ${accessToken}` },
     });
-    if (!res.ok)
+    if (!response.ok)
       return NextResponse.json(
         { error: "Failed to delete deck" },
-        { status: res.status }
+        { status: response.status }
       );
-    return NextResponse.json({ message: "Deck deleted" });
+
+    const result = await response.json();
+
+    return NextResponse.json(result, {status: 200});
   } catch (error) {
     console.error("Error deleting deck:", error);
     return NextResponse.json(

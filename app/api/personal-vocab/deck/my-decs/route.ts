@@ -1,41 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BASE_URL = "http://85.175.218.17/api/v1"; // Adjust if using env variable
+const BASE_URL = "http://85.175.218.17/api/v1/deck/my-decks";
+
 
 export async function GET(req: NextRequest) {
-  const accessToken = req.cookies.get("accessToken")?.value;
-
-  console.log(accessToken);
-  // Check for accessToken
-  if (!accessToken) {
-    console.log("No accessToken found in cookies");
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+//#region Access token
+   const accessToken = req?.cookies.get("accessToken")?.value;
+   if (!accessToken)
+     return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
+   //#endregion
 
   try {
-    // Proxy request to personal_vocab microservice
-    const res = await fetch(`${BASE_URL}/deck/my-decks`, {
+
+    const response = await fetch(`${BASE_URL}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
-      },
+      }
     });
 
-    // Handle non-200 responses
-    if (!res.ok) {
-      console.log(`Backend responded with status: ${res.status}`);
+    if (!response.ok) {
       return NextResponse.json(
-        { error: "Failed to fetch decks" },
-        { status: res.status }
+        { error: "Failed" },
+        { status: response.status }
       );
     }
 
-    const decks = await res.json();
-    console.log("Decks fetched from backend:", decks); // Debug log
-    return NextResponse.json(decks);
+    const result = await response.json();
+    return NextResponse.json(result, { status: 200 });
   } catch (error) {
-    console.error("Error fetching decks from personal_vocab:", error);
+    console.error("Error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

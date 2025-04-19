@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = "http://85.175.218.17/api/v1/card";
+const API_URL = "http://85.175.218.17/api/v1/contribution";
 
-export async function POST(
+export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
@@ -13,18 +13,17 @@ export async function POST(
   //#endregion
   const body = await req.json();
 
-  const response = await fetch(`${API_URL}/review/${params.id}`, {
-    method: "POST",
+  const response = await fetch(`${API_URL}/deck/${params.id}`, {
+    method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
       "Content-type": "application/json",
     },
-    body: JSON.stringify(body),
   });
 
   if (!response.ok)
     return NextResponse.json(
-      { error: "Failed to review a card" },
+      { error: "Failed" },
       { status: 500 }
     );
 

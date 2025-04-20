@@ -1,30 +1,42 @@
+// components/SideBar.tsx
 "use client";
 
-import { Box, VStack, Text, Button, Divider, Icon, Center } from "@chakra-ui/react";
+import { Box, VStack, Text, Button, Divider, Icon } from "@chakra-ui/react";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import {
-  FaHome,
-  FaLayerGroup,
-  FaPlus,
-  FaSearch,
-  FaUser,
-  FaSignOutAlt,
   FaSignInAlt,
 } from "react-icons/fa";
-import ProfileMenu from "./ProfileMenu";
+import ProfileMenu from "./ProfileMenu"; // Assuming ProfileMenu is in the same directory or correctly imported
+import { IconType } from "react-icons";
 
-export default function SideBar() {
+// Define the interface for a single button's data
+interface SideBarButtonData {
+  icon: IconType; 
+  path: string; 
+  labelText: string;
+}
+
+interface SideBarProps {
+  buttonData: SideBarButtonData[];
+  // Add any other props SideBar might need here
+}
+
+export default function SideBar({ buttonData }: SideBarProps) {
   const { isAuthenticated, user, logout } = useAuth();
   const router = useRouter();
+
   const handleNavigation = (path: string) => {
     router.push(path);
   };
 
   const actions = [
-    { label: "Open Profile", onClick: () =>  handleNavigation("/profile"), color: "black" },
+    { label: "Open Profile", onClick: () => handleNavigation("/profile"), color: "black" },
     { label: "Logout", onClick: () => logout(), color: "red" },
   ];
+
+  // Example of how you might conditionally show actions or login button
+  const profileActions = isAuthenticated ? actions : [];
 
   return (
     <Box
@@ -45,7 +57,7 @@ export default function SideBar() {
       <VStack align="stretch" spacing={4}>
         {/* Logo/Title */}
         <Text
-        textAlign="center"
+          textAlign="center"
           fontSize="2xl"
           fontWeight="bold"
           color="teal.300"
@@ -55,34 +67,9 @@ export default function SideBar() {
           LBL
         </Text>
 
-        {/* Navigation Items */}
-        {isAuthenticated ? (
-          <>
-            <ProfileMenu userName={user!.userName} actions={actions}/>
-            <Divider borderColor="gray.600" />
-            <Button
-              leftIcon={<Icon as={FaHome} />}
-              variant="ghost"
-              justifyContent="start"
-              w="full"
-              color="gray.200"
-              _hover={{ bg: "gray.700", color: "teal.300" }}
-              onClick={() => handleNavigation("/dashboard")}
-            >
-              Dashboard
-            </Button>
-            <Button
-              leftIcon={<Icon as={FaLayerGroup} />}
-              variant="ghost"
-              justifyContent="start"
-              w="full"
-              color="gray.200"
-              _hover={{ bg: "gray.700", color: "teal.300" }}
-              onClick={() => handleNavigation("/dashboard/decks")}
-            >
-              Decks
-            </Button>
-          </>
+        {/* Profile Menu or Login Button */}
+        {isAuthenticated && user ? (
+           <ProfileMenu userName={user.userName} actions={profileActions}/>
         ) : (
           <Button
             leftIcon={<Icon as={FaSignInAlt} />}
@@ -91,11 +78,31 @@ export default function SideBar() {
             w="full"
             color="gray.200"
             _hover={{ bg: "gray.700", color: "teal.300" }}
-            onClick={() => handleNavigation("/login")}
+            onClick={() => handleNavigation("/login")} // Assuming a login path
           >
-            Login
+            Sign In
           </Button>
         )}
+
+
+        <Divider borderColor="gray.600" />
+
+        {/* Dynamically rendered buttons from props */}
+        {buttonData.map((buttonInfo, index) => (
+          <Button
+            key={index} // Using index as a key is acceptable for static lists, but a unique ID is better if the list can change
+            leftIcon={<Icon as={buttonInfo.icon} />}
+            variant="ghost"
+            justifyContent="start"
+            w="full"
+            color="gray.200"
+            _hover={{ bg: "gray.700", color: "teal.300" }}
+            onClick={() => handleNavigation(buttonInfo.path)}
+          >
+            {buttonInfo.labelText}
+          </Button>
+        ))}
+
       </VStack>
     </Box>
   );

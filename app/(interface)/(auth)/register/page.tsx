@@ -103,6 +103,7 @@ export default function RegisterPage() {
         <Button
           type="submit"
           colorScheme="teal"
+          bg="#171717"
           isLoading={loading}
           width="full"
         >

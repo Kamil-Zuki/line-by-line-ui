@@ -18,13 +18,13 @@ import MainLayout from "@/app/components/MainLayout";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false); // Added missing useState
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const toast = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true); // Now works with useState
+    setLoading(true);
     try {
       await login(email, password);
       toast({
@@ -80,6 +80,7 @@ export default function LoginPage() {
         <Button
           type="submit"
           colorScheme="teal"
+          bg="#171717"
           isLoading={loading}
           width="full"
         >

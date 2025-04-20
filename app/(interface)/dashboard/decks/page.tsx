@@ -31,7 +31,7 @@ export default function MyDecksPage() {
 
     const fetchDecks = async () => {
       try {
-        const myDecks: DeckResponse[] = await fetchApi("/decks/my-decks");
+        const myDecks: DeckResponse[] = await fetchApi("/deck/my-decks");
         setDecks(myDecks);
       } catch (error: any) {
         console.error("Error fetching decks:", error.message, {

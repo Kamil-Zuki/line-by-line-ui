@@ -31,7 +31,7 @@ export default function SearchDecks() {
   const search = async () => {
     try {
       const results = await api.get<Deck[]>(
-        `/search/decks?query=${encodeURIComponent(query)}`
+        `/search/deck?query=${encodeURIComponent(query)}`
       );
       setDecks(results);
     } catch (error) {

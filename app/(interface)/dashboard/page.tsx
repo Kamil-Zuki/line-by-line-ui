@@ -37,7 +37,7 @@ export default function DashboardPage() {
 
     const fetchData = async () => {
       try {
-        const myDecks: DeckResponse[] = await fetchApi("/decks/my-decks");
+        const myDecks: DeckResponse[] = await fetchApi("/deck/my-decks");
         const deckCount = myDecks.length;
         const totalCards = myDecks.reduce(
           (sum, deck) => sum + deck.cardCount,
@@ -45,7 +45,7 @@ export default function DashboardPage() {
         );
         setStats({ deckCount, totalCards });
 
-        const decks: DeckResponse[] = await fetchApi("/decks/public");
+        const decks: DeckResponse[] = await fetchApi("/deck/public");
         setPublicDecks(decks);
       } catch (error: any) {
         console.error("Error fetching data:", error.message, {

@@ -38,7 +38,7 @@ export default function DeckDetailPage() {
 
     const fetchDeckAndCards = async () => {
       try {
-        const deckData: DeckResponse = await fetchApi(`/decks/${deckId}`);
+        const deckData: DeckResponse = await fetchApi(`/deck/${deckId}`);
         const cardData: CardResponse[] = await fetchApi(
           `/cards/deck/${deckId}`
         );

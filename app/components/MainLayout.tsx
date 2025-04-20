@@ -11,7 +11,7 @@ interface MainLayoutProps {
 export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <Box minH="100vh" bg="gray.50">
-      <Box as="header" bg="teal.500" p={4} color="white" textAlign="center">
+      <Box as="header" bg="#171717" p={4} color="white" textAlign="center">
         <Heading size="lg">
           <Link href="/">LineByLine</Link>
         </Heading>

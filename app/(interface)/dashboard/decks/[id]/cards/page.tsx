@@ -48,7 +48,7 @@ export default function DeckCards() {
 
   const fetchCards = async () => {
     try {
-      const data = await api.get<Card[]>(`/cards/deck/${id}`);
+      const data = await api.get<Card[]>(`/card/deck/${id}`);
       setCards(data);
     } catch (error) {
       console.error("Failed to fetch cards:", error);

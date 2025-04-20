@@ -32,7 +32,7 @@ export default function EditDeckPage() {
 
     const fetchDeck = async () => {
       try {
-        const deckData: DeckResponse = await fetchApi(`/decks/${deckId}`);
+        const deckData: DeckResponse = await fetchApi(`/deck/${deckId}`);
         if (deckData.ownerId !== user?.id) {
           toast({
             title: "Error",

@@ -37,7 +37,7 @@ export default function NewDeck() {
     e.preventDefault();
     try {
       console.log("Submitting deck creation:", form);
-      const deck = await api.post<{ id: string }>("/decks", form);
+      const deck = await api.post<{ id: string }>("/deck", form);
       console.log("Deck created successfully:", deck);
       router.push(`/dashboard/decks/${deck.id}`);
     } catch (error: any) {

@@ -15,7 +15,10 @@ export async function GET(
    //#endregion
 
   try {
-    const response = await fetch(`${API_URL}/${params.id}`, {
+
+    const {id} = await params;
+
+    const response = await fetch(`${API_URL}/${id}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,

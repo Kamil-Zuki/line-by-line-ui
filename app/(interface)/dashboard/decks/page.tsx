@@ -64,7 +64,7 @@ export default function MyDecksPage() {
     if (!confirm("Are you sure you want to delete this deck?")) return;
 
     try {
-      await fetchApi(`/decks/${deckId}`, { method: "DELETE" });
+      await fetchApi(`/deck/${deckId}`, { method: "DELETE" });
       setDecks(decks.filter((deck) => deck.id !== deckId));
       toast({
         title: "Success",

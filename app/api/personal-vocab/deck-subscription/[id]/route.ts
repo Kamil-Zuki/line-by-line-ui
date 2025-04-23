@@ -15,16 +15,13 @@ export async function POST(
   try {
     const awatedParams =  await params; 
     const id = awatedParams.id;
-    console.log(await req.json());
-    const body = await req.json();
 
     const response = await fetch(`${API_URL}/${id}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
+      }
     });
 
     if (!response.ok) {
@@ -55,10 +52,11 @@ export async function DELETE(
   if (!accessToken)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   //#endregion
-
+  console.log("Delete method")
   try {
-    const id = await params.id; 
-
+    const awatedParams =  await params; 
+    const id = awatedParams.id;
+    console.log(id)
     const response = await fetch(`${API_URL}/${id}`, {
       method: "DELETE",
       headers: {
@@ -73,9 +71,9 @@ export async function DELETE(
       );
     }
 
-    const result = await response.json();
+    // const result = await response.json();
 
-    return NextResponse.json(result, { status: 200 });
+    return NextResponse.json( {status: 200} );
   } catch (error) {
      console.error("Error in DELETE handler:", error); 
     return NextResponse.json(

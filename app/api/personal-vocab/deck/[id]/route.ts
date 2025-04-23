@@ -101,9 +101,8 @@ export async function DELETE(
         { status: response.status }
       );
 
-    const result = await response.json();
 
-    return NextResponse.json(result, {status: 200});
+    return NextResponse.json({status: 200});
   } catch (error) {
     console.error("Error deleting deck:", error);
     return NextResponse.json(

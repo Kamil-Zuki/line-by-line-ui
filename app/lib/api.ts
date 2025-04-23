@@ -24,6 +24,7 @@ export async function fetchApi<T>(
       cache: "no-store", // Ensure fresh data
     });
 
+    console.log(res);
     if (!res.ok) {
       let errorBody: string;
       try {
@@ -72,6 +73,7 @@ export async function fetchApi<T>(
       throw error;
     }
 
+    
     return (await res.json()) as T;
   } catch (error: any) {
     console.error("Network or fetch error:", {

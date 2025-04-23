@@ -40,7 +40,7 @@ export function DeckDetailsModal({
   useEffect(() => {
     const fetchDeckDetails = async () => {
       try {
-        const response: DeckResponse = await fetchApi(`/decks/${deck.id}`);
+        const response: DeckResponse = await fetchApi(`/deck/${deck.id}`);
         setDetailedDeck(response);
         setIsSubscribed(response.isSubscribed);
       } catch (error: any) {

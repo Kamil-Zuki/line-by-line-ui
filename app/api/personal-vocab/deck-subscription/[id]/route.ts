@@ -2,35 +2,43 @@ import { NextRequest, NextResponse } from "next/server";
 
 const API_URL = "http://85.175.218.17/api/v1/deck-subscription";
 
-export async function POST(req: NextRequest, {props}: {props: {id: string}}) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { id: string } } // Correct way to access dynamic segments
+) {
   //#region Access token
-  const accessToken = req.cookies.get("accessToken")?.value;
+  const accessToken = req?.cookies.get("accessToken")?.value;
   if (!accessToken)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-     //#endregion
+  //#endregion
 
   try {
-
+    const awatedParams =  await params; 
+    const id = awatedParams.id;
+    console.log(await req.json());
     const body = await req.json();
 
-    const response = await fetch(`${API_URL}/${props.id}`, {
+    const response = await fetch(`${API_URL}/${id}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
     });
 
-    if (!response.ok)
-      throw NextResponse.json(
+    if (!response.ok) {
+      return NextResponse.json(
         { error: "Failed to create deck subscriptions" },
         { status: response.status }
       );
+    }
 
     const result = await response.json();
 
-    return NextResponse.json(result, {status: 200});
+    return NextResponse.json(result, { status: 200 });
   } catch (error) {
+    console.error("Error in POST handler:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -38,34 +46,41 @@ export async function POST(req: NextRequest, {props}: {props: {id: string}}) {
   }
 }
 
-export async function DELETE(req: NextRequest, {props}: {props: {id: string}}) {
-    //#region Access token
-    const accessToken = req.cookies.get("accessToken")?.value;
-    if (!accessToken)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-       //#endregion
-  
-    try {
-      const response = await fetch(`${API_URL}/${props.id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-  
-      if (!response.ok)
-        throw NextResponse.json(
-          { error: "Failed to delete deck subscriptions" },
-          { status: response.status }
-        );
-  
-      const result = await response.json();
-  
-      return NextResponse.json(result, {status: 200});
-    } catch (error) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } } 
+) {
+  //#region Access token
+  const accessToken = req.cookies.get("accessToken")?.value;
+  if (!accessToken)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  //#endregion
+
+  try {
+    const id = await params.id; 
+
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (!response.ok) {
       return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
+        { error: "Failed to delete deck subscriptions" },
+        { status: response.status }
       );
     }
+
+    const result = await response.json();
+
+    return NextResponse.json(result, { status: 200 });
+  } catch (error) {
+     console.error("Error in DELETE handler:", error); 
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
+}

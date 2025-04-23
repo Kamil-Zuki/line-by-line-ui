@@ -40,7 +40,7 @@ export default function DeckDetailPage() {
       try {
         const deckData: DeckResponse = await fetchApi(`/deck/${deckId}`);
         const cardData: CardResponse[] = await fetchApi(
-          `/cards/deck/${deckId}`
+          `/card/${deckId}/cards`
         );
         setDeck(deckData);
         setCards(cardData);

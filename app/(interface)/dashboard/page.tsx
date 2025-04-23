@@ -5,10 +5,7 @@ import {
   Box,
   Heading,
   Text,
-  Flex,
-  Select,
-  HStack,
-  Button,
+  Flex
 } from "@chakra-ui/react";
 import { useAuth } from "@/app/hooks/useAuth";
 import { fetchApi, DeckResponse } from "@/app/lib/api";

@@ -80,7 +80,7 @@ export default function EditDeckPage() {
           .map((tag) => tag.trim())
           .filter(Boolean),
       };
-      await fetchApi(`/decks/${deckId}`, {
+      await fetchApi(`/deck/${deckId}`, {
         method: "PUT",
         body: JSON.stringify(updatedDeck),
       });

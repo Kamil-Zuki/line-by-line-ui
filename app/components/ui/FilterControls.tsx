@@ -1,55 +1,51 @@
-import { Select, HStack, Button } from "@chakra-ui/react";
+import { Select, HStack, FormControl, FormLabel } from "@chakra-ui/react";
 
-interface FilterControlsProps {
-  languageFilter: string;
-  setLanguageFilter: (value: string) => void;
-  sortOption: "trending" | "newest" | "top";
-  setSortOption: (value: "trending" | "newest" | "top") => void;
+// Define generic types for flexibility
+interface FilterControlsProps<TFilter extends string, TSort extends string> {
+  languageFilter: TFilter;
+  setLanguageFilter: (value: TFilter) => void;
+  sortOption: TSort;
+  setSortOption: (value: TSort) => void;
+  languageOptions?: { value: TFilter; label: string }[];
+  sortOptions?: { value: TSort; label: string }[];
 }
 
-export function FilterControls({
+export function FilterControls<TFilter extends string, TSort extends string>({
   languageFilter,
   setLanguageFilter,
   sortOption,
   setSortOption,
-}: FilterControlsProps) {
+  languageOptions = [],
+  sortOptions = [],
+}: FilterControlsProps<TFilter, TSort>) {
   return (
-    <HStack mb={6} spacing={4}>
-      <Select
-        w="200px"
-        bgGradient="linear(to-r, #F5546A, #558AFE)"
-        color="white"
-        value={languageFilter}
-        onChange={(e) => setLanguageFilter(e.target.value)}
-      >
-        <option value="all">All Languages</option>
-        <option value="English">English</option>
-        <option value="Spanish">Spanish</option>
-        <option value="French">French</option>
-      </Select>
-      <HStack spacing={2}>
-        <Button
-          variant={sortOption === "trending" ? "solid" : "outline"}
-          colorScheme="blue"
-          onClick={() => setSortOption("trending")}
+    <HStack spacing={4}>
+      <FormControl maxW="200px">
+        <FormLabel>Filter</FormLabel>
+        <Select
+          value={languageFilter}
+          onChange={(e) => setLanguageFilter(e.target.value as TFilter)}
         >
-          Trending
-        </Button>
-        <Button
-          variant={sortOption === "newest" ? "solid" : "outline"}
-          colorScheme="blue"
-          onClick={() => setSortOption("newest")}
+          {languageOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </Select>
+      </FormControl>
+      <FormControl maxW="200px">
+        <FormLabel>Sort By</FormLabel>
+        <Select
+          value={sortOption}
+          onChange={(e) => setSortOption(e.target.value as TSort)}
         >
-          Newest
-        </Button>
-        <Button
-          variant={sortOption === "top" ? "solid" : "outline"}
-          colorScheme="blue"
-          onClick={() => setSortOption("top")}
-        >
-          Top
-        </Button>
-      </HStack>
+          {sortOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </Select>
+      </FormControl>
     </HStack>
   );
 }

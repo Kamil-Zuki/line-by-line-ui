@@ -20,23 +20,27 @@ import { FaCopy } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { fetchApi } from "@/app/lib/api";
 import { DeckResponse } from "@/app/lib/api";
+import { EditIcon, DeleteIcon } from "@chakra-ui/icons";
 
 interface DeckDetailsModalProps {
   deck: DeckResponse;
   isOpen: boolean;
   onClose: () => void;
+  onEdit?: (deckId: string) => void; // Optional edit handler
+  onDelete?: (deckId: string) => void; // Optional delete handler
 }
 
 export function DeckDetailsModal({
   deck,
   isOpen,
   onClose,
+  onEdit,
+  onDelete,
 }: DeckDetailsModalProps) {
   const [detailedDeck, setDetailedDeck] = useState<DeckResponse>(deck);
   const [isSubscribed, setIsSubscribed] = useState(deck.isSubscribed);
   const toast = useToast();
 
-  // Fetch additional deck details (e.g., author, prompt, LLM model)
   useEffect(() => {
     const fetchDeckDetails = async () => {
       try {
@@ -53,7 +57,6 @@ export function DeckDetailsModal({
     }
   }, [isOpen, deck.id]);
 
-  // Handle Subscribe/Unsubscribe
   const handleSubscribe = async () => {
     try {
       if (isSubscribed) {
@@ -88,7 +91,6 @@ export function DeckDetailsModal({
     }
   };
 
-  // Handle Fork
   const handleFork = async () => {
     try {
       await fetchApi(`/decks/${deck.id}/fork`, { method: "POST" });
@@ -111,7 +113,6 @@ export function DeckDetailsModal({
     }
   };
 
-  // Copy Prompt to Clipboard
   const handleCopyPrompt = () => {
     if (detailedDeck.generationPrompt) {
       navigator.clipboard.writeText(detailedDeck.generationPrompt);
@@ -148,7 +149,6 @@ export function DeckDetailsModal({
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          {/* Deck Image */}
           {detailedDeck.imageUrl ? (
             <Image
               src={detailedDeck.imageUrl}
@@ -162,8 +162,6 @@ export function DeckDetailsModal({
           ) : (
             <Box bg="gray.700" h="200px" borderRadius="md" mb={4} />
           )}
-
-          {/* Deck Info */}
           <Text mb={4}>
             {detailedDeck.description || "No description available."}
           </Text>
@@ -173,8 +171,6 @@ export function DeckDetailsModal({
             </Text>
             <Text fontSize="sm">Cards: {detailedDeck.cardCount}</Text>
           </HStack>
-
-          {/* Prompt */}
           <Text fontSize="sm" fontWeight="bold" mb={2}>
             Prompt Details
           </Text>
@@ -195,8 +191,6 @@ export function DeckDetailsModal({
               colorScheme="blue"
             />
           </HStack>
-
-          {/* LLM Model */}
           <Text fontSize="sm" fontWeight="bold" mb={2}>
             LLM Model
           </Text>
@@ -204,6 +198,22 @@ export function DeckDetailsModal({
         </ModalBody>
         <ModalFooter>
           <HStack spacing={4}>
+            {onEdit && (
+              <IconButton
+                aria-label="Edit deck"
+                icon={<EditIcon />}
+                onClick={() => onEdit(detailedDeck.id)}
+                colorScheme="teal"
+              />
+            )}
+            {onDelete && (
+              <IconButton
+                aria-label="Delete deck"
+                icon={<DeleteIcon />}
+                onClick={() => onDelete(detailedDeck.id)}
+                colorScheme="red"
+              />
+            )}
             <Button
               onClick={handleSubscribe}
               colorScheme={isSubscribed ? "red" : "purple"}

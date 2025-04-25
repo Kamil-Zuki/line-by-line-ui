@@ -1,12 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Box,
-  Heading,
-  Text,
-  Flex
-} from "@chakra-ui/react";
+import { Box, Heading, Text, Flex } from "@chakra-ui/react";
 import { useAuth } from "@/app/hooks/useAuth";
 import { fetchApi, DeckResponse } from "@/app/lib/api";
 import { DeckCard } from "@/app/components/ui/DeckCard";
@@ -19,6 +14,16 @@ interface Stats {
 }
 
 type SortOption = "trending" | "newest" | "top";
+
+interface LanguageOption {
+  value: string; // Language filter can remain string for flexibility
+  label: string;
+}
+
+interface SortOptionConfig {
+  value: SortOption; // Explicitly use SortOption
+  label: string;
+}
 
 export default function DashboardPage() {
   const { isAuthenticated, user, loading: authLoading } = useAuth();
@@ -72,6 +77,19 @@ export default function DashboardPage() {
       return 0;
     });
 
+  const languageOptions: LanguageOption[] = [
+    { value: "all", label: "All Languages" },
+    { value: "english", label: "English" },
+    { value: "spanish", label: "Spanish" },
+    // Add more as needed
+  ];
+
+  const sortOptions: SortOptionConfig[] = [
+    { value: "trending", label: "Trending" },
+    { value: "newest", label: "Newest" },
+    { value: "top", label: "Top Rated" },
+  ];
+
   if (authLoading || !isAuthenticated) return null;
   if (loading) return <Text>Loading...</Text>;
 
@@ -85,6 +103,8 @@ export default function DashboardPage() {
         setLanguageFilter={setLanguageFilter}
         sortOption={sortOption}
         setSortOption={setSortOption}
+        languageOptions={languageOptions}
+        sortOptions={sortOptions}
       />
       <Flex wrap="wrap" justify="flex-start" gap={6}>
         {filteredDecks.map((deck) => (

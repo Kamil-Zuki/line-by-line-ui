@@ -1,180 +1,216 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Box,
   Heading,
   Text,
-  VStack,
+  Flex,
   Button,
-  HStack,
-  IconButton,
-  Select,
   useToast,
-  Wrap,
+  Spinner,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
-import { EditIcon, DeleteIcon } from "@chakra-ui/icons";
 import { useAuth } from "@/app/hooks/useAuth";
 import { fetchApi, DeckResponse } from "@/app/lib/api";
+import { DeckCard } from "@/app/components/ui/DeckCard";
+import { FilterControls } from "@/app/components/ui/FilterControls";
+import { DeckDetailsModal } from "@/app/components/ui/DeckDetailsModal";
+
+type FilterOption = "all" | "owned" | "subscribed";
+type SortOption = "newest" | "title";
+
+interface FilterOptionConfig {
+  value: FilterOption;
+  label: string;
+}
+
+interface SortOptionConfig {
+  value: SortOption;
+  label: string;
+}
+
+const filterOptions: FilterOptionConfig[] = [
+  { value: "all", label: "All Decks" },
+  { value: "owned", label: "Owned Decks" },
+  { value: "subscribed", label: "Subscribed Decks" },
+];
+
+const sortOptions: SortOptionConfig[] = [
+  { value: "newest", label: "Newest" },
+  { value: "title", label: "Title" },
+];
 
 export default function MyDecksPage() {
   const { isAuthenticated, user, loading: authLoading } = useAuth();
   const [decks, setDecks] = useState<DeckResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | "owned" | "subscribed">("all");
+  const [isLoading, setIsLoading] = useState(true);
+  const [filter, setFilter] = useState<FilterOption>("all");
+  const [sortOption, setSortOption] = useState<SortOption>("newest");
+  const [selectedDeck, setSelectedDeck] = useState<DeckResponse | null>(null);
   const router = useRouter();
   const toast = useToast();
 
-  useEffect(() => {
-    if (!isAuthenticated || authLoading) return;
-
-    const fetchDecks = async () => {
-      try {
-        const myDecks: DeckResponse[] = await fetchApi("/deck/my-decks");
-        setDecks(myDecks);
-      } catch (error: any) {
-        console.error("Error fetching decks:", error.message, {
-          status: error.status,
-        });
-        toast({
-          title: "Error",
-          description: "Failed to load decks.",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDecks();
-  }, [isAuthenticated, authLoading, toast]);
-
-  const handleDeckClick = (deckId: string) => {
-    router.push(`/dashboard/decks/${deckId}`);
-  };
-
-  const handleEdit = (deckId: string) => {
-    router.push(`/dashboard/decks/${deckId}/edit`); // Assumes an edit page
-  };
-
-  const handleDelete = async (deckId: string) => {
-    if (!confirm("Are you sure you want to delete this deck?")) return;
-
+  // Fetch decks
+  const fetchDecks = useCallback(async () => {
+    setIsLoading(true);
     try {
-      await fetchApi(`/deck/${deckId}`, { method: "DELETE" });
-      setDecks(decks.filter((deck) => deck.id !== deckId));
-      toast({
-        title: "Success",
-        description: "Deck deleted.",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
+      const myDecks: DeckResponse[] = await fetchApi("/deck/my-decks");
+      setDecks(myDecks);
     } catch (error: any) {
-      console.error("Error deleting deck:", error.message, {
+      console.error("Error fetching decks:", error.message, {
         status: error.status,
       });
       toast({
         title: "Error",
-        description: "Failed to delete deck.",
+        description: "Failed to load decks. Please try again.",
         status: "error",
         duration: 3000,
         isClosable: true,
       });
+    } finally {
+      setIsLoading(false);
     }
+  }, [toast]);
+
+  useEffect(() => {
+    if (!isAuthenticated || authLoading) return;
+    fetchDecks();
+  }, [isAuthenticated, authLoading, fetchDecks]);
+
+  // Handle edit action
+  const handleEdit = useCallback(
+    (deckId: string) => {
+      router.push(`/dashboard/decks/${deckId}/edit`);
+    },
+    [router]
+  );
+
+  // Handle delete action
+  const handleDelete = useCallback(
+    async (deckId: string) => {
+      if (!confirm("Are you sure you want to delete this deck?")) return;
+
+      try {
+        await fetchApi(`/deck/${deckId}`, { method: "DELETE" });
+        setDecks((prevDecks) => prevDecks.filter((deck) => deck.id !== deckId));
+        setSelectedDeck(null); // Close modal
+        toast({
+          title: "Success",
+          description: "Deck deleted successfully.",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+      } catch (error: any) {
+        console.error("Error deleting deck:", error.message, {
+          status: error.status,
+        });
+        toast({
+          title: "Error",
+          description: "Failed to delete deck. Please try again.",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    },
+    [toast]
+  );
+
+  // Filter and sort decks
+  const filteredDecks = decks
+    .filter((deck) => {
+      if (filter === "owned") return deck.ownerId === user?.id;
+      if (filter === "subscribed") return deck.isSubscribed;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortOption === "newest") {
+        return (
+          new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
+        );
+      }
+      return a.title.localeCompare(b.title); // sortOption === "title"
+    });
+
+  // Handle create new deck
+  const handleCreateDeck = () => {
+    router.push("/dashboard/decks/new");
   };
 
-  const filteredDecks = decks.filter((deck) => {
-    if (filter === "owned") return deck.ownerId === user?.id;
-    if (filter === "subscribed") return deck.isSubscribed;
-    return true; // "all"
-  });
-
-  if (authLoading || !isAuthenticated) return null;
-  if (loading) return <Text>Loading decks...</Text>;
+  if (authLoading || !isAuthenticated) {
+    return null;
+  }
 
   return (
-    <Box p={6}>
-      <Heading size="lg">My Decks, {user?.userName}</Heading>
-      <HStack mt={4} spacing={4}>
-        <Select
-          value={filter}
-          onChange={(e) =>
-            setFilter(e.target.value as "all" | "owned" | "subscribed")
+    <Box p={{ base: 4, md: 6 }} maxW="1200px" mx="auto">
+      <Heading as="h1" size="lg" mb={4}>
+        My Decks, {user?.userName || "User"}
+      </Heading>
+
+      <Flex
+        justify="space-between"
+        align={{ base: "stretch", sm: "center" }}
+        mb={6}
+        direction={{ base: "column", sm: "row" }}
+        gap={4}
+      >
+        <FilterControls
+          languageFilter={filter}
+          setLanguageFilter={(value: string) =>
+            setFilter(value as FilterOption)
           }
-          width="200px"
-        >
-          <option value="all">All Decks</option>
-          <option value="owned">Owned Decks</option>
-          <option value="subscribed">Subscribed Decks</option>
-        </Select>
+          sortOption={sortOption}
+          setSortOption={(value: string) => setSortOption(value as SortOption)}
+          languageOptions={filterOptions}
+          sortOptions={sortOptions}
+        />
         <Button
           colorScheme="teal"
-          onClick={() => router.push("/dashboard/decks/new")}
+          onClick={handleCreateDeck}
+          size="md"
+          minW="150px"
         >
           Create New Deck
         </Button>
-      </HStack>
-      {filteredDecks.length > 0 ? (
-        <Wrap mt={4} spacing={4} align="stretch">
+      </Flex>
+
+      {isLoading ? (
+        <Flex justify="center" py={10}>
+          <Spinner size="xl" color="teal.500" />
+        </Flex>
+      ) : filteredDecks.length > 0 ? (
+        <Flex wrap="wrap" justify="flex-start" gap={6}>
           {filteredDecks.map((deck) => (
-            <Box
+            <DeckCard
               key={deck.id}
-              p={4}
-              borderWidth="1px"
-              borderRadius="md"
-              _hover={{ bg: "gray.100" }}
-            >
-              <HStack justify="space-between">
-                <Box
-                  onClick={() => handleDeckClick(deck.id)}
-                  cursor="pointer"
-                  flex="1"
-                >
-                  <Text fontSize="xl" fontWeight="bold">
-                    {deck.title}
-                  </Text>
-                  <Text>{deck.description || "No description"}</Text>
-                  <Text fontSize="sm" color="gray.500">
-                    Cards: {deck.cardCount ?? "N/A"} • Created:{" "}
-                    {new Date(deck.createdDate).toLocaleDateString()}
-                  </Text>
-                </Box>
-                {deck.ownerId === user?.id && (
-                  <HStack spacing={2}>
-                    <IconButton
-                      aria-label="Edit deck"
-                      icon={<EditIcon />}
-                      size="sm"
-                      onClick={() => handleEdit(deck.id)}
-                    />
-                    <IconButton
-                      aria-label="Delete deck"
-                      icon={<DeleteIcon />}
-                      size="sm"
-                      colorScheme="red"
-                      onClick={() => handleDelete(deck.id)}
-                    />
-                  </HStack>
-                )}
-              </HStack>
-            </Box>
+              deck={deck}
+              onClick={() => setSelectedDeck(deck)}
+            />
           ))}
-        </Wrap>
+        </Flex>
       ) : (
-        <Box mt={4}>
-          <Text>No decks match your filter.</Text>
-          <Button
-            mt={2}
-            colorScheme="teal"
-            onClick={() => router.push("/dashboard/decks/new")}
-          >
+        <Box textAlign="center" py={10}>
+          <Text fontSize="lg" mb={4}>
+            No decks match your filter.
+          </Text>
+          <Button colorScheme="teal" onClick={handleCreateDeck}>
             Create Your First Deck
           </Button>
         </Box>
+      )}
+
+      {selectedDeck && (
+        <DeckDetailsModal
+          deck={selectedDeck}
+          isOpen={!!selectedDeck}
+          onClose={() => setSelectedDeck(null)}
+          onEdit={selectedDeck.ownerId === user?.id ? handleEdit : undefined}
+          onDelete={
+            selectedDeck.ownerId === user?.id ? handleDelete : undefined
+          }
+        />
       )}
     </Box>
   );

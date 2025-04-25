@@ -68,55 +68,65 @@ export default function MyDecksPage() {
         duration: 3000,
         isClosable: true,
       });
+      router.push("/dashboard");
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, router]);
 
   useEffect(() => {
-    if (!isAuthenticated || authLoading) return;
+    if (!isAuthenticated || authLoading) {
+      if (!authLoading) {
+        router.push("/auth/login");
+      }
+      return;
+    }
     fetchDecks();
-  }, [isAuthenticated, authLoading, fetchDecks]);
+  }, [isAuthenticated, authLoading, fetchDecks, router]);
 
   // Handle edit action
-  const handleEdit = useCallback(
-    (deckId: string) => {
-      router.push(`/dashboard/decks/${deckId}/edit`);
-    },
-    [router]
-  );
+  const handleEdit = (deckId: string) => {
+    router.push(`/dashboard/decks/${deckId}/edit`);
+  };
 
   // Handle delete action
-  const handleDelete = useCallback(
-    async (deckId: string) => {
-      if (!confirm("Are you sure you want to delete this deck?")) return;
+  const handleDelete = async (deckId: string) => {
+    if (!confirm("Are you sure you want to delete this deck?")) return;
 
-      try {
-        await fetchApi(`/deck/${deckId}`, { method: "DELETE" });
-        setDecks((prevDecks) => prevDecks.filter((deck) => deck.id !== deckId));
-        setSelectedDeck(null); // Close modal
-        toast({
-          title: "Success",
-          description: "Deck deleted successfully.",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-        });
-      } catch (error: any) {
-        console.error("Error deleting deck:", error.message, {
-          status: error.status,
-        });
-        toast({
-          title: "Error",
-          description: "Failed to delete deck. Please try again.",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-      }
-    },
-    [toast]
-  );
+    try {
+      await fetchApi(`/deck/${deckId}`, { method: "DELETE" });
+      setDecks((prevDecks) => prevDecks.filter((deck) => deck.id !== deckId));
+      setSelectedDeck(null);
+      toast({
+        title: "Success",
+        description: "Deck deleted successfully.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error: any) {
+      console.error("Error deleting deck:", error.message, {
+        status: error.status,
+      });
+      toast({
+        title: "Error",
+        description: "Failed to delete deck. Please try again.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
+  // Handle manage cards action
+  const handleManageCards = (deckId: string) => {
+    router.push(`/dashboard/decks/${deckId}/cards`);
+  };
+
+  // Handle learn action
+  const handleLearn = (deckId: string) => {
+    router.push(`/dashboard/decks/${deckId}/learn`);
+  };
 
   // Filter and sort decks
   const filteredDecks = decks
@@ -131,17 +141,13 @@ export default function MyDecksPage() {
           new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
         );
       }
-      return a.title.localeCompare(b.title); // sortOption === "title"
+      return a.title.localeCompare(b.title);
     });
 
   // Handle create new deck
   const handleCreateDeck = () => {
     router.push("/dashboard/decks/new");
   };
-
-  if (authLoading || !isAuthenticated) {
-    return null;
-  }
 
   return (
     <Box p={{ base: 4, md: 6 }} maxW="1200px" mx="auto">
@@ -157,13 +163,11 @@ export default function MyDecksPage() {
         gap={4}
       >
         <FilterControls
-          languageFilter={filter}
-          setLanguageFilter={(value: string) =>
-            setFilter(value as FilterOption)
-          }
+          filter={filter}
+          setFilter={setFilter}
           sortOption={sortOption}
-          setSortOption={(value: string) => setSortOption(value as SortOption)}
-          languageOptions={filterOptions}
+          setSortOption={setSortOption}
+          filterOptions={filterOptions}
           sortOptions={sortOptions}
         />
         <Button
@@ -206,11 +210,15 @@ export default function MyDecksPage() {
           deck={selectedDeck}
           isOpen={!!selectedDeck}
           onClose={() => setSelectedDeck(null)}
-          userId={user?.id || ""} // Pass user ID
+          userId={user?.id || ""}
           onEdit={selectedDeck.ownerId === user?.id ? handleEdit : undefined}
           onDelete={
             selectedDeck.ownerId === user?.id ? handleDelete : undefined
           }
+          onManageCards={
+            selectedDeck.ownerId === user?.id ? handleManageCards : undefined
+          }
+          onLearn={selectedDeck.ownerId === user?.id ? handleLearn : undefined}
         />
       )}
     </Box>

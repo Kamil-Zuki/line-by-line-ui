@@ -1,43 +1,69 @@
 import { Select, HStack, FormControl, FormLabel } from "@chakra-ui/react";
 
-// Define generic types for flexibility
+interface FilterOptionConfig<TFilter extends string> {
+  value: TFilter;
+  label: string;
+}
+
+interface SortOptionConfig<TSort extends string> {
+  value: TSort;
+  label: string;
+}
+
 interface FilterControlsProps<TFilter extends string, TSort extends string> {
-  languageFilter: TFilter;
-  setLanguageFilter: (value: TFilter) => void;
+  filter: TFilter;
+  setFilter: (value: TFilter) => void;
   sortOption: TSort;
   setSortOption: (value: TSort) => void;
-  languageOptions?: { value: TFilter; label: string }[];
-  sortOptions?: { value: TSort; label: string }[];
+  filterOptions: FilterOptionConfig<TFilter>[];
+  sortOptions: SortOptionConfig<TSort>[];
 }
 
 export function FilterControls<TFilter extends string, TSort extends string>({
-  languageFilter,
-  setLanguageFilter,
+  filter,
+  setFilter,
   sortOption,
   setSortOption,
-  languageOptions = [],
-  sortOptions = [],
+  filterOptions,
+  sortOptions,
 }: FilterControlsProps<TFilter, TSort>) {
   return (
-    <HStack spacing={4}>
-      <FormControl maxW="200px">
-        <FormLabel>Filter</FormLabel>
+    <HStack
+      spacing={{ base: 2, md: 4 }}
+      flexWrap={{ base: "wrap", sm: "nowrap" }}
+    >
+      <FormControl id="deck-filter" maxW={{ base: "100%", sm: "200px" }}>
+        <FormLabel fontSize="sm" mb={1}>
+          Filter Decks
+        </FormLabel>
         <Select
-          value={languageFilter}
-          onChange={(e) => setLanguageFilter(e.target.value as TFilter)}
+          value={filter}
+          onChange={(e) => setFilter(e.target.value as TFilter)}
+          borderColor="gray.600"
+          bg="gray.800"
+          color="white"
+          _focus={{ borderColor: "teal.500", boxShadow: "0 0 0 1px teal.500" }}
+          aria-label="Filter decks"
         >
-          {languageOptions.map((option) => (
+          {filterOptions.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
           ))}
         </Select>
       </FormControl>
-      <FormControl maxW="200px">
-        <FormLabel>Sort By</FormLabel>
+      <FormControl id="deck-sort" maxW={{ base: "100%", sm: "200px" }}>
+        <FormLabel fontSize="sm" mb={1}>
+          Sort By
+        </FormLabel>
         <Select
           value={sortOption}
           onChange={(e) => setSortOption(e.target.value as TSort)}
+          borderColor="gray.600"
+          bg="gray.800"
+          color="white"
+          _focus={{ borderColor: "teal.500", boxShadow: "0 0 0 1px teal.500" }}
+          aria-label="Sort decks"
         >
           {sortOptions.map((option) => (
             <option key={option.value} value={option.value}>

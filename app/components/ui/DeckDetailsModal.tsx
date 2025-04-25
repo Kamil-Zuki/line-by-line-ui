@@ -16,6 +16,7 @@ import {
   Avatar,
   useToast,
 } from "@chakra-ui/react";
+import { Image } from "@chakra-ui/react";
 import { DeckResponse } from "@/app/lib/api";
 
 interface DeckDetailsModalProps {
@@ -168,15 +169,20 @@ export function DeckDetailsModal({
         </ModalBody>
         <ModalFooter>
           <VStack spacing={3} width="100%">
-            <Button
-              width="100%"
-              bgGradient="linear(to-r, pink.500, purple.500, blue.500)"
-              color="white"
-              _hover={{ opacity: 0.9 }}
-              onClick={handleGenerate}
-            >
-              Generate with this Model
-            </Button>
+            {isOwner && (
+              <>
+                <Button
+                  width="100%"
+                  bgGradient="linear(to-r, pink.500, purple.500, blue.500)"
+                  color="white"
+                  _hover={{ opacity: 0.9 }}
+                  onClick={handleGenerate}
+                >
+                  Generate with this Model
+                </Button>
+              </>
+            )}
+
             <HStack spacing={2} justify="center" width="100%">
               {onEdit && isOwner && (
                 <Button

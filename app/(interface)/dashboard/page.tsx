@@ -120,6 +120,7 @@ export default function DashboardPage() {
           deck={selectedDeck}
           isOpen={!!selectedDeck}
           onClose={() => setSelectedDeck(null)}
+          userId={user?.id || ""} // Pass user ID
         />
       )}
     </Box>

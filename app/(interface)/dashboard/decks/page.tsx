@@ -206,6 +206,7 @@ export default function MyDecksPage() {
           deck={selectedDeck}
           isOpen={!!selectedDeck}
           onClose={() => setSelectedDeck(null)}
+          userId={user?.id || ""} // Pass user ID
           onEdit={selectedDeck.ownerId === user?.id ? handleEdit : undefined}
           onDelete={
             selectedDeck.ownerId === user?.id ? handleDelete : undefined

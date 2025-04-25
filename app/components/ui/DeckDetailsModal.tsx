@@ -18,14 +18,14 @@ import {
 } from "@chakra-ui/react";
 import { FaCopy } from "react-icons/fa";
 import { useState, useEffect } from "react";
-import { fetchApi } from "@/app/lib/api";
-import { DeckResponse } from "@/app/lib/api";
+import { fetchApi, DeckResponse } from "@/app/lib/api";
 import { EditIcon, DeleteIcon } from "@chakra-ui/icons";
 
 interface DeckDetailsModalProps {
   deck: DeckResponse;
   isOpen: boolean;
   onClose: () => void;
+  userId: string; // Current user's ID to check ownership
   onEdit?: (deckId: string) => void; // Optional edit handler
   onDelete?: (deckId: string) => void; // Optional delete handler
 }
@@ -34,12 +34,14 @@ export function DeckDetailsModal({
   deck,
   isOpen,
   onClose,
+  userId,
   onEdit,
   onDelete,
 }: DeckDetailsModalProps) {
   const [detailedDeck, setDetailedDeck] = useState<DeckResponse>(deck);
   const [isSubscribed, setIsSubscribed] = useState(deck.isSubscribed);
   const toast = useToast();
+  const isOwner = detailedDeck.ownerId === userId;
 
   useEffect(() => {
     const fetchDeckDetails = async () => {
@@ -49,13 +51,20 @@ export function DeckDetailsModal({
         setIsSubscribed(response.isSubscribed);
       } catch (error: any) {
         console.error("Error fetching deck details:", error.message);
+        toast({
+          title: "Error",
+          description: "Failed to load deck details.",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
       }
     };
 
     if (isOpen) {
       fetchDeckDetails();
     }
-  }, [isOpen, deck.id]);
+  }, [isOpen, deck.id, toast]);
 
   const handleSubscribe = async () => {
     try {
@@ -64,7 +73,7 @@ export function DeckDetailsModal({
         setIsSubscribed(false);
         toast({
           title: "Unsubscribed",
-          description: `You have unsubscribed from ${deck.title}.`,
+          description: `You have unsubscribed from ${detailedDeck.title}.`,
           status: "success",
           duration: 3000,
           isClosable: true,
@@ -74,7 +83,7 @@ export function DeckDetailsModal({
         setIsSubscribed(true);
         toast({
           title: "Subscribed",
-          description: `You have subscribed to ${deck.title}.`,
+          description: `You have subscribed to ${detailedDeck.title}.`,
           status: "success",
           duration: 3000,
           isClosable: true,
@@ -83,7 +92,7 @@ export function DeckDetailsModal({
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to update subscription.",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -96,7 +105,7 @@ export function DeckDetailsModal({
       await fetchApi(`/decks/${deck.id}/fork`, { method: "POST" });
       toast({
         title: "Deck Forked",
-        description: `You have forked ${deck.title}. It’s now in your gallery.`,
+        description: `You have forked ${detailedDeck.title}. It’s now in your gallery.`,
         status: "success",
         duration: 3000,
         isClosable: true,
@@ -105,7 +114,7 @@ export function DeckDetailsModal({
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to fork deck.",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -123,19 +132,39 @@ export function DeckDetailsModal({
         duration: 3000,
         isClosable: true,
       });
+    } else {
+      toast({
+        title: "No Prompt",
+        description: "No generation prompt available to copy.",
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size={{ base: "full", md: "lg" }}
+      isCentered
+    >
       <ModalOverlay />
-      <ModalContent bg="gray.800" color="white" borderRadius="md">
+      <ModalContent
+        bg="gray.800"
+        color="white"
+        borderRadius={{ base: 0, md: "md" }}
+      >
         <ModalHeader>
           <HStack spacing={4}>
             <Avatar
               size="md"
               name={detailedDeck.authorNickname || "Unknown"}
               src={detailedDeck.authorAvatar}
+              aria-label={`Avatar of ${
+                detailedDeck.authorNickname || "Unknown"
+              }`}
             />
             <Box>
               <Text fontSize="xl" fontWeight="bold">
@@ -147,22 +176,28 @@ export function DeckDetailsModal({
             </Box>
           </HStack>
         </ModalHeader>
-        <ModalCloseButton />
+        <ModalCloseButton aria-label="Close modal" />
         <ModalBody>
           {detailedDeck.imageUrl ? (
             <Image
               src={detailedDeck.imageUrl}
-              alt={detailedDeck.title}
+              alt={`Image for ${detailedDeck.title}`}
               borderRadius="md"
               mb={4}
-              h="200px"
+              h={{ base: "150px", md: "200px" }}
               w="100%"
               objectFit="cover"
             />
           ) : (
-            <Box bg="gray.700" h="200px" borderRadius="md" mb={4} />
+            <Box
+              bg="gray.700"
+              h={{ base: "150px", md: "200px" }}
+              borderRadius="md"
+              mb={4}
+              aria-hidden="true"
+            />
           )}
-          <Text mb={4}>
+          <Text mb={4} fontSize="md">
             {detailedDeck.description || "No description available."}
           </Text>
           <HStack mb={4} spacing={4}>
@@ -183,12 +218,14 @@ export function DeckDetailsModal({
               border="none"
               resize="none"
               h="100px"
+              aria-label="Generation prompt"
             />
             <IconButton
-              aria-label="Copy prompt"
+              aria-label="Copy prompt to clipboard"
               icon={<FaCopy />}
               onClick={handleCopyPrompt}
               colorScheme="blue"
+              size="md"
             />
           </HStack>
           <Text fontSize="sm" fontWeight="bold" mb={2}>
@@ -198,37 +235,48 @@ export function DeckDetailsModal({
         </ModalBody>
         <ModalFooter>
           <HStack spacing={4}>
-            {onEdit && (
-              <IconButton
-                aria-label="Edit deck"
-                icon={<EditIcon />}
-                onClick={() => onEdit(detailedDeck.id)}
-                colorScheme="teal"
-              />
+            {isOwner ? (
+              <>
+                {onEdit && (
+                  <IconButton
+                    aria-label="Edit deck"
+                    icon={<EditIcon />}
+                    onClick={() => onEdit(detailedDeck.id)}
+                    colorScheme="teal"
+                    size="md"
+                  />
+                )}
+                {onDelete && (
+                  <IconButton
+                    aria-label="Delete deck"
+                    icon={<DeleteIcon />}
+                    onClick={() => onDelete(detailedDeck.id)}
+                    colorScheme="red"
+                    size="md"
+                  />
+                )}
+              </>
+            ) : (
+              <>
+                <Button
+                  onClick={handleSubscribe}
+                  colorScheme={isSubscribed ? "red" : "purple"}
+                  variant="outline"
+                  size="md"
+                >
+                  {isSubscribed ? "Unfollow" : "Follow"}
+                </Button>
+                <Button
+                  onClick={handleFork}
+                  bgGradient="linear(to-r, #F5546A, #558AFE)"
+                  color="white"
+                  _hover={{ opacity: 0.9 }}
+                  size="md"
+                >
+                  Fork Deck
+                </Button>
+              </>
             )}
-            {onDelete && (
-              <IconButton
-                aria-label="Delete deck"
-                icon={<DeleteIcon />}
-                onClick={() => onDelete(detailedDeck.id)}
-                colorScheme="red"
-              />
-            )}
-            <Button
-              onClick={handleSubscribe}
-              colorScheme={isSubscribed ? "red" : "purple"}
-              variant="outline"
-            >
-              {isSubscribed ? "Unfollow" : "Follow"}
-            </Button>
-            <Button
-              onClick={handleFork}
-              bgGradient="linear(to-r, #F5546A, #558AFE)"
-              color="white"
-              _hover={{ opacity: 0.9 }}
-            >
-              Fork Deck
-            </Button>
           </HStack>
         </ModalFooter>
       </ModalContent>

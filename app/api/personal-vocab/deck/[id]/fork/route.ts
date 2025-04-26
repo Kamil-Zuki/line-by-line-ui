@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const BASE_URL = "http://85.175.218.17/api/v1/deck";
 
 
-export async function POST(req: NextRequest, {params}: {params: {id: string }}) {
+export async function POST(req: NextRequest, {params}: {params: Promise<{id: string }>}) {
    //#region Access token
    const accessToken = req?.cookies.get("accessToken")?.value;
    if (!accessToken)
@@ -13,7 +13,11 @@ export async function POST(req: NextRequest, {params}: {params: {id: string }}) 
   try {
     const body = await req.json();
 
-    const response = await fetch(`${BASE_URL}/${params.id}/fork`, {
+    const awaitedParams = await params;
+    const id = awaitedParams.id;
+
+
+    const response = await fetch(`${BASE_URL}/${id}/fork`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,

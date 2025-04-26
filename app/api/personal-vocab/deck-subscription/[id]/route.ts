@@ -4,7 +4,7 @@ const API_URL = "http://85.175.218.17/api/v1/deck-subscription";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } } // Correct way to access dynamic segments
+  { params }: { params: Promise<{ id: string }> } // Correct way to access dynamic segments
 ) {
   //#region Access token
   const accessToken = req?.cookies.get("accessToken")?.value;
@@ -13,10 +13,7 @@ export async function POST(
   //#endregion
 
   try {
-    const awatedParams =  await params; 
-    const id = awatedParams.id;
-
-    const response = await fetch(`${API_URL}/${id}`, {
+    const response = await fetch(`${API_URL}/${params.id}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,

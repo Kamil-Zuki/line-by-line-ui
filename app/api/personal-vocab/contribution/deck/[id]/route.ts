@@ -4,16 +4,19 @@ const API_URL = "http://85.175.218.17/api/v1/contribution";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   //#region Access token
   const accessToken = req?.cookies.get("accessToken")?.value;
   if (!accessToken)
     return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
   //#endregion
-  const body = await req.json();
 
-  const response = await fetch(`${API_URL}/deck/${params.id}`, {
+  
+  const awaitedParams = await params;
+  const id = awaitedParams.id;
+
+  const response = await fetch(`${API_URL}/deck/${id}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,

@@ -133,12 +133,12 @@ export default function DashboardPage() {
       {stats && (
         <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4} mb={6}>
           <Stat bg="gray.800" p={4} borderRadius="md">
-            <StatLabel>Your Decks</StatLabel>
-            <StatNumber>{stats.deckCount}</StatNumber>
+            <StatLabel color="white">Your Decks</StatLabel>
+            <StatNumber color="white">{stats.deckCount}</StatNumber>
           </Stat>
           <Stat bg="gray.800" p={4} borderRadius="md">
-            <StatLabel>Total Cards</StatLabel>
-            <StatNumber>{stats.totalCards}</StatNumber>
+            <StatLabel color="white">Total Cards</StatLabel>
+            <StatNumber color="white">{stats.totalCards}</StatNumber>
           </Stat>
         </SimpleGrid>
       )}

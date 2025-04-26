@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = "http://85.175.218.17/api/v1/card";
+const API_URL = "http://85.175.218.17/api/v1/contribution";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   //#region Access token
   const accessToken = req?.cookies.get("accessToken")?.value;
@@ -13,7 +13,10 @@ export async function POST(
   //#endregion
   const body = await req.json();
 
-  const response = await fetch(`${API_URL}/review/${params.id}`, {
+  const awaitedParams = await params;
+  const id = awaitedParams.id;
+
+  const response = await fetch(`${API_URL}/${id}/review`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -24,7 +27,7 @@ export async function POST(
 
   if (!response.ok)
     return NextResponse.json(
-      { error: "Failed to review a card" },
+      { error: "Failed" },
       { status: 500 }
     );
 

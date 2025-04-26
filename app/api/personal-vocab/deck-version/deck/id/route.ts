@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const API_URL = "http://85.175.218.17/api/v1/deck-version/deck";
 
-export async function GET(req: NextRequest, {props}: {props: {id: string}}) {
+export async function GET(req: NextRequest, {params}: {params: Promise<{id: string}>}) {
   //#region Access token
   const accessToken = req.cookies.get("accessToken")?.value;
   if (!accessToken)
@@ -10,8 +10,10 @@ export async function GET(req: NextRequest, {props}: {props: {id: string}}) {
      //#endregion
 
   try {
+    const awaitedParams = await params;
+    const id = awaitedParams.id;
 
-    const response = await fetch(`${API_URL}/${props.id}`, {
+    const response = await fetch(`${API_URL}/${id}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -20,7 +22,7 @@ export async function GET(req: NextRequest, {props}: {props: {id: string}}) {
 
     if (!response.ok)
       throw NextResponse.json(
-        { error: "Failed to create deck subscriptions" },
+        { error: "Failed" },
         { status: response.status }
       );
 

@@ -14,6 +14,9 @@ import {
   VStack,
   Flex,
   Spinner,
+  useToast,
+  CloseButton,
+  Text as ChakraText, // Renamed to avoid conflict
 } from "@chakra-ui/react";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useApi } from "@/app/lib/api";
@@ -22,12 +25,45 @@ export default function NewDeck() {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
   const api = useApi();
+  const toast = useToast();
   const [form, setForm] = useState({
     title: "",
     description: "",
     isPublic: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Custom toast renderer for Ultimate Spider-Man style
+  const showErrorToast = (message: string) => {
+    toast({
+      position: "top",
+      duration: 3000,
+      isClosable: true,
+      render: ({ onClose }) => (
+        <Box
+          bg="gray.800"
+          border="2px solid"
+          borderColor="blue.900"
+          color="white"
+          p={4}
+          borderRadius="md"
+          boxShadow="0 0 5px rgba(66, 153, 225, 0.3)" // Soft blue glow
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          _hover={{ bg: "gray.700" }}
+        >
+          <VStack align="start" spacing={1}>
+            <Heading as="h3" size="sm" color="white">
+              Error
+            </Heading>
+            <ChakraText fontSize="sm">{message}</ChakraText>
+          </VStack>
+          <CloseButton onClick={onClose} color="white" />
+        </Box>
+      ),
+    });
+  };
 
   if (loading) {
     return (
@@ -58,6 +94,7 @@ export default function NewDeck() {
       router.push(`/dashboard/decks/${deck.id}`);
     } catch (error: any) {
       console.error("Error creating deck:", error.message);
+      showErrorToast("Failed to create deck. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

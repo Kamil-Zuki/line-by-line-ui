@@ -7,8 +7,8 @@ export async function PUT(req: NextRequest) {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
 
-  const { username } = await req.json();
-
+  const body = await req.json();
+  console.log(body);
   if (!accessToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -21,9 +21,9 @@ export async function PUT(req: NextRequest) {
         Accept: "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({ username }),
+      body: JSON.stringify(body),
     });
-
+    console.log(res)
     if (!res.ok) {
       return NextResponse.json(
         { error: "Failed to update password info" },
@@ -31,8 +31,8 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    const user = await res.json();
-    return NextResponse.json(user);
+    const result = await res.json();
+    return NextResponse.json(result, {status: 200});
   } catch (error) {
     return NextResponse.json(
       { error: "Internal server error" },

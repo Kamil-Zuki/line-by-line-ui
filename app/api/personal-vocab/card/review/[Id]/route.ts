@@ -4,7 +4,7 @@ const API_URL = "http://85.175.218.17/api/v1/card";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   //#region Access token
   const accessToken = req?.cookies.get("accessToken")?.value;
@@ -13,7 +13,9 @@ export async function POST(
   //#endregion
   const body = await req.json();
 
-  const response = await fetch(`${API_URL}/review/${params.id}`, {
+  const awaitedParams = await params;
+  const id = awaitedParams.id;
+  const response = await fetch(`${API_URL}/review/${id}`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,

@@ -7,21 +7,32 @@ interface SettingsSidebarProps {
   activeTab?: string;
   onTabChange?: (tab: string) => void;
   onLogout?: () => void;
+  zIndex?: number; // Add zIndex prop
 }
 
 const SettingsSidebar = ({
   activeTab = "profile",
   onTabChange,
   onLogout,
+  zIndex,
 }: SettingsSidebarProps) => (
   <Box
     w="240px"
-    borderRight="1px solid"
-    borderColor="whiteAlpha.100"
-    bg="#2b2d31"
+    borderRight="2px solid"
+    borderColor="blue.900"
+    bg="gray.800"
     p={4}
+    position="relative"
+    zIndex={zIndex} // Apply zIndex to ensure clickability
   >
-    <Text fontSize="xl" fontWeight="bold" mb={6} px={2} color="white">
+    <Text
+      fontSize="xl"
+      fontWeight="bold"
+      mb={6}
+      px={2}
+      color="white"
+      textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(66, 153, 225, 0.3)"
+    >
       User Settings
     </Text>
 
@@ -31,9 +42,11 @@ const SettingsSidebar = ({
         justifyContent="flex-start"
         leftIcon={<FiUser color="white" />}
         onClick={() => onTabChange?.("profile")}
-        bg={activeTab === "profile" ? "#404249" : "transparent"}
-        _hover={{ bg: "#404249" }}
+        bg={activeTab === "profile" ? "gray.700" : "transparent"}
+        _hover={{ bg: "gray.600" }}
         color="white"
+        border={activeTab === "profile" ? "2px solid" : "none"}
+        borderColor="blue.900"
       >
         My Account
       </Button>
@@ -42,9 +55,11 @@ const SettingsSidebar = ({
         justifyContent="flex-start"
         leftIcon={<FiShield color="white" />}
         onClick={() => onTabChange?.("privacy")}
-        bg={activeTab === "privacy" ? "#404249" : "transparent"}
-        _hover={{ bg: "#404249" }}
+        bg={activeTab === "privacy" ? "gray.700" : "transparent"}
+        _hover={{ bg: "gray.600" }}
         color="white"
+        border={activeTab === "privacy" ? "2px solid" : "none"}
+        borderColor="blue.900"
       >
         Privacy
       </Button>
@@ -53,20 +68,31 @@ const SettingsSidebar = ({
         justifyContent="flex-start"
         leftIcon={<FiBell color="white" />}
         onClick={() => onTabChange?.("notifications")}
-        bg={activeTab === "notifications" ? "#404249" : "transparent"}
-        _hover={{ bg: "#404249" }}
+        bg={activeTab === "notifications" ? "gray.700" : "transparent"}
+        _hover={{ bg: "gray.600" }}
         color="white"
+        border={activeTab === "notifications" ? "2px solid" : "none"}
+        borderColor="blue.900"
       >
         Notifications
       </Button>
-      <Divider borderColor="whiteAlpha.100" my={2} />
+      <Divider borderColor="gray.600" my={2} />
       <Button
         variant="ghost"
         justifyContent="flex-start"
-        leftIcon={<FiLogOut color="red.300" />}
-        color="red.300"
+        leftIcon={<FiLogOut color="white" />}
+        color="white"
+        bg="red.800"
+        border="2px solid"
+        borderColor="blue.900"
+        _hover={{
+          bg: "red.700",
+          boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
+          transform: "scale(1.02)",
+        }}
+        _active={{ bg: "red.900" }}
+        transition="all 0.2s"
         onClick={() => onLogout?.()}
-        _hover={{ bg: "red.900" }}
       >
         Log Out
       </Button>

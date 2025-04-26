@@ -1,4 +1,3 @@
-// app/components/settings/AccountProfile.tsx
 "use client";
 
 import { useState } from "react";
@@ -22,7 +21,7 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
-  Text,
+  Text as ChakraText,
   VStack,
   useDisclosure,
   useToast,
@@ -55,7 +54,38 @@ const AccountProfile = ({ user }: AccountProfileProps) => {
 
   const passwordModal = useDisclosure();
   const usernameModal = useDisclosure();
-  const toast = useToast();
+  const toast = useToast(); // Use the useToast hook directly
+
+  const showToast = (title: string, description: string, status: "success" | "error") => {
+    toast({
+      position: "top",
+      duration: status === "success" ? 3000 : 5000,
+      isClosable: true,
+      render: ({ onClose }: { onClose: () => void }) => (
+        <Box
+          bg="gray.800"
+          border="2px solid"
+          borderColor="blue.900"
+          color="white"
+          p={4}
+          borderRadius="md"
+          boxShadow="0 0 5px rgba(66, 153, 225, 0.3)"
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          _hover={{ bg: "gray.700" }}
+        >
+          <VStack align="start" spacing={1}>
+            <ChakraText fontWeight="bold" fontSize="md">{title}</ChakraText>
+            <ChakraText fontSize="sm">{description}</ChakraText>
+          </VStack>
+          <Button size="sm" onClick={onClose} color="white" variant="ghost">
+            Close
+          </Button>
+        </Box>
+      ),
+    });
+  };
 
   const validatePasswordForm = () => {
     let isValid = true;
@@ -113,12 +143,7 @@ const AccountProfile = ({ user }: AccountProfileProps) => {
     const result = await updatePassword(currentPassword, newPassword);
 
     if (result.success) {
-      toast({
-        title: "Success",
-        description: result.message || "Password updated successfully",
-        status: "success",
-        duration: 3000,
-      });
+      showToast("Success", result.message || "Password updated successfully", "success");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -128,12 +153,7 @@ const AccountProfile = ({ user }: AccountProfileProps) => {
       if (result.error?.includes("405")) {
         errorMessage = "Password update method not allowed. Contact support.";
       }
-      toast({
-        title: "Error",
-        description: errorMessage,
-        status: "error",
-        duration: 5000,
-      });
+      showToast("Error", errorMessage, "error");
     }
   };
 
@@ -143,28 +163,28 @@ const AccountProfile = ({ user }: AccountProfileProps) => {
     const result = await updateUsername(newUsername);
 
     if (result.success) {
-      toast({
-        title: "Success",
-        description: result.message || "Username updated successfully",
-        status: "success",
-        duration: 3000,
-      });
+      showToast("Success", result.message || "Username updated successfully", "success");
       usernameModal.onClose();
     } else {
-      toast({
-        title: "Error",
-        description: result.error || "Failed to update username",
-        status: "error",
-        duration: 3000,
-      });
+      showToast("Error", result.error || "Failed to update username", "error");
     }
   };
 
   return (
-    <Box bg="#2f3136" borderRadius="md" p={4} color="white">
-      <Text fontSize="xl" fontWeight="semibold" mb={4}>
+    <Box
+      bg="gray.700"
+      border="2px solid"
+      borderColor="blue.900"
+      borderRadius="md"
+      p={4}
+      color="white"
+      boxShadow="2px 2px 4px rgba(0, 0, 0, 0.5)"
+      _hover={{ boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)" }}
+      transition="all 0.2s"
+    >
+      <ChakraText fontSize="xl" fontWeight="semibold" mb={4} textShadow="1px 1px 2px rgba(0, 0, 0, 0.8)">
         Account
-      </Text>
+      </ChakraText>
 
       {/* Username Section */}
       <Flex
@@ -173,18 +193,27 @@ const AccountProfile = ({ user }: AccountProfileProps) => {
         mb={4}
         pb={4}
         borderBottom="1px"
-        borderColor="gray.700"
+        borderColor="gray.600"
       >
         <Box>
-          <Text fontSize="sm" color="gray.400">
+          <ChakraText fontSize="sm" color="gray.400" textTransform="uppercase">
             USERNAME
-          </Text>
-          <Text>{user.userName}</Text>
+          </ChakraText>
+          <ChakraText>{user.userName}</ChakraText>
         </Box>
         <Button
           size="sm"
-          bg="#5865f2"
-          _hover={{ bg: "#4752c4" }}
+          bg="red.800"
+          border="2px solid"
+          borderColor="blue.900"
+          color="white"
+          _hover={{
+            bg: "red.700",
+            boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
+            transform: "scale(1.02)",
+          }}
+          _active={{ bg: "red.900" }}
+          transition="all 0.2s"
           onClick={usernameModal.onOpen}
         >
           Edit
@@ -198,13 +227,13 @@ const AccountProfile = ({ user }: AccountProfileProps) => {
         mb={4}
         pb={4}
         borderBottom="1px"
-        borderColor="gray.700"
+        borderColor="gray.600"
       >
         <Box>
-          <Text fontSize="sm" color="gray.400">
+          <ChakraText fontSize="sm" color="gray.400" textTransform="uppercase">
             EMAIL
-          </Text>
-          <Text>{user.email}</Text>
+          </ChakraText>
+          <ChakraText>{user.email}</ChakraText>
         </Box>
         {/* Add edit button if email editing is desired */}
       </Flex>
@@ -212,15 +241,24 @@ const AccountProfile = ({ user }: AccountProfileProps) => {
       {/* Password Section */}
       <Flex justify="space-between" align="center" mb={4}>
         <Box>
-          <Text fontSize="sm" color="gray.400">
+          <ChakraText fontSize="sm" color="gray.400" textTransform="uppercase">
             PASSWORD
-          </Text>
-          <Text>••••••••</Text>
+          </ChakraText>
+          <ChakraText>••••••••</ChakraText>
         </Box>
         <Button
           size="sm"
-          bg="#5865f2"
-          _hover={{ bg: "#4752c4" }}
+          bg="red.800"
+          border="2px solid"
+          borderColor="blue.900"
+          color="white"
+          _hover={{
+            bg: "red.700",
+            boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
+            transform: "scale(1.02)",
+          }}
+          _active={{ bg: "red.900" }}
+          transition="all 0.2s"
           onClick={passwordModal.onOpen}
         >
           Change Password
@@ -230,71 +268,126 @@ const AccountProfile = ({ user }: AccountProfileProps) => {
       {/* Password Modal */}
       <Modal isOpen={passwordModal.isOpen} onClose={passwordModal.onClose}>
         <ModalOverlay />
-        <ModalContent bg="#36393f" color="white">
-          <ModalHeader>Change Your Password</ModalHeader>
-          <ModalCloseButton />
+        <ModalContent
+          bg="gray.800"
+          color="white"
+          border="2px solid"
+          borderColor="blue.900"
+          borderRadius="md"
+        >
+          <ModalHeader textShadow="1px 1px 2px rgba(0, 0, 0, 0.8)">Change Your Password</ModalHeader>
+          <ModalCloseButton color="white" />
           <ModalBody>
             <VStack spacing={4}>
               <FormControl isInvalid={!!errors.currentPassword}>
-                <FormLabel>Current Password</FormLabel>
+                <FormLabel color="gray.400" textTransform="uppercase" fontSize="sm">
+                  Current Password
+                </FormLabel>
                 <InputGroup>
                   <InputLeftElement pointerEvents="none">
-                    <FiKey color="gray" />
+                    <FiKey color="gray.400" />
                   </InputLeftElement>
                   <Input
                     type={showPassword ? "text" : "password"}
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    bg="#202225"
-                    border="none"
+                    bg="gray.700"
+                    border="2px solid"
+                    borderColor="blue.900"
+                    color="white"
+                    borderRadius="md"
+                    _focus={{ borderColor: "blue.700", boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)" }}
                   />
                   <InputRightElement>
                     <IconButton
-                      aria-label={
-                        showPassword ? "Hide password" : "Show password"
-                      }
-                      icon={showPassword ? <FiEyeOff /> : <FiEye />}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      icon={showPassword ? <FiEyeOff color="gray.400" /> : <FiEye color="gray.400" />}
                       variant="ghost"
                       size="sm"
                       onClick={() => setShowPassword(!showPassword)}
                     />
                   </InputRightElement>
                 </InputGroup>
-                <FormErrorMessage>{errors.currentPassword}</FormErrorMessage>
+                <FormErrorMessage
+                  color="red.500"
+                  fontWeight="bold"
+                  textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 3px rgba(229, 62, 62, 0.3)"
+                >
+                  {errors.currentPassword}
+                </FormErrorMessage>
               </FormControl>
 
               <FormControl isInvalid={!!errors.newPassword}>
-                <FormLabel>New Password</FormLabel>
+                <FormLabel color="gray.400" textTransform="uppercase" fontSize="sm">
+                  New Password
+                </FormLabel>
                 <Input
                   type={showPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  bg="#202225"
-                  border="none"
+                  bg="gray.700"
+                  border="2px solid"
+                  borderColor="blue.900"
+                  color="white"
+                  borderRadius="md"
+                  _focus={{ borderColor: "blue.700", boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)" }}
                 />
-                <FormErrorMessage>{errors.newPassword}</FormErrorMessage>
+                <FormErrorMessage
+                  color="red.500"
+                  fontWeight="bold"
+                  textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 3px rgba(229, 62, 62, 0.3)"
+                >
+                  {errors.newPassword}
+                </FormErrorMessage>
               </FormControl>
 
               <FormControl isInvalid={!!errors.confirmPassword}>
-                <FormLabel>Confirm New Password</FormLabel>
+                <FormLabel color="gray.400" textTransform="uppercase" fontSize="sm">
+                  Confirm New Password
+                </FormLabel>
                 <Input
                   type={showPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  bg="#202225"
-                  border="none"
+                  bg="gray.700"
+                  border="2px solid"
+                  borderColor="blue.900"
+                  color="white"
+                  borderRadius="md"
+                  _focus={{ borderColor: "blue.700", boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)" }}
                 />
-                <FormErrorMessage>{errors.confirmPassword}</FormErrorMessage>
+                <FormErrorMessage
+                  color="red.500"
+                  fontWeight="bold"
+                  textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 3px rgba(229, 62, 62, 0.3)"
+                >
+                  {errors.confirmPassword}
+                </FormErrorMessage>
               </FormControl>
             </VStack>
           </ModalBody>
           <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={passwordModal.onClose}>
+            <Button
+              variant="ghost"
+              mr={3}
+              onClick={passwordModal.onClose}
+              color="white"
+              _hover={{ bg: "gray.700" }}
+            >
               Cancel
             </Button>
             <Button
-              bg="#5865f2"
-              _hover={{ bg: "#4752c4" }}
+              bg="red.800"
+              border="2px solid"
+              borderColor="blue.900"
+              color="white"
+              _hover={{
+                bg: "red.700",
+                boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
+                transform: "scale(1.02)",
+              }}
+              _active={{ bg: "red.900" }}
+              transition="all 0.2s"
               onClick={handlePasswordUpdate}
               isLoading={loading}
             >
@@ -307,33 +400,66 @@ const AccountProfile = ({ user }: AccountProfileProps) => {
       {/* Username Modal */}
       <Modal isOpen={usernameModal.isOpen} onClose={usernameModal.onClose}>
         <ModalOverlay />
-        <ModalContent bg="#36393f" color="white">
-          <ModalHeader>Change Your Username</ModalHeader>
-          <ModalCloseButton />
+        <ModalContent
+          bg="gray.800"
+          color="white"
+          border="2px solid"
+          borderColor="blue.900"
+          borderRadius="md"
+        >
+          <ModalHeader textShadow="1px 1px 2px rgba(0, 0, 0, 0.8)">Change Your Username</ModalHeader>
+          <ModalCloseButton color="white" />
           <ModalBody>
             <FormControl isInvalid={!!errors.username}>
-              <FormLabel>Username</FormLabel>
+              <FormLabel color="gray.400" textTransform="uppercase" fontSize="sm">
+                Username
+              </FormLabel>
               <InputGroup>
                 <InputLeftElement pointerEvents="none">
-                  <FiUser color="gray" />
+                  <FiUser color="gray.400" />
                 </InputLeftElement>
                 <Input
                   value={newUsername}
                   onChange={(e) => setNewUsername(e.target.value)}
-                  bg="#202225"
-                  border="none"
+                  bg="gray.700"
+                  border="2px solid"
+                  borderColor="blue.900"
+                  color="white"
+                  borderRadius="md"
+                  _focus={{ borderColor: "blue.700", boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)" }}
                 />
               </InputGroup>
-              <FormErrorMessage>{errors.username}</FormErrorMessage>
+              <FormErrorMessage
+                color="red.500"
+                fontWeight="bold"
+                textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 3px rgba(229, 62, 62, 0.3)"
+              >
+                {errors.username}
+              </FormErrorMessage>
             </FormControl>
           </ModalBody>
           <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={usernameModal.onClose}>
+            <Button
+              variant="ghost"
+              mr={3}
+              onClick={usernameModal.onClose}
+              color="white"
+              _hover={{ bg: "gray.700" }}
+            >
               Cancel
             </Button>
             <Button
-              bg="#5865f2"
-              _hover={{ bg: "#4752c4" }}
+              bg="red.800"
+              border="2px solid"
+              borderColor="blue.900"
+              color="white"
+              _hover={{
+                bg: "red.700",
+                boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
+                transform: "scale(1.02)",
+              }}
+              _active={{ bg: "red.900" }}
+              transition="all 0.2s"
               onClick={handleUsernameUpdate}
               isLoading={loading}
             >

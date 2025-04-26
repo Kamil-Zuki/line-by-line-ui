@@ -8,10 +8,11 @@ import {
   FormLabel,
   Input,
   VStack,
-  Text,
+  Text as ChakraText,
   Link as ChakraLink,
   FormErrorMessage,
   useToast,
+  CloseButton,
 } from "@chakra-ui/react";
 import { useAuth } from "@/app/hooks/useAuth";
 import Link from "next/link";
@@ -38,27 +39,43 @@ export default function RegisterPage() {
 
     try {
       let message = await register(email, password, confirmPassword);
-      toast({
-        title: `Registration Successful. ${message}`,
-        description: "You can now log in!",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-        position: "top",
-      });
+      showToast("Registration Successful", message ? `${message} You can now log in!` : "You can now log in!", "success");
     } catch (error: any) {
       setError(error.message || "Registration failed");
-      toast({
-        title: "Registration Failed",
-        description: error.message || "Something went wrong",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-        position: "top",
-      });
+      showToast("Registration Failed", error.message || "Something went wrong", "error");
     } finally {
       setLoading(false);
     }
+  };
+
+  // Custom toast renderer for Ultimate Spider-Man style
+  const showToast = (title: string, description: string, status: "success" | "error") => {
+    toast({
+      position: "top",
+      duration: status === "success" ? 3000 : 5000,
+      isClosable: true,
+      render: ({ onClose }) => (
+        <Box
+          bg="gray.800"
+          border="2px solid"
+          borderColor="blue.900"
+          color="white"
+          p={4}
+          borderRadius="md"
+          boxShadow="0 0 5px rgba(66, 153, 225, 0.3)" // Soft blue glow
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          _hover={{ bg: "gray.700" }}
+        >
+          <VStack align="start" spacing={1}>
+            <ChakraText fontWeight="bold" fontSize="md">{title}</ChakraText>
+            <ChakraText fontSize="sm">{description}</ChakraText>
+          </VStack>
+          <CloseButton onClick={onClose} color="white" />
+        </Box>
+      ),
+    });
   };
 
   return (
@@ -69,6 +86,7 @@ export default function RegisterPage() {
       justifyContent="center"
       alignItems="center"
       p={{ base: 4, md: 8 }}
+      bg="gray.800"
       position="relative"
       _before={{
         content: '""',
@@ -77,10 +95,21 @@ export default function RegisterPage() {
         left: "0",
         right: "0",
         bottom: "0",
-        border: "3px solid",
-        borderColor: "white",
-        boxShadow: "0 0 15px rgba(229, 62, 62, 0.5)", // Red glow
+        background: "linear-gradient(45deg, rgba(255, 255, 255, 0.05), transparent)",
+        opacity: 0.3,
         zIndex: 1,
+      }}
+      _after={{
+        content: '""',
+        position: "absolute",
+        top: "20px",
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: "60px",
+        height: "2px",
+        bg: "white",
+        boxShadow: "0 0 3px rgba(255, 255, 255, 0.3)",
+        zIndex: 2,
       }}
     >
       {/* Main Content Container */}
@@ -88,23 +117,24 @@ export default function RegisterPage() {
         bg="gray.800"
         p={{ base: 6, md: 10 }}
         border="2px solid"
-        borderColor="white"
-        boxShadow="4px 4px 0 rgba(0, 0, 0, 0.8)"
+        borderColor="blue.900"
+        boxShadow="4px 4px 8px rgba(0, 0, 0, 0.5)" // Comic panel shadow
         maxW="400px"
         w="100%"
         position="relative"
-        zIndex={2}
+        zIndex={3}
+        borderRadius="md"
       >
-        <Text
+        <ChakraText
           fontSize={{ base: "xl", md: "2xl" }}
           fontWeight="extrabold"
           mb={6}
           color="white"
-          textShadow="2px 2px 4px rgba(0, 0, 0, 0.9), 0 0 8px rgba(229, 62, 62, 0.5)" // Red glow
+          textShadow="2px 2px 4px rgba(0, 0, 0, 0.9), 0 0 8px rgba(66, 153, 225, 0.3)" // Soft blue glow
           textAlign="center"
         >
           Register
-        </Text>
+        </ChakraText>
         <VStack spacing={4} as="form" onSubmit={handleSubmit}>
           <FormControl isRequired isInvalid={!!error}>
             <FormLabel
@@ -121,12 +151,12 @@ export default function RegisterPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
               bg="gray.700"
-              borderColor="white"
+              border="2px solid"
+              borderColor="blue.900"
               color="white"
-              borderRadius="0"
-              borderWidth="2px"
+              borderRadius="md"
               _placeholder={{ color: "gray.400" }}
-              _focus={{ borderColor: "red.600", boxShadow: "0 0 0 1px red.600" }}
+              _focus={{ borderColor: "blue.700", boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)" }}
             />
           </FormControl>
           <FormControl isRequired isInvalid={!!error}>
@@ -144,12 +174,12 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               bg="gray.700"
-              borderColor="white"
+              border="2px solid"
+              borderColor="blue.900"
               color="white"
-              borderRadius="0"
-              borderWidth="2px"
+              borderRadius="md"
               _placeholder={{ color: "gray.400" }}
-              _focus={{ borderColor: "red.600", boxShadow: "0 0 0 1px red.600" }}
+              _focus={{ borderColor: "blue.700", boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)" }}
             />
           </FormControl>
           <FormControl isRequired isInvalid={!!error}>
@@ -167,18 +197,18 @@ export default function RegisterPage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Confirm your password"
               bg="gray.700"
-              borderColor="white"
+              border="2px solid"
+              borderColor="blue.900"
               color="white"
-              borderRadius="0"
-              borderWidth="2px"
+              borderRadius="md"
               _placeholder={{ color: "gray.400" }}
-              _focus={{ borderColor: "red.600", boxShadow: "0 0 0 1px red.600" }}
+              _focus={{ borderColor: "blue.700", boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)" }}
             />
             {error && (
               <FormErrorMessage
                 color="red.500"
                 fontWeight="bold"
-                textShadow="1px 1px 2px rgba(0, 0, 0, 0.8)"
+                textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 3px rgba(229, 62, 62, 0.3)"
               >
                 {error}
               </FormErrorMessage>
@@ -187,31 +217,34 @@ export default function RegisterPage() {
           <Button
             type="submit"
             size="lg"
-            variant="solid"
-            bg="red.600"
+            bg="red.800"
+            border="2px solid"
+            borderColor="blue.900"
             color="white"
             w="100%"
             isLoading={loading}
             _hover={{
               bg: "red.700",
-              transform: "scale(0.98)",
-              boxShadow: "0 0 15px rgba(229, 62, 62, 0.7)",
+              boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
+              transform: "scale(1.02)",
             }}
+            _active={{ bg: "red.900" }}
+            transition="all 0.2s"
           >
             Register
           </Button>
-          <Text fontSize="sm" color="gray.400">
+          <ChakraText fontSize="sm" color="gray.300" textAlign="center">
             Already have an account?{" "}
             <ChakraLink
               as={Link}
               href="/login"
-              color="blue.500"
+              color="red.500"
               fontWeight="bold"
-              _hover={{ color: "blue.600", textDecoration: "underline" }}
+              _hover={{ color: "red.400", textDecoration: "underline" }}
             >
               Login
             </ChakraLink>
-          </Text>
+          </ChakraText>
         </VStack>
       </Box>
     </Box>

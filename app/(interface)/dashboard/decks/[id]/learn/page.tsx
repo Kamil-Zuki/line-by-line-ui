@@ -167,10 +167,11 @@ export default function LearnPage({
             size={{ base: "lg", md: "xl" }}
             color="white"
             textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(66, 153, 225, 0.3)" // Soft blue glow
+            textAlign="center" // Center the heading text
           >
             Learn Deck
           </Heading>
-          <ChakraText color="gray.300" mb={4}>
+          <ChakraText color="gray.300" mb={4} textAlign="center">
             No due cards for this deck.
           </ChakraText>
           <Button
@@ -185,6 +186,7 @@ export default function LearnPage({
             }}
             _active={{ bg: "red.900" }}
             transition="all 0.2s"
+            alignSelf="center" // Center the button
             onClick={() => router.push(`/dashboard/decks/${id}`)}
           >
             Back to Deck
@@ -235,11 +237,16 @@ export default function LearnPage({
           size={{ base: "lg", md: "xl" }}
           color="white"
           textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(66, 153, 225, 0.3)" // Soft blue glow
+          textAlign="center" // Center the heading text
         >
           Learn Deck
         </Heading>
-        <CardReview card={cards[currentIndex]} onReview={handleReview} />
-        <ChakraText color="gray.300">
+        <CardReview
+          key={cards[currentIndex].id} // Add key to force re-mount when card changes
+          card={cards[currentIndex]}
+          onReview={handleReview}
+        />
+        <ChakraText color="gray.300" textAlign="center">
           Card {currentIndex + 1} of {cards.length}
         </ChakraText>
       </VStack>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   Box,
   Button,
@@ -19,6 +19,16 @@ interface CardReviewProps {
 export function CardReview({ card, onReview }: CardReviewProps) {
   const [isFlipped, setIsFlipped] = useState(false);
 
+  // Reset isFlipped when the card changes
+  useEffect(() => {
+    setIsFlipped(false);
+  }, [card]);
+
+  // Use useCallback to ensure the handler is stable
+  const handleFlip = useCallback(() => {
+    setIsFlipped((prev) => !prev);
+  }, []);
+
   return (
     <VStack
       spacing={4}
@@ -30,6 +40,8 @@ export function CardReview({ card, onReview }: CardReviewProps) {
       boxShadow="2px 2px 4px rgba(0, 0, 0, 0.5)" // Comic panel shadow
       maxW="600px"
       w="full"
+      mx="auto" // Ensure the CardReview itself is centered within its parent
+      align="center" // Center children horizontally
       position="relative"
       _hover={{
         boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)", // Soft blue glow on hover
@@ -41,16 +53,21 @@ export function CardReview({ card, onReview }: CardReviewProps) {
         fontSize="xl"
         color="white"
         textShadow="1px 1px 2px rgba(0, 0, 0, 0.8)"
+        textAlign="center" // Center the text
       >
         {isFlipped ? card.back : card.front}
       </ChakraText>
       {card.hint && !isFlipped && (
-        <ChakraText color="gray.300" fontStyle="italic">
+        <ChakraText
+          color="gray.300"
+          fontStyle="italic"
+          textAlign="center" // Center the hint text
+        >
           Hint: {card.hint}
         </ChakraText>
       )}
       {card.mediaUrl && (
-        <>
+        <Box display="flex" justifyContent="center" w="full"> {/* Center media */}
           {card.skill === "Listening" ? (
             <Box as="audio" controls src={card.mediaUrl} maxW="100%" sx={{
               "&::-webkit-media-controls-panel": {
@@ -73,7 +90,7 @@ export function CardReview({ card, onReview }: CardReviewProps) {
               borderRadius="md"
             />
           )}
-        </>
+        </Box>
       )}
       <Button
         bg="red.800"
@@ -88,7 +105,7 @@ export function CardReview({ card, onReview }: CardReviewProps) {
         _active={{ bg: "red.900" }}
         transition="all 0.2s"
         width="150px"
-        onClick={() => setIsFlipped(!isFlipped)}
+        onClick={handleFlip} // Use the stable handler
       >
         {isFlipped ? "Show Front" : "Show Back"}
       </Button>

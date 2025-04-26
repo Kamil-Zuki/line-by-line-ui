@@ -17,13 +17,40 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         style={{
           minHeight: "100vh",
           position: "relative",
-          border: "4px solid white",
           margin: 0,
-          boxShadow: "0 0 15px rgba(229, 62, 62, 0.5)", // Red glow for dramatic effect
           background: "gray.900",
         }}
       >
-        {/* Add a jagged ink splatter effect around the edges */}
+        {/* Subtle cityscape gradient and web accent */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "linear-gradient(45deg, rgba(255, 255, 255, 0.05), transparent)",
+            opacity: 0.3,
+            pointerEvents: "none",
+            zIndex: 0,
+          }}
+        />
+        {/* Web thread accent */}
+        <div
+          style={{
+            position: "absolute",
+            top: "-2px",
+            left: "5%",
+            width: "60px",
+            height: "2px",
+            background: "white",
+            boxShadow: "0 0 3px rgba(255, 255, 255, 0.3)", // Soft white glow
+            transform: "rotate(-45deg)",
+            pointerEvents: "none",
+            zIndex: 1,
+          }}
+        />
+        {/* Main border with comic-book style */}
         <div
           style={{
             position: "absolute",
@@ -31,10 +58,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             left: "-4px",
             right: "-4px",
             bottom: "-4px",
-            border: "2px solid",
-            borderColor: "red.600",
-            pointerEvents: "none", // Ensure the border doesn't interfere with interactions
-            boxShadow: "inset 0 0 10px rgba(0, 0, 0, 0.8)", // Inner shadow for depth
+            border: "4px solid",
+            borderColor: "blue.900",
+            boxShadow: "0 0 5px rgba(66, 153, 225, 0.3), inset 0 0 5px rgba(0, 0, 0, 0.5)", // Soft blue glow + inner shadow
+            pointerEvents: "none",
+            zIndex: 1,
           }}
         />
         <ChakraWrapper>{children}</ChakraWrapper>

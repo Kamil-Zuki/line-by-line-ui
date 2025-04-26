@@ -63,6 +63,38 @@ export default function DashboardPage() {
   const router = useRouter();
   const toast = useToast();
 
+  // Custom toast renderer for Ultimate Spider-Man style
+  const showToast = () => {
+    toast({
+      position: "top",
+      duration: 3000,
+      isClosable: true,
+      render: ({ onClose }) => (
+        <Box
+          bg="gray.800"
+          border="2px solid"
+          borderColor="blue.900"
+          color="white"
+          p={4}
+          borderRadius="md"
+          boxShadow="0 0 5px rgba(66, 153, 225, 0.3)" // Soft blue glow
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          _hover={{ bg: "gray.700" }}
+        >
+          <VStack align="start" spacing={1}>
+            <Heading as="h3" size="sm" color="white">
+              Error
+            </Heading>
+            <Text fontSize="sm">Failed to load data. Please try again.</Text>
+          </VStack>
+          <CloseButton onClick={onClose} color="white" />
+        </Box>
+      ),
+    });
+  };
+
   // Fetch data
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -78,41 +110,12 @@ export default function DashboardPage() {
       console.error("Error fetching data:", error.message, {
         status: error.status,
       });
-      toast({
-        position: "top",
-        duration: 3000,
-        isClosable: true,
-        render: ({ onClose }) => (
-          <Box
-            bg="black"
-            border="2px solid"
-            borderColor="red.500"
-            color="white"
-            p={4}
-            borderRadius="md"
-            boxShadow="0 0 10px rgba(255, 215, 0, 0.5)" // Yellow glow for Spidey
-            display="flex"
-            alignItems="center"
-            justifyContent="space-between"
-            _hover={{ bg: "gray.900" }}
-          >
-            <VStack align="start" spacing={1}>
-              <Heading as="h3" size="sm" color="white">
-                Error
-              </Heading>
-              <Text fontSize="sm">
-                Failed to load data. Please try again.
-              </Text>
-            </VStack>
-            <CloseButton onClick={onClose} color="white" />
-          </Box>
-        ),
-      });
+      showToast();
       router.push("/dashboard");
     } finally {
       setLoading(false);
     }
-  }, [toast, router]);
+  }, [router]);
 
   useEffect(() => {
     if (!isAuthenticated || authLoading) {
@@ -161,35 +164,30 @@ export default function DashboardPage() {
         left: "0",
         right: "0",
         bottom: "0",
-        border: "3px solid",
-        borderColor: "red.500",
-        boxShadow: "0 0 15px rgba(59, 130, 246, 0.5)", // Blue glow for Spidey
+        background: "linear-gradient(45deg, rgba(255, 255, 255, 0.05), transparent)",
+        opacity: 0.3,
         zIndex: 1,
-        background: "radial-gradient(circle at 5% 5%, transparent 0%, transparent 5%, white 6%, transparent 7%)",
-        backgroundSize: "30px 30px",
-        opacity: 0.1,
       }}
       _after={{
         content: '""',
         position: "absolute",
-        top: "-5px",
+        top: "-2px",
         left: "10%",
-        width: "100px",
+        width: "60px",
         height: "2px",
         bg: "white",
-        transform: "rotate(-45deg)",
-        boxShadow: "0 0 5px rgba(255, 255, 255, 0.5)",
+        boxShadow: "0 0 3px rgba(255, 255, 255, 0.3)",
         zIndex: 2,
       }}
     >
       <Box
         maxW="1200px"
         mx="auto"
-        bg="black"
+        bg="gray.800"
         p={{ base: 4, md: 6 }}
         border="2px solid"
-        borderColor="red.500"
-        boxShadow="4px 4px 0 rgba(0, 0, 0, 0.8)"
+        borderColor="blue.900"
+        boxShadow="4px 4px 8px rgba(0, 0, 0, 0.5)" // Comic panel shadow
         borderRadius="md"
         position="relative"
         zIndex={2}
@@ -199,7 +197,7 @@ export default function DashboardPage() {
           size={{ base: "lg", md: "xl" }}
           mb={6}
           color="white"
-          textShadow="2px 2px 4px rgba(0, 0, 0, 0.9), 0 0 8px rgba(255, 215, 0, 0.5)" // Yellow glow for Spidey
+          textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(66, 153, 225, 0.3)" // Soft blue glow
         >
           Community Creations
         </Heading>
@@ -207,49 +205,53 @@ export default function DashboardPage() {
         {stats && (
           <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4} mb={6}>
             <Stat
-              bg="gray.900"
+              bg="gray.700"
               p={4}
               border="2px solid"
-              borderColor="blue.500"
-              boxShadow="2px 2px 0 rgba(0, 0, 0, 0.8)"
+              borderColor="blue.900"
+              boxShadow="2px 2px 4px rgba(0, 0, 0, 0.5)"
               borderRadius="md"
+              _hover={{ transform: "scale(1.01)" }}
+              transition="all 0.2s"
             >
               <StatLabel
                 color="gray.400"
                 fontSize="sm"
                 textTransform="uppercase"
-                fontWeight="extrabold"
+                fontWeight="bold"
               >
                 Your Decks
               </StatLabel>
               <StatNumber
                 color="white"
                 fontSize="2xl"
-                textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(255, 215, 0, 0.3)" // Yellow glow
+                textShadow="1px 1px 2px rgba(0, 0, 0, 0.8)"
               >
                 {stats.deckCount}
               </StatNumber>
             </Stat>
             <Stat
-              bg="gray.900"
+              bg="gray.700"
               p={4}
               border="2px solid"
-              borderColor="blue.500"
-              boxShadow="2px 2px 0 rgba(0, 0, 0, 0.8)"
+              borderColor="blue.900"
+              boxShadow="2px 2px 4px rgba(0, 0, 0, 0.5)"
               borderRadius="md"
+              _hover={{ transform: "scale(1.01)" }}
+              transition="all 0.2s"
             >
               <StatLabel
                 color="gray.400"
                 fontSize="sm"
                 textTransform="uppercase"
-                fontWeight="extrabold"
+                fontWeight="bold"
               >
                 Total Cards
               </StatLabel>
               <StatNumber
                 color="white"
                 fontSize="2xl"
-                textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(255, 215, 0, 0.3)" // Yellow glow
+                textShadow="1px 1px 2px rgba(0, 0, 0, 0.8)"
               >
                 {stats.totalCards}
               </StatNumber>
@@ -270,10 +272,10 @@ export default function DashboardPage() {
           <Flex justify="center" py={10}>
             <Spinner
               size="xl"
-              color="red.500"
-              thickness="4px"
+              color="white"
+              thickness="3px"
               speed="0.65s"
-              _hover={{ filter: "drop-shadow(0 0 10px rgba(239, 68, 68, 0.7))" }}
+              _hover={{ filter: "drop-shadow(0 0 5px rgba(255, 255, 255, 0.3))" }}
             />
           </Flex>
         ) : filteredDecks.length > 0 ? (

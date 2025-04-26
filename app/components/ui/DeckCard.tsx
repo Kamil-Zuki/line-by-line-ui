@@ -13,11 +13,11 @@ export function DeckCard({ deck, onClick, "aria-label": ariaLabel }: DeckCardPro
       as="button"
       onClick={onClick}
       aria-label={ariaLabel}
-      bg="black"
+      bg="gray.700"
       p={4}
       border="2px solid"
-      borderColor="red.500"
-      boxShadow="4px 4px 0 rgba(0, 0, 0, 0.8)"
+      borderColor="blue.900"
+      boxShadow="4px 4px 8px rgba(0, 0, 0, 0.5)" // Comic panel shadow
       width={{ base: "100%", sm: "300px" }}
       height="200px"
       borderRadius="md"
@@ -30,43 +30,27 @@ export function DeckCard({ deck, onClick, "aria-label": ariaLabel }: DeckCardPro
         left: "0",
         right: "0",
         bottom: "0",
-        background: "radial-gradient(circle at 10% 10%, transparent 0%, transparent 10%, white 11%, transparent 12%)",
-        backgroundSize: "20px 20px",
-        opacity: 0.2,
+        background: "linear-gradient(45deg, rgba(255, 255, 255, 0.05), transparent)",
+        opacity: 0.3,
         zIndex: 1,
-      }}
-      _after={{
-        content: '""',
-        position: "absolute",
-        top: "-50%",
-        left: "-50%",
-        width: "200%",
-        height: "200%",
-        background: "linear-gradient(45deg, transparent, blue.500, transparent)",
-        opacity: 0,
-        transform: "rotate(45deg)",
-        transition: "opacity 0.3s, transform 0.3s",
       }}
       _hover={{
         transform: "scale(1.02)",
-        boxShadow: "0 0 15px rgba(59, 130, 246, 0.5)", // Blue glow for Spidey
-        borderColor: "blue.500",
-        _after: {
-          opacity: 0.3,
-          transform: "rotate(45deg) translate(20%, 20%)",
-        },
+        boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)", // Soft blue glow
+        borderColor: "blue.800",
       }}
       _focus={{
         outline: "none",
-        boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.7)",
+        boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.5)",
       }}
+      transition="all 0.2s"
     >
       <VStack align="start" spacing={2} height="100%" position="relative" zIndex={2}>
         <Heading
           as="h3"
           size="md"
           color="white"
-          textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(255, 215, 0, 0.3)" // Yellow glow for Spidey
+          textShadow="1px 1px 2px rgba(0, 0, 0, 0.8)"
           noOfLines={1}
         >
           {deck.title}
@@ -82,26 +66,30 @@ export function DeckCard({ deck, onClick, "aria-label": ariaLabel }: DeckCardPro
         </Text>
         <Box display="flex" gap={2}>
           <Badge
-            colorScheme="red"
+            colorScheme="blue"
             borderRadius="md"
             border="1px solid"
-            borderColor="red.500"
+            borderColor="blue.900"
             px={2}
             py={1}
             fontSize="xs"
             textTransform="uppercase"
+            bg="blue.800"
+            color="white"
           >
             Cards: {deck.cardCount}
           </Badge>
           <Badge
-            colorScheme="blue"
+            colorScheme="red"
             borderRadius="md"
             border="1px solid"
-            borderColor="blue.500"
+            borderColor="red.800"
             px={2}
             py={1}
             fontSize="xs"
             textTransform="uppercase"
+            bg="red.800"
+            color="white"
           >
             Subs: {deck.subscriberCount}
           </Badge>

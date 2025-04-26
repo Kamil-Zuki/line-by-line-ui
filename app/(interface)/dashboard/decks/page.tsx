@@ -188,10 +188,11 @@ export default function MyDecksPage() {
         <Flex wrap="wrap" justify="flex-start" gap={6}>
           {filteredDecks.map((deck) => (
             <DeckCard
-              key={deck.id}
-              deck={deck}
-              onClick={() => setSelectedDeck(deck)}
-            />
+            key={deck.id}
+            deck={deck}
+            onClick={() => setSelectedDeck(deck)}
+            aria-label={`View details for ${deck.title}`}
+          />
           ))}
         </Flex>
       ) : (

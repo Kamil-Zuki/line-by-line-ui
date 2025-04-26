@@ -12,6 +12,8 @@ import {
   StatLabel,
   StatNumber,
   SimpleGrid,
+  VStack,
+  CloseButton,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
@@ -77,17 +79,34 @@ export default function DashboardPage() {
         status: error.status,
       });
       toast({
-        title: "Error",
-        description: "Failed to load data. Please try again.",
-        status: "error",
+        position: "top",
         duration: 3000,
         isClosable: true,
-        position: "top",
-        // bg: "black",
-        // border: "2px solid",
-        // borderColor: "red.500",
-        // color: "white",
-        // _hover: { bg: "gray.900" },
+        render: ({ onClose }) => (
+          <Box
+            bg="black"
+            border="2px solid"
+            borderColor="red.500"
+            color="white"
+            p={4}
+            borderRadius="md"
+            boxShadow="0 0 10px rgba(255, 215, 0, 0.5)" // Yellow glow for Spidey
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            _hover={{ bg: "gray.900" }}
+          >
+            <VStack align="start" spacing={1}>
+              <Heading as="h3" size="sm" color="white">
+                Error
+              </Heading>
+              <Text fontSize="sm">
+                Failed to load data. Please try again.
+              </Text>
+            </VStack>
+            <CloseButton onClick={onClose} color="white" />
+          </Box>
+        ),
       });
       router.push("/dashboard");
     } finally {
@@ -271,7 +290,7 @@ export default function DashboardPage() {
         ) : (
           <Box textAlign="center" py={10}>
             <Text
-              fontSize="-déck lg"
+              fontSize="lg"
               color="gray.400"
               fontWeight="bold"
               textShadow="1px 1px 2px rgba(0, 0, 0, 0.8)"

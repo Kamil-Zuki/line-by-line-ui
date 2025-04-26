@@ -29,7 +29,7 @@ export default function SideBar({ buttonData }: SideBarProps) {
 
   const actions = [
     { label: "Open Profile", onClick: () => handleNavigation("/profile"), color: "white" },
-    { label: "Logout", onClick: () => logout(), color: "red.500" },
+    { label: "Logout", onClick: () => logout(), color: "red.800" },
   ];
 
   const profileActions = isAuthenticated ? actions : [];
@@ -43,13 +43,13 @@ export default function SideBar({ buttonData }: SideBarProps) {
         top="1rem"
         left="1rem"
         zIndex={20}
-        bg="red.500"
+        bg="red.800"
         border="2px solid"
-        borderColor="blue.500"
+        borderColor="blue.900"
         color="white"
         _hover={{
-          bg: "red.600",
-          boxShadow: "0 0 10px rgba(59, 130, 246, 0.5)",
+          bg: "red.700",
+          boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
         }}
         onClick={onOpen}
       >
@@ -61,15 +61,15 @@ export default function SideBar({ buttonData }: SideBarProps) {
         as="nav"
         w={{ base: isOpen ? "257px" : "0", md: "257px" }}
         h={{ base: "100vh", md: "100vh" }}
-        bg="black"
+        bg="gray.800"
         color="white"
         p={{ base: isOpen ? 4 : 0, md: 4 }}
         position={{ base: "fixed", md: "fixed" }}
         top={0}
         left={0}
         borderRight="2px solid"
-        borderColor="red.500"
-        boxShadow="0 0 15px rgba(59, 130, 246, 0.5)" // Blue glow for Spidey
+        borderColor="blue.900"
+        boxShadow="4px 4px 8px rgba(0, 0, 0, 0.5)" // Comic panel shadow
         overflowX="hidden"
         transition="width 0.3s"
         zIndex={10}
@@ -80,21 +80,20 @@ export default function SideBar({ buttonData }: SideBarProps) {
           left: "0",
           right: "0",
           bottom: "0",
-          background: "radial-gradient(circle at 5% 5%, transparent 0%, transparent 5%, white 6%, transparent 7%)",
-          backgroundSize: "20px 20px",
-          opacity: 0.1,
+          background: "linear-gradient(45deg, rgba(255, 255, 255, 0.05), transparent)",
+          opacity: 0.3,
           zIndex: 1,
         }}
         _after={{
           content: '""',
           position: "absolute",
           top: "10%",
-          left: "-5px",
-          width: "100px",
+          left: "-2px",
+          width: "60px",
           height: "2px",
           bg: "white",
           transform: "rotate(-45deg)",
-          boxShadow: "0 0 5px rgba(255, 255, 255, 0.5)",
+          boxShadow: "0 0 3px rgba(255, 255, 255, 0.3)",
           zIndex: 2,
         }}
       >
@@ -105,7 +104,7 @@ export default function SideBar({ buttonData }: SideBarProps) {
             fontSize="2xl"
             fontWeight="bold"
             color="white"
-            textShadow="2px 2px 4px rgba(0, 0, 0, 0.9), 0 0 8px rgba(255, 215, 0, 0.5)" // Yellow glow
+            textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(66, 153, 225, 0.3)" // Soft blue glow
             letterSpacing="wider"
             mb={4}
           >
@@ -122,44 +121,17 @@ export default function SideBar({ buttonData }: SideBarProps) {
               justifyContent="start"
               w="full"
               color="white"
-              bg="red.500"
+              bg="red.800"
               border="2px solid"
-              borderColor="blue.500"
+              borderColor="blue.900"
               _hover={{
-                bg: "red.600",
-                boxShadow: "0 0 10px rgba(255, 215, 0, 0.5)", // Yellow glow
-                _after: {
-                  opacity: 0.3,
-                  transform: "rotate(45deg) translate(20%, 20%)",
-                },
+                bg: "red.700",
+                boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
+                transform: "scale(1.02)",
               }}
               position="relative"
               overflow="hidden"
-              _before={{
-                content: '""',
-                position: "absolute",
-                top: "0",
-                left: "0",
-                right: "0",
-                bottom: "0",
-                background: "radial-gradient(circle at 10% 10%, transparent 0%, transparent 10%, white 11%, transparent 12%)",
-                backgroundSize: "15px 15px",
-                opacity: 0.1,
-                zIndex: 1,
-              }}
-              _after={{
-                content: '""',
-                position: "absolute",
-                top: "-50%",
-                left: "-50%",
-                width: "200%",
-                height: "200%",
-                background: "linear-gradient(45deg, transparent, blue.500, transparent)",
-                opacity: 0,
-                transform: "rotate(45deg)",
-                transition: "opacity 0.3s, transform 0.3s",
-                zIndex: 0,
-              }}
+              transition="all 0.2s"
             >
               Sign In
             </Button>
@@ -176,44 +148,17 @@ export default function SideBar({ buttonData }: SideBarProps) {
               justifyContent="start"
               w="full"
               color="white"
-              bg="red.500"
+              bg="red.800"
               border="2px solid"
-              borderColor="blue.500"
+              borderColor="blue.900"
               _hover={{
-                bg: "red.600",
-                boxShadow: "0 0 10px rgba(255, 215, 0, 0.5)", // Yellow glow
-                _after: {
-                  opacity: 0.3,
-                  transform: "rotate(45deg) translate(20%, 20%)",
-                },
+                bg: "red.700",
+                boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
+                transform: "scale(1.02)",
               }}
               position="relative"
               overflow="hidden"
-              _before={{
-                content: '""',
-                position: "absolute",
-                top: "0",
-                left: "0",
-                right: "0",
-                bottom: "0",
-                background: "radial-gradient(circle at 10% 10%, transparent 0%, transparent 10%, white 11%, transparent 12%)",
-                backgroundSize: "15px 15px",
-                opacity: 0.1,
-                zIndex: 1,
-              }}
-              _after={{
-                content: '""',
-                position: "absolute",
-                top: " masa-50%",
-                left: "-50%",
-                width: "200%",
-                height: "200%",
-                background: "linear-gradient(45deg, transparent, blue.500, transparent)",
-                opacity: 0,
-                transform: "rotate(45deg)",
-                transition: "opacity 0.3s, transform 0.3s",
-                zIndex: 0,
-              }}
+              transition="all 0.2s"
               onClick={() => handleNavigation(buttonInfo.path)}
             >
               <Text

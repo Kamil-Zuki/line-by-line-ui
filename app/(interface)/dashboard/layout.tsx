@@ -22,9 +22,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         left: "0",
         right: "0",
         bottom: "0",
-        background: "radial-gradient(circle at 5% 5%, transparent 0%, transparent 5%, white 6%, transparent 7%)",
-        backgroundSize: "30px 30px",
-        opacity: 0.05,
+        background: "linear-gradient(45deg, rgba(255, 255, 255, 0.05), transparent)",
+        opacity: 0.3,
         zIndex: 0,
       }}
     >
@@ -33,23 +32,22 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         flex="1"
         p={{ base: 4, md: 6 }}
         ml={{ base: 0, md: "257px" }}
-        bg="black"
+        bg="gray.800"
         border="2px solid"
-        borderColor="red.500"
+        borderColor="blue.900"
         borderRadius={{ md: "md" }}
-        boxShadow="0 0 15px rgba(59, 130, 246, 0.5)" // Blue glow for Spidey
+        boxShadow="4px 4px 8px rgba(0, 0, 0, 0.5)" // Comic panel shadow
         position="relative"
         zIndex={1}
         _after={{
           content: '""',
           position: "absolute",
-          top: "-5px",
+          top: "-2px",
           left: "10%",
-          width: "100px",
+          width: "60px",
           height: "2px",
           bg: "white",
-          transform: "rotate(-45deg)",
-          boxShadow: "0 0 5px rgba(255, 255, 255, 0.5)",
+          boxShadow: "0 0 3px rgba(255, 255, 255, 0.3)",
           zIndex: 2,
         }}
       >

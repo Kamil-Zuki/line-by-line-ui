@@ -9,6 +9,8 @@ import {
   Button,
   useToast,
   Spinner,
+  VStack,
+  CloseButton,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
@@ -51,6 +53,38 @@ export default function MyDecksPage() {
   const router = useRouter();
   const toast = useToast();
 
+  // Custom toast renderer for Spider-Man style
+  const showToast = (title: string, description: string, status: "success" | "error") => {
+    toast({
+      position: "top",
+      duration: 3000,
+      isClosable: true,
+      render: ({ onClose }) => (
+        <Box
+          bg="black"
+          border="2px solid"
+          borderColor={status === "success" ? "blue.500" : "red.500"}
+          color="white"
+          p={4}
+          borderRadius="md"
+          boxShadow="0 0 10px rgba(255, 215, 0, 0.5)" // Yellow glow for Spidey
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          _hover={{ bg: "gray.900" }}
+        >
+          <VStack align="start" spacing={1}>
+            <Heading as="h3" size="sm" color="white">
+              {title}
+            </Heading>
+            <Text fontSize="sm">{description}</Text>
+          </VStack>
+          <CloseButton onClick={onClose} color="white" />
+        </Box>
+      ),
+    });
+  };
+
   // Fetch decks
   const fetchDecks = useCallback(async () => {
     setIsLoading(true);
@@ -61,18 +95,12 @@ export default function MyDecksPage() {
       console.error("Error fetching decks:", error.message, {
         status: error.status,
       });
-      toast({
-        title: "Error",
-        description: "Failed to load decks. Please try again.",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
+      showToast("Error", "Failed to load decks. Please try again.", "error");
       router.push("/dashboard");
     } finally {
       setIsLoading(false);
     }
-  }, [toast, router]);
+  }, [router]);
 
   useEffect(() => {
     if (!isAuthenticated || authLoading) {
@@ -97,24 +125,12 @@ export default function MyDecksPage() {
       await fetchApi(`/deck/${deckId}`, { method: "DELETE" });
       setDecks((prevDecks) => prevDecks.filter((deck) => deck.id !== deckId));
       setSelectedDeck(null);
-      toast({
-        title: "Success",
-        description: "Deck deleted successfully.",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
+      showToast("Success", "Deck deleted successfully.", "success");
     } catch (error: any) {
       console.error("Error deleting deck:", error.message, {
         status: error.status,
       });
-      toast({
-        title: "Error",
-        description: "Failed to delete deck. Please try again.",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
+      showToast("Error", "Failed to delete deck. Please try again.", "error");
     }
   };
 
@@ -150,78 +166,159 @@ export default function MyDecksPage() {
   };
 
   return (
-    <Box p={{ base: 4, md: 6 }} maxW="1200px" mx="auto">
-      <Heading as="h1" size="lg" mb={4}>
-        My Decks, {user?.userName || "User"}
-      </Heading>
-
-      <Flex
-        justify="space-between"
-        align={{ base: "stretch", sm: "center" }}
-        mb={6}
-        direction={{ base: "column", sm: "row" }}
-        gap={4}
+    <Box
+      minH="100vh"
+      p={{ base: 4, md: 8 }}
+      position="relative"
+      _before={{
+        content: '""',
+        position: "absolute",
+        top: "0",
+        left: "0",
+        right: "0",
+        bottom: "0",
+        border: "3px solid",
+        borderColor: "red.500",
+        boxShadow: "0 0 15px rgba(59, 130, 246, 0.5)", // Blue glow for Spidey
+        zIndex: 1,
+        background: "radial-gradient(circle at 5% 5%, transparent 0%, transparent 5%, white 6%, transparent 7%)",
+        backgroundSize: "30px 30px",
+        opacity: 0.1,
+      }}
+      _after={{
+        content: '""',
+        position: "absolute",
+        top: "-5px",
+        right: "10%",
+        width: "100px",
+        height: "2px",
+        bg: "white",
+        transform: "rotate(45deg)",
+        boxShadow: "0 0 5px rgba(255, 255, 255, 0.5)",
+        zIndex: 2,
+      }}
+    >
+      <Box
+        maxW="1200px"
+        mx="auto"
+        bg="black"
+        p={{ base: 4, md: 6 }}
+        border="2px solid"
+        borderColor="red.500"
+        boxShadow="4px 4px 0 rgba(0, 0, 0, 0.8)"
+        borderRadius="md"
+        position="relative"
+        zIndex={2}
       >
-        <FilterControls
-          filter={filter}
-          setFilter={setFilter}
-          sortOption={sortOption}
-          setSortOption={setSortOption}
-          filterOptions={filterOptions}
-          sortOptions={sortOptions}
-        />
-        <Button
-          colorScheme="teal"
-          onClick={handleCreateDeck}
-          size="md"
-          minW="150px"
+        <Heading
+          as="h1"
+          size={{ base: "lg", md: "xl" }}
+          mb={4}
+          color="white"
+          textShadow="2px 2px 4px rgba(0, 0, 0, 0.9), 0 0 8px rgba(255, 215, 0, 0.5)" // Yellow glow for Spidey
         >
-          Create New Deck
-        </Button>
-      </Flex>
+          My Decks, {user?.userName || "User"}
+        </Heading>
 
-      {isLoading ? (
-        <Flex justify="center" py={10}>
-          <Spinner size="xl" color="teal.500" />
-        </Flex>
-      ) : filteredDecks.length > 0 ? (
-        <Flex wrap="wrap" justify="flex-start" gap={6}>
-          {filteredDecks.map((deck) => (
-            <DeckCard
-            key={deck.id}
-            deck={deck}
-            onClick={() => setSelectedDeck(deck)}
-            aria-label={`View details for ${deck.title}`}
+        <Flex
+          justify="space-between"
+          align={{ base: "stretch", sm: "center" }}
+          mb={6}
+          direction={{ base: "column", sm: "row" }}
+          gap={4}
+        >
+          <FilterControls
+            filter={filter}
+            setFilter={setFilter}
+            sortOption={sortOption}
+            setSortOption={setSortOption}
+            filterOptions={filterOptions}
+            sortOptions={sortOptions}
           />
-          ))}
-        </Flex>
-      ) : (
-        <Box textAlign="center" py={10}>
-          <Text fontSize="lg" mb={4}>
-            No decks match your filter.
-          </Text>
-          <Button colorScheme="teal" onClick={handleCreateDeck}>
-            Create Your First Deck
+          <Button
+            bg="red.500"
+            border="2px solid"
+            borderColor="blue.500"
+            color="white"
+            onClick={handleCreateDeck}
+            size="md"
+            minW="150px"
+            _hover={{
+              bg: "red.600",
+              boxShadow: "0 0 10px rgba(59, 130, 246, 0.5)",
+            }}
+            _active={{ bg: "red.700" }}
+          >
+            Create New Deck
           </Button>
-        </Box>
-      )}
+        </Flex>
 
-      {selectedDeck && (
-        <DeckDetailsModal
-          deck={selectedDeck}
-          isOpen={!!selectedDeck}
-          onClose={() => setSelectedDeck(null)}
-          userId={user?.id || ""}
-          onEdit={selectedDeck.ownerId === user?.id ? handleEdit : undefined}
-          onDelete={
-            selectedDeck.ownerId === user?.id ? handleDelete : undefined
-          }
-          onManageCards={
-            selectedDeck.ownerId === user?.id ? handleManageCards : undefined
-          }
-          onLearn={selectedDeck.ownerId === user?.id ? handleLearn : undefined}
-        />
-      )}
+        {isLoading ? (
+          <Flex justify="center" py={10}>
+            <Spinner
+              size="xl"
+              color="red.500"
+              thickness="4px"
+              speed="0.65s"
+              _hover={{ filter: "drop-shadow(0 0 10px rgba(239, 68, 68, 0.7))" }}
+            />
+          </Flex>
+        ) : filteredDecks.length > 0 ? (
+          <Flex wrap="wrap" justify="flex-start" gap={6}>
+            {filteredDecks.map((deck) => (
+              <DeckCard
+                key={deck.id}
+                deck={deck}
+                onClick={() => setSelectedDeck(deck)}
+                aria-label={`View details for ${deck.title}`}
+              />
+            ))}
+          </Flex>
+        ) : (
+          <Box textAlign="center" py={10}>
+            <Text
+              fontSize="lg"
+              color="gray.400"
+              fontWeight="bold"
+              textShadow="1px 1px 2px rgba(0, 0, 0, 0.8)"
+              mb={4}
+            >
+              No decks match your filter.
+            </Text>
+            <Button
+              bg="red.500"
+              border="2px solid"
+              borderColor="blue.500"
+              color="white"
+              onClick={handleCreateDeck}
+              _hover={{
+                bg: "red.600",
+                boxShadow: "0 0 10px rgba(59, 130, 246, 0.5)",
+              }}
+              _active={{ bg: "red.700" }}
+            >
+              Create Your First Deck
+            </Button>
+          </Box>
+        )}
+
+        {selectedDeck && (
+          <DeckDetailsModal
+            deck={selectedDeck}
+            isOpen={!!selectedDeck}
+            onClose={() => setSelectedDeck(null)}
+            userId={user?.id || ""}
+            onEdit={selectedDeck.ownerId === user?.id ? handleEdit : undefined}
+            onDelete={
+              selectedDeck.ownerId === user?.id ? handleDelete : undefined
+            }
+            onManageCards={
+              selectedDeck.ownerId === user?.id ? handleManageCards : undefined
+            }
+            onLearn={selectedDeck.ownerId === user?.id ? handleLearn : undefined}
+          />
+        )}
+      </Box>
     </Box>
   );
 }

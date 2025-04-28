@@ -1,3 +1,4 @@
+//app\hooks\useAuth.ts
 "use client";
 
 import { useState, useEffect } from "react";
@@ -93,7 +94,7 @@ export function useAuth() {
         };
       }
 
-      const { refreshToken } = await res.json(); // Server returns refresh token
+      const { refreshToken } = await res.json();
       document.cookie = `refreshToken=${refreshToken}; path=/; max-age=${
         60 * 60 * 24 * 7
       }; sameSite=lax`; // Store refresh token client-side

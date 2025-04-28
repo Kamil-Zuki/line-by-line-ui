@@ -9,11 +9,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
   //#endregion
 
-  // Get deckId from query parameters
-  const deckId = req.nextUrl.searchParams.get("deckId");
-  if (!deckId)
-    return NextResponse.json({ error: "deckId is required" }, { status: 400 });
-
   const response = await fetch(`${API_URL}`, {
     method: "GET",
     headers: {

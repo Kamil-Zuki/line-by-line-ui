@@ -1,10 +1,11 @@
+import { error } from "console";
 import { NextRequest, NextResponse } from "next/server";
 
 const API_URL = "http://85.175.218.17/api/v1/card";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   //#region Access token
   const accessToken = req?.cookies.get("accessToken")?.value;
@@ -12,7 +13,10 @@ export async function GET(
     return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
   //#endregion
 
-  const response = await fetch(`${API_URL}/${params.id}`, {
+  const awaitedParams = await params;
+  const id = awaitedParams.id;
+
+  const response = await fetch(`${API_URL}/${id}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -22,7 +26,7 @@ export async function GET(
 
   if (!response.ok)
     return NextResponse.json(
-      { error: "Failed to create a card" },
+      { error: "Failed to get a card" },
       { status: 500 }
     );
 
@@ -44,25 +48,25 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const awaitedParams = await params
   const id = awaitedParams.id; 
    
-   const body = await req.json();
+  const body = await req.json();
 
-const response = await fetch(`${API_URL}/api/v1/card/${id}`, {
-  method: "PUT",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${accessToken}`
-  },
-  body: JSON.stringify(body),
-});
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`
+    },
+    body: JSON.stringify(body),
+  });
 
-const data = await response.json();
+const result = await response.json();
 
 if (!response.ok) {
-  return NextResponse.json(data, { status: response.status });
+  return NextResponse.json(result, { status: response.status });
 }
 
-return NextResponse.json(data);
 
+return NextResponse.json(result);
 } catch (error) { 
   return NextResponse.json({ error: "Internal Server Error" }, { status: 500 }); } 
 }

@@ -1,6 +1,14 @@
 "use client";
 
-import { Box, VStack, Text, Button, Divider, Icon, useDisclosure } from "@chakra-ui/react";
+import {
+  Box,
+  VStack,
+  Text,
+  Button,
+  Divider,
+  Icon,
+  useDisclosure,
+} from "@chakra-ui/react";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { FaSignInAlt, FaBars } from "react-icons/fa";
@@ -28,7 +36,11 @@ export default function SideBar({ buttonData }: SideBarProps) {
   };
 
   const actions = [
-    { label: "Open Profile", onClick: () => handleNavigation("/profile"), color: "white" },
+    {
+      label: "Open Profile",
+      onClick: () => handleNavigation("/profile"),
+      color: "white",
+    },
     { label: "Logout", onClick: () => logout(), color: "red.800" },
   ];
 
@@ -80,7 +92,8 @@ export default function SideBar({ buttonData }: SideBarProps) {
           left: "0",
           right: "0",
           bottom: "0",
-          background: "linear-gradient(45deg, rgba(255, 255, 255, 0.05), transparent)",
+          background:
+            "linear-gradient(45deg, rgba(255, 255, 255, 0.05), transparent)",
           opacity: 0.3,
           zIndex: 1,
         }}

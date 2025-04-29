@@ -1,6 +1,6 @@
 "use client";
 
-import SideBar from "@/app/components/sideBar";
+import SideBar from "@/app/components/SideBar";
 import { Box, Flex } from "@chakra-ui/react";
 import { ReactNode } from "react";
 import { FaHome, FaLayerGroup, FaListAlt } from "react-icons/fa"; // Added FaListAlt

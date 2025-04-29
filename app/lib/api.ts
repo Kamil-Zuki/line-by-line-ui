@@ -72,7 +72,6 @@ export async function fetchApi<T>(
       throw error;
     }
 
-    
     return (await res.json()) as T;
   } catch (error: any) {
     console.error("Network or fetch error:", {
@@ -138,17 +137,25 @@ export interface DeckResponse {
   llmModel?: string; // New
 }
 
-
 export interface CardDto {
   id: string;
+  deckId: string;
   front: string;
   back: string;
   hint?: string;
   mediaUrl?: string;
-  skill: "Reading" | "Writing" | "Speaking" | "Listening";
-  deckId: string;
-  createdDate: string;
-  progress?: UserCardProgress;
+  skill: SkillType;
+  createdDate: string; // Added
+  progress?: UserCardProgressDto; // Added
+}
+
+export type SkillType = "Reading" | "Writing" | "Speaking" | "Listening";
+
+export interface UserCardProgressDto {
+  interval: number;
+  easiness: number;
+  repetitions: number;
+  nextReviewDate?: string;
 }
 
 export interface UserCardProgress {

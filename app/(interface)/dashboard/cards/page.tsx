@@ -30,12 +30,12 @@ export default function AllCardsPage() {
 
   // State for sorting and filtering
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | null>(null);
-  const [filterDeck, setFilterDeck] = useState<string>("");
+  const [filterDeck, setFilterDeck] = useState<string>("all"); // Default to "all"
 
   // Get unique deck titles for the filter dropdown
   const deckTitles = useMemo(() => {
     const titles = new Set(cards.map((card) => card.deckTitle));
-    return ["", ...Array.from(titles)]; // Include empty option for "All Decks"
+    return ["all", ...Array.from(titles)]; // Use "all" as the default option
   }, [cards]);
 
   // Sort and filter cards
@@ -43,7 +43,7 @@ export default function AllCardsPage() {
     let filtered = [...cards];
 
     // Apply filter by deckTitle
-    if (filterDeck) {
+    if (filterDeck !== "all") {
       filtered = filtered.filter((card) => card.deckTitle === filterDeck);
     }
 
@@ -94,15 +94,33 @@ export default function AllCardsPage() {
       <Flex mb={4} justifyContent="flex-end">
         <Select
           w="200px"
-          placeholder="Filter by Deck"
           value={filterDeck}
           onChange={(e) => setFilterDeck(e.target.value)}
           bg="gray.700"
           borderColor="blue.900"
+          color="white"
+          css={{
+            "&": {
+              backgroundColor: "#1A202C",
+              color: "white",
+            },
+            "& > option": {
+              backgroundColor: "#1A202C",
+              color: "white",
+            },
+          }}
+          _focus={{
+            borderColor: "blue.700",
+            boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
+          }}
         >
           {deckTitles.map((title) => (
-            <option key={title || "all"} value={title}>
-              {title || "All Decks"}
+            <option
+              key={title}
+              value={title}
+              style={{ backgroundColor: "#1A202C", color: "white" }}
+            >
+              {title === "all" ? "All Decks" : title}
             </option>
           ))}
         </Select>

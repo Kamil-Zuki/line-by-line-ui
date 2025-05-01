@@ -1,8 +1,9 @@
+//app\api\personal-vocab\study\route.ts
 import { NextRequest, NextResponse } from "next/server";
 
 const API_URL = "http://85.175.218.17/api/v1/study";
 
-export async function GET(req: NextRequest, {params}: {params: Promise<{sessionId: string}>}) {
+export async function GET(req: NextRequest, {params}: {params: Promise<{id: string}>}) {
     //#region Access token
     const accessToken = req.cookies.get("accessToken")?.value;
     if (!accessToken)
@@ -11,9 +12,9 @@ export async function GET(req: NextRequest, {params}: {params: Promise<{sessionI
 
 try {
     const awaitedParams = await params;
-    const sessionId = awaitedParams.sessionId;
+    const id = awaitedParams.id;
 
-    const response = await fetch(`${API_URL}/${sessionId}`, {
+    const response = await fetch(`${API_URL}/${id}`, {
     method: "GET",
     headers: {
         Authorization: `Bearer ${accessToken}`,

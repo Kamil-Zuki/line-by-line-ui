@@ -1,3 +1,4 @@
+//app\api\personal-vocab\study\start\route.ts
 import { NextRequest, NextResponse } from "next/server";
 
 const API_URL = 'http://85.175.218.17/api/v1/study/start'

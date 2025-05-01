@@ -1,3 +1,4 @@
+//app\api\personal-vocab\study\end\[sessionId]\route.ts
 import { NextRequest, NextResponse } from "next/server";
 
 const API_URL = 'http://85.175.218.17/api/v1/study/end'
@@ -15,15 +16,15 @@ export async function POST(
 try {
     const awaitedParams = await params;
     const id = awaitedParams.id;
+    console.log("sessionId", id)
 
-    const body = await req.json();
     const response = await fetch(`${API_URL}/${id}`, {
         method: "POST",
         headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify(""),
       });
       if (!response.ok) {
         return NextResponse.json(

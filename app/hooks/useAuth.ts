@@ -1,11 +1,10 @@
-//app\hooks\useAuth.ts
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 interface Tokens {
-  refreshToken?: string; // Only refresh token is stored client-side
+  refreshToken?: string;
 }
 
 interface User {
@@ -24,31 +23,39 @@ export function useAuth() {
   const router = useRouter();
 
   const getCookie = (name: string): string | undefined => {
-    // Get the full cookie string
     const cookieString = document.cookie;
     if (!cookieString) return undefined;
 
-    // Split into individual cookie entries
     const cookies = cookieString.split("; ");
-
-    // Find the cookie with the matching name
     const cookie = cookies.find((row) => row.startsWith(`${name}=`));
     if (!cookie) return undefined;
 
-    // Extract the value after the first '='
-    const value = cookie.substring(name.length + 1); // +1 for the '='
-
+    const value = cookie.substring(name.length + 1);
+    console.log(`Cookie ${name}:`, value); // Debug log
     return value;
   };
 
   useEffect(() => {
     const checkAuth = async () => {
+      console.log("Starting checkAuth");
       setLoading(true);
       try {
-        const res = await fetch("/api/auth/me", { credentials: "include" }); // Access token is HttpOnly
+        console.log("Fetching /api/auth/me");
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10-second timeout
+
+        const res = await fetch("/api/auth/me", {
+          credentials: "include",
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+        console.log("/api/auth/me response status:", res.status);
+
         if (res.ok) {
           const userData: User = await res.json();
-          const refreshToken = getCookie("refreshToken"); // Refresh token is not HttpOnly
+          console.log("User data:", userData);
+          const refreshToken = getCookie("refreshToken");
           setTokens({ refreshToken });
           setUser(userData);
           setIsAuthenticated(true);
@@ -56,6 +63,7 @@ export function useAuth() {
           console.log("Access token invalid or expired, attempting refresh");
           const refreshed = await refreshToken();
           if (!refreshed) {
+            console.log("Refresh failed, setting unauthenticated state");
             setIsAuthenticated(false);
             setUser(null);
           }
@@ -64,17 +72,86 @@ export function useAuth() {
           setIsAuthenticated(false);
           setUser(null);
         }
-      } catch (error) {
-        console.error("Error in checkAuth:", error);
+      } catch (error: any) {
+        console.error("Error in checkAuth:", error.message);
+        if (error.name === "AbortError") {
+          console.error("Request to /api/auth/me timed out");
+        }
         setIsAuthenticated(false);
         setUser(null);
       } finally {
+        console.log("Setting loading to false in checkAuth");
         setLoading(false);
       }
     };
 
     checkAuth();
   }, []);
+
+  const refreshToken = async (): Promise<boolean> => {
+    const refresh = tokens.refreshToken || getCookie("refreshToken");
+    if (!refresh) {
+      console.log("No refresh token available, cannot refresh");
+      logout();
+      return false;
+    }
+
+    console.log("Refreshing token with refreshToken:", refresh);
+    setLoading(true);
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      const res = await fetch("/api/auth/refresh-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: refresh }),
+        credentials: "include",
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+      console.log("/api/auth/refresh-token response status:", res.status);
+
+      if (!res.ok) {
+        console.log(`Refresh failed with status: ${res.status}`);
+        logout();
+        return false;
+      }
+
+      const { refreshToken: newRefreshToken } = await res.json();
+      console.log("New refresh token:", newRefreshToken);
+      document.cookie = `refreshToken=${newRefreshToken}; path=/; max-age=${
+        60 * 60 * 24 * 7
+      }; sameSite=lax`;
+      setTokens({ refreshToken: newRefreshToken });
+
+      console.log("Fetching /api/auth/me after refresh");
+      const meRes = await fetch("/api/auth/me", {
+        credentials: "include",
+        signal: new AbortController().signal,
+      });
+
+      console.log("/api/auth/me after refresh status:", meRes.status);
+      if (meRes.ok) {
+        const userData = await meRes.json();
+        console.log("User data after refresh:", userData);
+        setUser(userData);
+        setIsAuthenticated(true);
+      }
+      return true;
+    } catch (error: any) {
+      console.error("Refresh token failed:", error.message);
+      if (error.name === "AbortError") {
+        console.error("Request to /api/auth/refresh-token timed out");
+      }
+      logout();
+      return false;
+    } finally {
+      console.log("Setting loading to false in refreshToken");
+      setLoading(false);
+    }
+  };
 
   const login = async (email: string, password: string) => {
     setLoading(true);
@@ -83,7 +160,7 @@ export function useAuth() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
-        credentials: "include", // Server sets HttpOnly access token
+        credentials: "include",
       });
 
       if (!res.ok) {
@@ -97,7 +174,7 @@ export function useAuth() {
       const { refreshToken } = await res.json();
       document.cookie = `refreshToken=${refreshToken}; path=/; max-age=${
         60 * 60 * 24 * 7
-      }; sameSite=lax`; // Store refresh token client-side
+      }; sameSite=lax`;
       setTokens({ refreshToken });
 
       const meRes = await fetch("/api/auth/me", { credentials: "include" });
@@ -126,7 +203,7 @@ export function useAuth() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, confirmPassword }),
-        credentials: "include", // Server might set access token
+        credentials: "include",
       });
 
       if (!res.ok) {
@@ -151,9 +228,9 @@ export function useAuth() {
     try {
       const res = await fetch("/api/auth/logout", {
         method: "POST",
-        credentials: "include", // Server invalidates HttpOnly access token
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken: tokens.refreshToken }), // Send refresh token if needed
+        body: JSON.stringify({ refreshToken: tokens.refreshToken }),
       });
       console.log("Tokens", tokens);
       if (!res.ok) {
@@ -164,56 +241,10 @@ export function useAuth() {
       setIsAuthenticated(false);
       setTokens({ refreshToken: "" });
       setUser(null);
-      document.cookie = "refreshToken=; path=/; max-age=0; sameSite=lax"; // Clear refresh token
+      document.cookie = "refreshToken=; path=/; max-age=0; sameSite=lax";
       router.push("/login");
     } catch (error) {
       console.error("Logout error:", error);
-    }
-  };
-
-  const refreshToken = async (): Promise<boolean> => {
-    const refresh = tokens.refreshToken || getCookie("refreshToken");
-    if (!refresh) {
-      console.log("No refresh token available, cannot refresh");
-      logout();
-      return false;
-    }
-
-    console.log("Refresh token method:", refresh);
-
-    setLoading(true);
-    try {
-      const res = await fetch("/api/auth/refresh-token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken: refresh }),
-        credentials: "include", // Server sets new HttpOnly access token
-      });
-
-      if (!res.ok) {
-        console.log(`Refresh failed with status: ${res.status}`);
-        logout();
-        return false;
-      }
-
-      const { refreshToken: newRefreshToken } = await res.json(); // Server returns new refresh token
-      document.cookie = `refreshToken=${newRefreshToken}; path=/; max-age=${
-        60 * 60 * 24 * 7
-      }; sameSite=lax`;
-      setTokens({ refreshToken: newRefreshToken });
-
-      const meRes = await fetch("/api/auth/me", { credentials: "include" });
-      if (meRes.ok) {
-        setUser(await meRes.json());
-        setIsAuthenticated(true);
-      }
-      return true;
-    } catch (error) {
-      console.error("Refresh token failed:", error);
-      logout();
-      return false;
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -272,7 +303,7 @@ export function useAuth() {
 
   return {
     isAuthenticated,
-    tokens, // Only contains refreshToken
+    tokens,
     user,
     login,
     logout,

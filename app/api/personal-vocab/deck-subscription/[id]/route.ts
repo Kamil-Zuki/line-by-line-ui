@@ -13,7 +13,10 @@ export async function POST(
   //#endregion
 
   try {
-    const response = await fetch(`${API_URL}/${params.id}`, {
+    const awatedParams =  await params; 
+    const id = awatedParams.id;
+
+    const response = await fetch(`${API_URL}/${id}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,

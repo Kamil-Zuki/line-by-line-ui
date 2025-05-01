@@ -1,3 +1,4 @@
+//app\(interface)\dashboard\decks\search\page.tsx
 "use client";
 
 import { useState, useEffect } from "react";

@@ -11,7 +11,6 @@ export async function GET(
   if (!accessToken)
     return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
   //#endregion
-
   
   const awaitedParams = await params;
   const id = awaitedParams.id;

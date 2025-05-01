@@ -15,6 +15,7 @@ export async function POST(
 
   const awaitedParams = await params;
   const id = awaitedParams.id;
+  console.log(id)
   const response = await fetch(`${API_URL}/review/${id}`, {
     method: "POST",
     headers: {

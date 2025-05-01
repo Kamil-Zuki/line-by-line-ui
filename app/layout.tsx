@@ -18,15 +18,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {/* Decorative Elements */}
         <div
           className={styles.cityscapeGradient}
-          aria-hidden="true" // Mark as decorative for screen readers
+          aria-hidden="true"
         />
         <div
           className={styles.webThread}
-          aria-hidden="true" // Mark as decorative for screen readers
+          aria-hidden="true"
         />
         <div
           className={styles.comicBorder}
-          aria-hidden="true" // Mark as decorative for screen readers
+          aria-hidden="true"
         />
         <ChakraWrapper>{children}</ChakraWrapper>
       </body>

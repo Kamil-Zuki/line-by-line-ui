@@ -11,13 +11,14 @@ import {
   FormLabel,
   Switch,
   Button,
+  useToast,
 } from "@chakra-ui/react";
 
 const NotificationSettings = () => {
   const [emailNotifications, setEmailNotifications] = useState(true);
+  const toast = useToast(); // Use the useToast hook directly
 
   const showToast = (title: string, description: string, status: "success") => {
-    const toast = (window as any).toast;
     toast({
       position: "top",
       duration: 3000,

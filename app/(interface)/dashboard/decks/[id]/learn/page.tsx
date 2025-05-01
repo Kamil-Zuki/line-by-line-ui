@@ -10,6 +10,8 @@ import {
   Spinner,
   CloseButton,
   VStack,
+  Select,
+  Flex,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
@@ -25,11 +27,18 @@ export default function LearnPage({
   const [cards, setCards] = useState<CardDto[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [sortBy, setSortBy] = useState<string>("nextReviewDate");
+  const [skill, setSkill] = useState<string | null>(null);
+  const [mode, setMode] = useState<string>("learn");
   const router = useRouter();
   const toast = useToast();
 
   // Custom toast renderer for Ultimate Spider-Man style
-  const showToast = (title: string, description: string, status: "success" | "error") => {
+  const showToast = (
+    title: string,
+    description: string,
+    status: "success" | "error"
+  ) => {
     toast({
       position: "top",
       duration: 3000,
@@ -68,7 +77,14 @@ export default function LearnPage({
     const fetchDueCards = async () => {
       setIsLoading(true);
       try {
-        const response = await fetchApi<CardDto[]>(`/card/due?deckId=${id}`);
+        // Build query parameters
+        const queryParams = new URLSearchParams({ deckId: id, mode });
+        if (sortBy) queryParams.append("sortBy", sortBy);
+        if (skill) queryParams.append("skill", skill);
+
+        const response = await fetchApi<CardDto[]>(
+          `/card/due?${queryParams.toString()}`
+        );
         setCards(response);
       } catch (error: any) {
         console.error("Error fetching due cards:", error.message, {
@@ -84,7 +100,7 @@ export default function LearnPage({
     if (isAuthenticated && !authLoading) {
       fetchDueCards();
     }
-  }, [isAuthenticated, authLoading, id, router]);
+  }, [isAuthenticated, authLoading, id, router, sortBy, skill, mode]);
 
   // Handle review submission
   const handleReview = async (quality: number) => {
@@ -113,7 +129,7 @@ export default function LearnPage({
 
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" py={10} bg="gray.800">
+      <Box display="flex" justifyContent="center" py={10}>
         <Spinner
           size="xl"
           color="white"
@@ -127,47 +143,14 @@ export default function LearnPage({
 
   if (cards.length === 0) {
     return (
-      <Box
-        maxW="800px"
-        mx="auto"
-        p={{ base: 4, md: 6 }}
-        bg="gray.800"
-        border="2px solid"
-        borderColor="blue.900"
-        borderRadius="md"
-        boxShadow="4px 4px 8px rgba(0, 0, 0, 0.5)" // Comic panel shadow
-        position="relative"
-        _before={{
-          content: '""',
-          position: "absolute",
-          top: "0",
-          left: "0",
-          right: "0",
-          bottom: "0",
-          background: "linear-gradient(45deg, rgba(255, 255, 255, 0.05), transparent)",
-          opacity: 0.3,
-          zIndex: 1,
-        }}
-        _after={{
-          content: '""',
-          position: "absolute",
-          top: "-2px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: "60px",
-          height: "2px",
-          bg: "white",
-          boxShadow: "0 0 3px rgba(255, 255, 255, 0.3)",
-          zIndex: 2,
-        }}
-      >
-        <VStack spacing={4} position="relative" zIndex={3} align="stretch">
+      <Box maxW="800px" mx="auto" p={{ base: 4, md: 6 }}>
+        <VStack spacing={4} align="stretch">
           <Heading
             as="h1"
             size={{ base: "lg", md: "xl" }}
             color="white"
             textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(66, 153, 225, 0.3)" // Soft blue glow
-            textAlign="center" // Center the heading text
+            textAlign="center"
           >
             Learn Deck
           </Heading>
@@ -186,7 +169,7 @@ export default function LearnPage({
             }}
             _active={{ bg: "red.900" }}
             transition="all 0.2s"
-            alignSelf="center" // Center the button
+            alignSelf="center"
             onClick={() => router.push(`/dashboard/decks/${id}`)}
           >
             Back to Deck
@@ -197,50 +180,102 @@ export default function LearnPage({
   }
 
   return (
-    <Box
-      maxW="800px"
-      mx="auto"
-      p={{ base: 4, md: 6 }}
-      bg="gray.800"
-      border="2px solid"
-      borderColor="blue.900"
-      borderRadius="md"
-      boxShadow="4px 4px 8px rgba(0, 0, 0, 0.5)" // Comic panel shadow
-      position="relative"
-      _before={{
-        content: '""',
-        position: "absolute",
-        top: "0",
-        left: "0",
-        right: "0",
-        bottom: "0",
-        background: "linear-gradient(45deg, rgba(255, 255, 255, 0.05), transparent)",
-        opacity: 0.3,
-        zIndex: 1,
-      }}
-      _after={{
-        content: '""',
-        position: "absolute",
-        top: "-2px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        width: "60px",
-        height: "2px",
-        bg: "white",
-        boxShadow: "0 0 3px rgba(255, 255, 255, 0.3)",
-        zIndex: 2,
-      }}
-    >
-      <VStack spacing={4} position="relative" zIndex={3} align="stretch">
+    <Box maxW="800px" mx="auto" p={{ base: 4, md: 6 }}>
+      <VStack spacing={4} align="stretch">
         <Heading
           as="h1"
           size={{ base: "lg", md: "xl" }}
           color="white"
           textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(66, 153, 225, 0.3)" // Soft blue glow
-          textAlign="center" // Center the heading text
+          textAlign="center"
         >
           Learn Deck
         </Heading>
+
+        {/* Controls for sorting, skill, and mode */}
+        <Flex gap={4} flexWrap="wrap" justifyContent="center">
+          <Select
+            w="200px"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            bg="gray.700"
+            borderColor="blue.900"
+            color="white"
+            css={{
+              "&": {
+                backgroundColor: "#1A202C",
+                color: "white",
+              },
+              "& > option": {
+                backgroundColor: "#1A202C",
+                color: "white",
+              },
+            }}
+            _focus={{
+              borderColor: "blue.700",
+              boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
+            }}
+          >
+            <option value="nextReviewDate">Sort by Next Review Date</option>
+            <option value="createdDate">Sort by Created Date</option>
+            <option value="easiness">Sort by Easiness</option>
+          </Select>
+
+          <Select
+            w="200px"
+            value={skill || ""}
+            onChange={(e) => setSkill(e.target.value || null)}
+            bg="gray.700"
+            borderColor="blue.900"
+            color="white"
+            css={{
+              "&": {
+                backgroundColor: "#1A202C",
+                color: "white",
+              },
+              "& > option": {
+                backgroundColor: "#1A202C",
+                color: "white",
+              },
+            }}
+            _focus={{
+              borderColor: "blue.700",
+              boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
+            }}
+          >
+            <option value="">All Skills</option>
+            <option value="reading">Reading</option>
+            <option value="writing">Writing</option>
+            <option value="speaking">Speaking</option>
+          </Select>
+
+          <Select
+            w="200px"
+            value={mode}
+            onChange={(e) => setMode(e.target.value)}
+            bg="gray.700"
+            borderColor="blue.900"
+            color="white"
+            css={{
+              "&": {
+                backgroundColor: "#1A202C",
+                color: "white",
+              },
+              "& > option": {
+                backgroundColor: "#1A202C",
+                color: "white",
+              },
+            }}
+            _focus={{
+              borderColor: "blue.700",
+              boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
+            }}
+          >
+            <option value="learn">Learn Mode</option>
+            <option value="review">Review Mode</option>
+          </Select>
+        </Flex>
+
         <CardReview
           key={cards[currentIndex].id} // Add key to force re-mount when card changes
           card={cards[currentIndex]}

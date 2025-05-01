@@ -3,32 +3,55 @@ import { NextRequest, NextResponse } from "next/server";
 const API_URL = "http://85.175.218.17/api/v1/card";
 
 export async function GET(req: NextRequest) {
-  //#region Access token
+  // #region Access token
   const accessToken = req?.cookies.get("accessToken")?.value;
-  if (!accessToken)
+  if (!accessToken) {
     return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
-  //#endregion
+  }
+  // #endregion
 
-  // Get deckId from query parameters
-  const deckId = req.nextUrl.searchParams.get("deckId");
-  if (!deckId)
+  // Get query parameters
+  const { searchParams } = req.nextUrl;
+  const deckId = searchParams.get("deckId");
+  const sortBy = searchParams.get("sortBy");
+  const skill = searchParams.get("skill");
+  const mode = searchParams.get("mode");
+
+  // Validate deckId
+  if (!deckId) {
     return NextResponse.json({ error: "deckId is required" }, { status: 400 });
+  }
 
-  const response = await fetch(`${API_URL}/due?deckId=${deckId}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-type": "application/json",
-    },
-  });
+  // Build the query string dynamically
+  const queryParams = new URLSearchParams();
+  queryParams.append("deckId", deckId);
+  if (sortBy) queryParams.append("sortBy", sortBy);
+  if (skill) queryParams.append("skill", skill);
+  if (mode) queryParams.append("mode", mode);
 
-  if (!response.ok)
+  try {
+    const response = await fetch(`${API_URL}/due?${queryParams.toString()}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: "Failed to fetch due cards" },
+        { status: response.status }
+      );
+    }
+
+    const dueCards = await response.json();
+    return NextResponse.json(dueCards, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching due cards:", error);
     return NextResponse.json(
-      { error: "Failed to create a card" },
+      { error: "Internal server error" },
       { status: 500 }
     );
-
-  const dueCards = await response.json();
-
-  return NextResponse.json(dueCards, { status: 200 });
+  }
 }

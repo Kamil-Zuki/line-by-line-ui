@@ -1,14 +1,14 @@
 "use client";
 
-import SideBar from "@/app/components/SideBar";
+import SideBar from "@/app/components/sideBar";
 import { Box, Flex } from "@chakra-ui/react";
 import { ReactNode } from "react";
-import { FaHome, FaLayerGroup, FaListAlt } from "react-icons/fa"; // Added FaListAlt
+import { FaHome, FaLayerGroup, FaStickyNote } from "react-icons/fa";
 
 const sidebarButtons = [
   { icon: FaHome, path: "/dashboard", labelText: "Dashboard" },
   { icon: FaLayerGroup, path: "/dashboard/decks", labelText: "Decks" },
-  { icon: FaListAlt, path: "/dashboard/cards", labelText: "All Cards" }, // Added All Cards
+  { icon: FaStickyNote, path: "/dashboard/cards", labelText: "Cards" },
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
@@ -23,8 +23,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         left: "0",
         right: "0",
         bottom: "0",
-        background:
-          "linear-gradient(45deg, rgba(255, 255, 255, 0.05), transparent)",
+        background: "linear-gradient(45deg, rgba(255, 255, 255, 0.05), transparent)",
         opacity: 0.3,
         zIndex: 0,
       }}

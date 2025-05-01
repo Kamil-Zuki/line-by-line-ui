@@ -48,7 +48,7 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
     //#region Access token
   const accessToken = req.cookies.get("accessToken")?.value;
@@ -57,8 +57,12 @@ export async function PUT(
  //#endregion
 
   try {
+
+    const awaitedParams = await params;
+    const id = awaitedParams.id;
+
     const body = await req.json();
-    const response = await fetch(`http://85.175.218.17/api/v1/deck/${params.id}`, {
+    const response = await fetch(`${API_URL}/${id}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${accessToken}`,

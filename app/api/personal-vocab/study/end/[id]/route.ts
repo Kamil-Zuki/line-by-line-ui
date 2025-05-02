@@ -26,14 +26,16 @@ try {
         },
         body: JSON.stringify(""),
       });
-      if (!response.ok) {
-        return NextResponse.json(
-          { error: "Failed to end session" },
-          { status: response.status }
-        );
-      }
-      const result = await response.json();
-      return NextResponse.json(result, {status: 200});
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: "Failed to end session" },
+        { status: response.status }
+      );
+    }
+
+    const result = await response.json();
+    return NextResponse.json(result, {status: 200});
     } catch (error) {
       console.error("Error:", error);
       return NextResponse.json(

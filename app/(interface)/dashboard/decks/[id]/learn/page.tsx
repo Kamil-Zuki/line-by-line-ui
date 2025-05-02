@@ -137,7 +137,7 @@ export default function LearnPage({
     if (!deckId) return;
     setIsStartingSession(true);
     try {
-      const response = await fetchApi<StartSessionResponse>("/study-session/start", {
+      const response = await fetchApi<StartSessionResponse>("/study/start", {
         method: "POST",
         body: JSON.stringify({ deckId }),
       });
@@ -160,7 +160,7 @@ export default function LearnPage({
     setIsEndingSession(true);
     try {
       const response = await fetchApi<SessionDetails>(
-        `/study-session/end/${sessionId}`,
+        `/study/end/${sessionId}`,
         { method: "POST" }
       );
       setSessionDetails(response);
@@ -430,7 +430,7 @@ export default function LearnPage({
                 End Time: {new Date(sessionDetails?.endTime || "").toLocaleString()}
               </ChakraText>
 
-              {sessionDetails?.reviewedCards.length ? (
+              {sessionDetails?.reviewedCards?.length ? (
                 <Box overflowX="auto">
                   <Table variant="simple" colorScheme="gray">
                     <Thead>

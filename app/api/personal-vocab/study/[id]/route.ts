@@ -4,30 +4,31 @@ import { NextRequest, NextResponse } from "next/server";
 const API_URL = "http://85.175.218.17/api/v1/study";
 
 export async function GET(req: NextRequest, {params}: {params: Promise<{id: string}>}) {
-    //#region Access token
-    const accessToken = req.cookies.get("accessToken")?.value;
-    if (!accessToken)
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    //#endregion
+  //#region Access token
+  const accessToken = req.cookies.get("accessToken")?.value;
+  if (!accessToken)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  //#endregion
 
 try {
-    const awaitedParams = await params;
-    const id = awaitedParams.id;
+  const awaitedParams = await params;
+  const id = awaitedParams.id;
 
-    const response = await fetch(`${API_URL}/${id}`, {
-    method: "GET",
-    headers: {
-        Authorization: `Bearer ${accessToken}`,
-    },
-    });
+  const response = await fetch(`${API_URL}/${id}`, {
+  method: "GET",
+  headers: {
+      Authorization: `Bearer ${accessToken}`,
+  },
+  });
 
-    if (!response.ok)
-        throw NextResponse.json(
-            { error: "Failed" },
-            { status: response.status }
-        );
+  if (!response.ok)
+      throw NextResponse.json(
+          { error: "Failed" },
+          { status: response.status }
+      );
 
-    const result = await response.json();
+  const result = await response.json();
+  console.log("Study session result:", result);
 
 return NextResponse.json(result, {status: 200});
   } catch (error) {

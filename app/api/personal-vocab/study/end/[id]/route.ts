@@ -35,6 +35,8 @@ try {
     }
 
     const result = await response.json();
+    console.log("Study end", result);
+
     return NextResponse.json(result, {status: 200});
     } catch (error) {
       console.error("Error:", error);

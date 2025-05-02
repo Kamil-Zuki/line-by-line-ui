@@ -159,9 +159,13 @@ export default function LearnPage({
     if (!sessionId || !deckId) return;
     setIsEndingSession(true);
     try {
-      const response = await fetchApi<SessionDetails>(
+      const endResponse = await fetchApi<SessionDetails>(
         `/study/end/${sessionId}`,
         { method: "POST" }
+      );
+      const response = await fetchApi<SessionDetails>(
+        `/study/${sessionId}`,
+        { method: "GET" }
       );
       setSessionDetails(response);
       setSessionId(null); // Reset session

@@ -101,9 +101,6 @@ export interface UpdateUserSettingsRequestDto {
   preferredMode: LearningMode;
 }
 
-
-
-
 export interface StartSessionResponse {
   sessionId: string;
 }
@@ -112,13 +109,15 @@ export interface SessionDetails {
   id: string;
   startTime: string; // ISO 8601 format
   endTime: string | null; // ISO 8601 format
-  reviewedCards: Array<{
-    cardId: string;
-    quality: number; // 0-5
-    reviewedAt: string; // ISO 8601 format
-  }>;
+  reviewedCards: StudySessionCardDto[];
   averageQuality: number;
   totalCardsReviewed: number;
+}
+
+export interface StudySessionCardDto{
+  cardId: string;
+  quality: number; // 0-5
+  reviewedAt: string; // ISO 8601 format
 }
 
 export interface ReviewFeedbackDto {

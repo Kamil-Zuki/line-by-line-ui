@@ -14,6 +14,11 @@ import { useRouter } from "next/navigation";
 import { FaSignInAlt, FaBars, FaCog, FaBook, FaHome } from "react-icons/fa";
 import ProfileMenu from "./ProfileMenu";
 import { IconType } from "react-icons";
+import React from "react";
+
+const MyComponent = React.forwardRef((props, ref) => {
+  return <Box ref={ref} {...props} />
+})
 
 interface SideBarButtonData {
   icon: IconType;

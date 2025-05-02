@@ -79,7 +79,7 @@ export default function SettingsPage() {
       setIsLoading(true);
       try {
         console.log("Try to load settings")
-        const response = await fetchApi<UserSettingsDto>("/card/settings", { method: "GET" });
+        const response = await fetchApi<UserSettingsDto>("/settings", { method: "GET" });
         setSettings(response);
         setFormValues({
           dailyNewCardLimit: response.dailyNewCardLimit,

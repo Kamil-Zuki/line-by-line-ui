@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = "http://85.175.218.17/api/v1/card/settings";
+const API_URL = "http://85.175.218.17/api/v1/settings";
 
 export async function PUT(req: NextRequest) {
   //#region Access token

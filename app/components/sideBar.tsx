@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useRouter } from "next/navigation";
-import { FaSignInAlt, FaBars } from "react-icons/fa";
+import { FaSignInAlt, FaBars, FaCog, FaBook, FaHome } from "react-icons/fa";
 import ProfileMenu from "./ProfileMenu";
 import { IconType } from "react-icons";
 
@@ -22,13 +22,34 @@ interface SideBarButtonData {
 }
 
 interface SideBarProps {
-  buttonData: SideBarButtonData[];
+  buttonData?: SideBarButtonData[];
 }
 
 export default function SideBar({ buttonData }: SideBarProps) {
   const { isAuthenticated, user, logout } = useAuth();
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  // Default button data if not provided via props
+  const defaultButtonData: SideBarButtonData[] = [
+    {
+      icon: FaHome,
+      path: "/dashboard",
+      labelText: "Dashboard",
+    },
+    {
+      icon: FaBook,
+      path: "/dashboard/decks",
+      labelText: "Decks",
+    },
+    {
+      icon: FaCog,
+      path: "/dashboard/settings",
+      labelText: "Settings",
+    },
+  ];
+
+  const buttonsToRender = buttonData || defaultButtonData;
 
   const handleNavigation = (path: string) => {
     router.push(path);
@@ -145,6 +166,7 @@ export default function SideBar({ buttonData }: SideBarProps) {
               position="relative"
               overflow="hidden"
               transition="all 0.2s"
+              onClick={() => handleNavigation("/login")}
             >
               Sign In
             </Button>
@@ -153,7 +175,7 @@ export default function SideBar({ buttonData }: SideBarProps) {
           <Divider borderColor="gray.600" />
 
           {/* Navigation Buttons */}
-          {buttonData.map((buttonInfo) => (
+          {buttonsToRender.map((buttonInfo) => (
             <Button
               key={buttonInfo.path}
               leftIcon={<Icon as={buttonInfo.icon} />}

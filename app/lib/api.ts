@@ -1,4 +1,3 @@
-// app/lib/api.ts
 import { useAuth } from "../hooks/useAuth";
 
 // Utility to fetch data from Next.js API routes
@@ -17,6 +16,7 @@ export async function fetchApi<T>(
   }`;
 
   try {
+    console.log(url)
     const res = await fetch(url, {
       ...options,
       headers,
@@ -166,4 +166,30 @@ export interface UserCardProgress {
   nextReviewDate: string;
   lastReviewedDate?: string;
   lastQuality: number;
+}
+
+// Types for settings
+export enum LearningMode {
+  Learn = "Learn",
+  Review = "Review",
+  Cram = "Cram",
+}
+
+export interface UserSettingsDto {
+  id: string;
+  userId: string;
+  dailyNewCardLimit: number;
+  dailyReviewLimit: number;
+  newCardsCompletedToday: number;
+  reviewsCompletedToday: number;
+  rolloverHour: number;
+  lastResetDate: string;
+  preferredMode: LearningMode;
+}
+
+export interface UpdateUserSettingsRequestDto {
+  dailyNewCardLimit: number;
+  dailyReviewLimit: number;
+  rolloverHour: number;
+  preferredMode: LearningMode;
 }

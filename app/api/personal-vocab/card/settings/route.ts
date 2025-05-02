@@ -11,8 +11,8 @@ export async function PUT(req: NextRequest) {
 
   const body = await req.json();
 
-  const response = await fetch(`${API_URL}/settings`, {
-    method: "POST",
+  const response = await fetch(`${API_URL}`, {
+    method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
       "Content-type": "application/json",
@@ -23,6 +23,33 @@ export async function PUT(req: NextRequest) {
   if (!response.ok)
     return NextResponse.json(
       { error: "Failed to update settings" },
+      { status: 500 }
+    );
+
+  const result = await response.json();
+
+  return NextResponse.json(result, { status: 200 });
+}
+
+
+export async function GET(req: NextRequest) {
+  //#region Access token
+  const accessToken = req?.cookies.get("accessToken")?.value;
+  if (!accessToken)
+    return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
+  //#endregion
+  console.log("Settings get method method")
+  const response = await fetch(`${API_URL}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-type": "application/json",
+    },
+  });
+
+  if (!response.ok)
+    return NextResponse.json(
+      { error: "Failed to get settings" },
       { status: 500 }
     );
 

@@ -3,12 +3,14 @@
 import SideBar from "@/app/components/SideBar";
 import { Box, Flex } from "@chakra-ui/react";
 import { ReactNode } from "react";
-import { FaHome, FaLayerGroup, FaStickyNote } from "react-icons/fa";
+import { FaCog, FaHome, FaLayerGroup, FaStickyNote } from "react-icons/fa";
 
 const sidebarButtons = [
   { icon: FaHome, path: "/dashboard", labelText: "Dashboard" },
   { icon: FaLayerGroup, path: "/dashboard/decks", labelText: "Decks" },
   { icon: FaStickyNote, path: "/dashboard/cards", labelText: "Cards" },
+  { icon: FaCog, path: "/dashboard/settings", labelText: "Settings",
+  },
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {

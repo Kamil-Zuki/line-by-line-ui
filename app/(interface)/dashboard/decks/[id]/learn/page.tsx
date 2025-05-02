@@ -8,7 +8,6 @@ import {
   Button,
   useToast,
   Spinner,
-  CloseButton,
   VStack,
   Flex,
   Progress,
@@ -25,13 +24,14 @@ import {
   Tr,
   Th,
   Td,
+  Link,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
-import { fetchApi, CardDto } from "@/app/lib/api";
+import { fetchApi, CardDto, UserSettingsDto } from "@/app/lib/api";
 import { CardReview } from "@/app/components/ui/CardReview";
 
-// Define session-related types (adjust based on actual API responses)
+// Define session-related types (adjusted based on API responses)
 interface StartSessionResponse {
   sessionId: string;
 }
@@ -43,10 +43,21 @@ interface SessionDetails {
   reviewedCards: Array<{
     cardId: string;
     quality: number; // 0-5
-    reviewedAt: string; // ISO 8601 format, added to match StudySessionCardDto
+    reviewedAt: string; // ISO 8601 format
   }>;
   averageQuality: number;
   totalCardsReviewed: number;
+}
+
+interface ReviewFeedbackDto {
+  nextReviewDate: string;
+  interval: number;
+  message: string;
+}
+
+interface ReviewResponseDto {
+  card: CardDto;
+  feedback: ReviewFeedbackDto;
 }
 
 export default function LearnPage({
@@ -55,17 +66,26 @@ export default function LearnPage({
   params: Promise<{ id: string }>;
 }) {
   const { isAuthenticated, loading: authLoading } = useAuth();
-  const [cards, setCards] = useState<CardDto[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true); // Initial loading state
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [startTime, setStartTime] = useState<Date | null>(null);
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [sessionDetails, setSessionDetails] = useState<SessionDetails | null>(null);
-  const [isEnding, setIsEnding] = useState(false);
-  const [showEndConfirmation, setShowEndConfirmation] = useState(false);
   const router = useRouter();
   const toast = useToast();
+  const [deckId, setDeckId] = useState<string | null>(null);
+  const [cards, setCards] = useState<CardDto[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionDetails, setSessionDetails] = useState<SessionDetails | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isStartingSession, setIsStartingSession] = useState(false);
+  const [isEndingSession, setIsEndingSession] = useState(false);
+  const [userSettings, setUserSettings] = useState<UserSettingsDto | null>(null);
+
+  // Resolve deckId from params
+  useEffect(() => {
+    const resolveParams = async () => {
+      const { id } = await params;
+      setDeckId(id);
+    };
+    resolveParams();
+  }, [params]);
 
   // Custom toast renderer for Ultimate Spider-Man style
   const showToast = (
@@ -85,7 +105,7 @@ export default function LearnPage({
           color="white"
           p={4}
           borderRadius="md"
-          boxShadow="0 0 5px rgba(66, 153, 225, 0.3)" // Soft blue glow
+          boxShadow="0 0 5px rgba(66, 153, 225, 0.3)"
           display="flex"
           alignItems="center"
           justifyContent="space-between"
@@ -97,21 +117,34 @@ export default function LearnPage({
             </Heading>
             <ChakraText fontSize="sm">{description}</ChakraText>
           </VStack>
-          <CloseButton onClick={onClose} color="white" />
+          <Button size="sm" variant="ghost" color="white" onClick={onClose}>
+            Close
+          </Button>
         </Box>
       ),
     });
   };
 
-  // Unwrap params using React.use
-  const { id } = React.use(params);
+  // Fetch user settings
+  const fetchUserSettings = useCallback(async () => {
+    try {
+      const settings = await fetchApi<UserSettingsDto>("/settings");
+      setUserSettings(settings);
+    } catch (error: any) {
+      console.error("Error fetching user settings:", error.message, {
+        status: error.status,
+      });
+      showToast("Error", "Failed to load user settings.", "error");
+    }
+  }, []);
 
-  // Fetch due cards on page load
+  // Fetch due cards
   const fetchDueCards = useCallback(async () => {
-    console.log("Fetching due cards for deck:", id);
+    if (!deckId) return;
+    console.log("Fetching due cards for deck:", deckId);
     try {
       const response = await fetchApi<CardDto[]>(
-        `/card/due?deckId=${id}&mode=learn&sortBy=nextReviewDate`
+        `/card/due?deckId=${deckId}&mode=learn&sortBy=nextReviewDate`
       );
       console.log("Due cards fetched:", response);
       setCards(response);
@@ -120,137 +153,110 @@ export default function LearnPage({
         status: error.status,
       });
       showToast("Error", "Failed to load due cards. Please try again.", "error");
-      router.push(`/dashboard/decks/${id}`);
+      router.push(`/dashboard/decks/${deckId}`);
       throw error;
     }
-  }, [id, router]);
+  }, [deckId, router]);
 
-  // Initial fetch when page loads
-  useEffect(() => {
-    if (!isAuthenticated || authLoading) return;
-
-    const loadInitialData = async () => {
-      setIsLoading(true);
-      try {
-        await fetchDueCards();
-      } catch (error) {
-        // Error is handled in fetchDueCards (toast and redirect)
-      } finally {
-        console.log("Setting isLoading to false after initial fetch");
-        setIsLoading(false);
-      }
-    };
-
-    loadInitialData();
-  }, [isAuthenticated, authLoading, fetchDueCards]);
-
-  // Start study session
-  const startSession = async () => {
-    if (cards.length === 0) {
-      showToast("Info", "No due cards for this deck.", "success");
-      router.push(`/dashboard/decks/${id}`);
-      return;
-    }
-
-    setIsLoading(true);
-    console.log("Starting session for deck:", id);
+  // Start a study session
+  const startSession = useCallback(async () => {
+    if (!deckId) return;
+    setIsStartingSession(true);
     try {
-      console.log("Calling /study/start");
-      const response = await fetchApi<StartSessionResponse>("/study/start", {
+      const response = await fetchApi<StartSessionResponse>("/study-session/start", {
         method: "POST",
-        body: JSON.stringify({ deckId: id }),
+        body: JSON.stringify({ deckId }),
       });
-      console.log("Session started:", response);
       setSessionId(response.sessionId);
-      setStartTime(new Date());
-      setCurrentIndex(0);
+      showToast("Success", "Study session started!", "success");
     } catch (error: any) {
       console.error("Error starting session:", error.message, {
         status: error.status,
       });
       showToast("Error", "Failed to start session. Please try again.", "error");
-      router.push(`/dashboard/decks/${id}`);
+      router.push(`/dashboard/decks/${deckId}`);
     } finally {
-      console.log("Setting isLoading to false after starting session");
-      setIsLoading(false);
+      setIsStartingSession(false);
     }
-  };
+  }, [deckId, router]);
 
-  // Timer logic
-  useEffect(() => {
-    if (!startTime || sessionDetails) return;
-
-    const timer = setInterval(() => {
-      setElapsedTime(Math.floor((Date.now() - startTime.getTime()) / 1000));
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [startTime, sessionDetails]);
-
-  // Format elapsed time as MM:SS
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
-  // Handle review submission
-  const handleReview = async (quality: number) => {
-    if (!sessionId) return;
-
+  // End the study session and fetch session details
+  const endSession = useCallback(async () => {
+    if (!sessionId || !deckId) return;
+    setIsEndingSession(true);
     try {
-      await fetchApi(`/card/review/${cards[currentIndex].id}`, {
-        method: "POST",
-        body: JSON.stringify({ quality }),
-      });
-      if (currentIndex < cards.length - 1) {
-        setCurrentIndex(currentIndex + 1);
-      } else {
-        setShowEndConfirmation(true); // Show confirmation when all cards are reviewed
-      }
-    } catch (error: any) {
-      console.error("Error submitting review:", error.message, {
-        status: error.status,
-      });
-      showToast("Error", "Failed to submit review. Please try again.", "error");
-    }
-  };
-
-  // End session
-  const endSession = async () => {
-    if (!sessionId) return;
-
-    setIsEnding(true);
-    try {
-      await fetchApi(`/study/end/${sessionId}`, { method: "POST" });
-      const details = await fetchApi<SessionDetails>(`/study/${sessionId}`);
-      console.log("Fetched session details:", details); // Debug log
-      setSessionDetails(details);
+      const response = await fetchApi<SessionDetails>(
+        `/study-session/end/${sessionId}`,
+        { method: "POST" }
+      );
+      setSessionDetails(response);
+      setSessionId(null); // Reset session
+      showToast("Success", "Study session ended!", "success");
     } catch (error: any) {
       console.error("Error ending session:", error.message, {
         status: error.status,
       });
       showToast("Error", "Failed to end session. Please try again.", "error");
     } finally {
-      setIsEnding(false);
-      setShowEndConfirmation(false);
+      setIsEndingSession(false);
     }
-  };
+  }, [sessionId, deckId]);
 
-  // Calculate average quality score
-  const calculateAverageQuality = (details: SessionDetails) => {
-    if (!details.reviewedCards || details.reviewedCards.length === 0) return 0;
-    const totalQuality = details.reviewedCards.reduce(
-      (sum, review) => sum + review.quality,
-      0
-    );
-    return (totalQuality / details.reviewedCards.length).toFixed(2);
-  };
+  // Handle card review
+  const handleReview = useCallback(
+    async (quality: number) => {
+      if (!sessionId || !deckId || currentIndex >= cards.length) return;
+      const card = cards[currentIndex];
+      try {
+        const response = await fetchApi<ReviewResponseDto>(
+          `/card/review/${card.id}`,
+          {
+            method: "POST",
+            body: JSON.stringify({ quality, sessionId }),
+          }
+        );
+        showToast(
+          "Review Submitted",
+          response.feedback.message,
+          quality >= 3 ? "success" : "error"
+        );
+
+        // Move to the next card or end the session
+        if (currentIndex + 1 < cards.length) {
+          setCurrentIndex(currentIndex + 1);
+        } else {
+          await endSession();
+        }
+      } catch (error: any) {
+        console.error("Error submitting review:", error.message, {
+          status: error.status,
+        });
+        showToast("Error", "Failed to submit review. Please try again.", "error");
+      }
+    },
+    [sessionId, deckId, currentIndex, cards, endSession]
+  );
+
+  // Initial data load
+  useEffect(() => {
+    if (!isAuthenticated || authLoading || !deckId) return;
+
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        await Promise.all([fetchUserSettings(), fetchDueCards()]);
+      } catch (error) {
+        console.error("Error during initial data load:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [isAuthenticated, authLoading, deckId, fetchUserSettings, fetchDueCards]);
 
   // Authentication and loading states
-  if (authLoading) {
+  if (authLoading || isLoading || !deckId) {
     return (
       <Box
         minH="100vh"
@@ -275,26 +281,7 @@ export default function LearnPage({
     return null;
   }
 
-  if (isLoading) {
-    return (
-      <Box
-        minH="100vh"
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-      >
-        <Spinner
-          size="xl"
-          color="white"
-          thickness="3px"
-          speed="0.65s"
-          _hover={{ filter: "drop-shadow(0 0 5px rgba(255, 255, 255, 0.3))" }}
-        />
-      </Box>
-    );
-  }
-
-  // Initial state: Show "Start Session" button
+  // Initial state: Show cards to review or "no cards" message
   if (!sessionId && !sessionDetails) {
     return (
       <Box
@@ -317,7 +304,22 @@ export default function LearnPage({
           {cards.length === 0 ? (
             <>
               <ChakraText color="gray.300" mb={4} textAlign="center">
-                No due cards for this deck.
+                {userSettings &&
+                userSettings.newCardsCompletedToday >= userSettings.dailyNewCardLimit
+                  ? (
+                    <>
+                      You’ve reached your daily new card limit.{" "}
+                      <Link
+                        href="/dashboard/settings"
+                        color="blue.300"
+                        textDecoration="underline"
+                      >
+                        Adjust your settings
+                      </Link>{" "}
+                      to learn more cards.
+                    </>
+                  )
+                  : "No due cards for this deck."}
               </ChakraText>
               <Button
                 bg="red.800"
@@ -331,51 +333,37 @@ export default function LearnPage({
                 }}
                 _active={{ bg: "red.900" }}
                 transition="all 0.2s"
-                alignSelf="center"
-                onClick={() => router.push(`/dashboard/decks/${id}`)}
-                aria-label="Back to deck"
+                onClick={() => router.push(`/dashboard/decks/${deckId}`)}
               >
                 Back to Deck
               </Button>
             </>
           ) : (
-            <>
-              <ChakraText color="gray.300" mb={4} textAlign="center">
-                Start a study session to review your {cards.length} due card{cards.length !== 1 ? "s" : ""}.
-              </ChakraText>
-              <Button
-                bg="red.800"
-                border="2px solid"
-                borderColor="blue.900"
-                color="white"
-                _hover={{
-                  bg: "red.700",
-                  boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
-                  transform: "scale(1.02)",
-                }}
-                _active={{ bg: "red.900" }}
-                transition="all 0.2s"
-                alignSelf="center"
-                onClick={startSession}
-                aria-label="Start study session"
-              >
-                Start Session
-              </Button>
-            </>
+            <Button
+              bg="red.800"
+              border="2px solid"
+              borderColor="blue.900"
+              color="white"
+              _hover={{
+                bg: "red.700",
+                boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
+                transform: "scale(1.02)",
+              }}
+              _active={{ bg: "red.900" }}
+              transition="all 0.2s"
+              isLoading={isStartingSession}
+              onClick={startSession}
+            >
+              Start Learning ({cards.length} cards)
+            </Button>
           )}
         </VStack>
       </Box>
     );
   }
 
-  // Session ended: Show results
-  if (sessionDetails) {
-    const startTimeFormatted = new Date(sessionDetails.startTime).toLocaleString();
-    const endTimeFormatted = sessionDetails.endTime
-      ? new Date(sessionDetails.endTime).toLocaleString()
-      : "N/A";
-    const averageQuality = calculateAverageQuality(sessionDetails);
-
+  // Session active: Show card review
+  if (sessionId && !sessionDetails) {
     return (
       <Box
         minH="100vh"
@@ -385,215 +373,135 @@ export default function LearnPage({
         p={4}
       >
         <VStack spacing={4} align="stretch" maxW="800px" w="100%">
-          <Heading
-            as="h1"
-            size={{ base: "lg", md: "xl" }}
-            color="white"
-            textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(66, 153, 225, 0.3)"
-            textAlign="center"
-          >
-            Session Results
-          </Heading>
-          <VStack
-            spacing={2}
-            p={4}
-            bg="gray.700"
-            border="2px solid"
-            borderColor="blue.900"
-            borderRadius="md"
-            boxShadow="0 0 5px rgba(66, 153, 225, 0.3)"
-          >
-            <ChakraText color="white">
-              <strong>Start Time:</strong> {startTimeFormatted}
-            </ChakraText>
-            <ChakraText color="white">
-              <strong>End Time:</strong> {endTimeFormatted}
-            </ChakraText>
-            <ChakraText color="white">
-              <strong>Cards Reviewed:</strong>{" "}
-              {sessionDetails.totalCardsReviewed}
-            </ChakraText>
-            <ChakraText color="white">
-              <strong>Average Quality Score:</strong> {averageQuality}/5
-            </ChakraText>
-          </VStack>
-          {sessionDetails.reviewedCards.length > 0 && (
-            <Box
-              p={4}
-              bg="gray.700"
-              border="2px solid"
-              borderColor="blue.900"
-              borderRadius="md"
-              boxShadow="0 0 5px rgba(66, 153, 225, 0.3)"
-              overflowX="auto"
+          <Flex justify="space-between" align="center">
+            <Heading
+              as="h1"
+              size={{ base: "lg", md: "xl" }}
+              color="white"
+              textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(66, 153, 225, 0.3)"
             >
-              <Heading as="h3" size="md" color="white" mb={4}>
-                Reviewed Cards
-              </Heading>
-              <Table variant="simple" colorScheme="gray">
-                <Thead>
-                  <Tr>
-                    <Th color="white">Card ID</Th>
-                    <Th color="white">Quality</Th>
-                    <Th color="white">Reviewed At</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {sessionDetails.reviewedCards.map((review, index) => (
-                    <Tr key={index}>
-                      <Td color="white">{review.cardId}</Td>
-                      <Td color="white">{review.quality}/5</Td>
-                      <Td color="white">
-                        {new Date(review.reviewedAt).toLocaleString()}
-                      </Td>
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-            </Box>
-          )}
-          <Button
-            bg="red.800"
-            border="2px solid"
-            borderColor="blue.900"
-            color="white"
-            _hover={{
-              bg: "red.700",
-              boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
-              transform: "scale(1.02)",
-            }}
-            _active={{ bg: "red.900" }}
-            transition="all 0.2s"
-            alignSelf="center"
-            onClick={() => router.push(`/dashboard/decks/${id}`)}
-            aria-label="Back to deck"
-          >
-            Back to Deck
-          </Button>
+              Card {currentIndex + 1} of {cards.length}
+            </Heading>
+            <Button
+              bg="gray.600"
+              color="white"
+              _hover={{ bg: "gray.500" }}
+              onClick={endSession}
+              isLoading={isEndingSession}
+            >
+              End Session
+            </Button>
+          </Flex>
+          <Progress
+            value={(currentIndex / cards.length) * 100}
+            size="sm"
+            colorScheme="blue"
+            bg="gray.600"
+            borderRadius="md"
+          />
+          <CardReview
+            key={cards[currentIndex].id}
+            card={cards[currentIndex]}
+            onReview={handleReview}
+            imageSize="500px"
+          />
         </VStack>
       </Box>
     );
   }
 
-  // Active session: Show card review UI
+  // Session ended: Show session stats
   return (
-    <>
-      <Box minH="100vh" p={4} display="flex" flexDirection="column">
-        <VStack spacing={4} align="stretch" maxW="800px" w="100%" mx="auto" flex={1}>
-          <Heading
-            as="h1"
-            size={{ base: "lg", md: "xl" }}
-            color="white"
+    <Box
+      minH="100vh"
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      p={4}
+    >
+      <Modal
+        isOpen={!!sessionDetails}
+        onClose={() => router.push(`/dashboard/decks/${deckId}`)}
+        isCentered
+        size={{ base: "full", md: "xl" }}
+      >
+        <ModalOverlay />
+        <ModalContent
+          bg="gray.700"
+          border="2px solid"
+          borderColor="blue.900"
+          color="white"
+          borderRadius="md"
+        >
+          <ModalHeader
             textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(66, 153, 225, 0.3)"
             textAlign="center"
           >
-            Learn Deck
-          </Heading>
-
-          {/* Timer and Progress Bar */}
-          <Flex
-            justifyContent="space-between"
-            alignItems="center"
-            bg="gray.700"
-            p={3}
-            border="2px solid"
-            borderColor="blue.900"
-            borderRadius="md"
-            boxShadow="0 0 5px rgba(66, 153, 225, 0.3)"
-          >
-            <ChakraText color="white" fontWeight="bold">
-              Time: {formatTime(elapsedTime)}
-            </ChakraText>
-            <Box flex={1} mx={4}>
-              <Progress
-                value={(currentIndex / cards.length) * 100}
-                size="sm"
-                colorScheme="blue"
-                bg="gray.600"
-                borderRadius="md"
-              />
-              <ChakraText color="gray.300" fontSize="sm" textAlign="center" mt={1}>
-                {currentIndex}/{cards.length} cards reviewed
+            Session Summary
+          </ModalHeader>
+          <ModalCloseButton color="white" />
+          <ModalBody>
+            <VStack spacing={4} align="stretch">
+              <ChakraText fontSize="lg">
+                Total Cards Reviewed: {sessionDetails?.totalCardsReviewed}
               </ChakraText>
-            </Box>
+              <ChakraText fontSize="lg">
+                Average Quality:{" "}
+                {sessionDetails?.averageQuality.toFixed(1)} / 5
+              </ChakraText>
+              <ChakraText fontSize="lg">
+                Start Time: {new Date(sessionDetails?.startTime || "").toLocaleString()}
+              </ChakraText>
+              <ChakraText fontSize="lg">
+                End Time: {new Date(sessionDetails?.endTime || "").toLocaleString()}
+              </ChakraText>
+
+              {sessionDetails?.reviewedCards.length ? (
+                <Box overflowX="auto">
+                  <Table variant="simple" colorScheme="gray">
+                    <Thead>
+                      <Tr>
+                        <Th color="gray.300">Card ID</Th>
+                        <Th color="gray.300">Quality</Th>
+                        <Th color="gray.300">Reviewed At</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {sessionDetails.reviewedCards.map((card, index) => (
+                        <Tr key={index}>
+                          <Td>{card.cardId}</Td>
+                          <Td>{card.quality}</Td>
+                          <Td>{new Date(card.reviewedAt).toLocaleString()}</Td>
+                        </Tr>
+                      ))}
+                    </Tbody>
+                  </Table>
+                </Box>
+              ) : (
+                <ChakraText>No cards reviewed in this session.</ChakraText>
+              )}
+            </VStack>
+          </ModalBody>
+          <ModalFooter>
             <Button
               bg="red.800"
               border="2px solid"
               borderColor="blue.900"
               color="white"
-              size="sm"
               _hover={{
                 bg: "red.700",
-                boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
+                boxShadow: "0 0 5px rgba(66, 153, 225, 0 - 0 0 5px rgba(66, 153, 225, 0.3)",
                 transform: "scale(1.02)",
               }}
               _active={{ bg: "red.900" }}
               transition="all 0.2s"
-              onClick={() => setShowEndConfirmation(true)}
-              isLoading={isEnding}
-              aria-label="End study session"
+              onClick={() => router.push(`/dashboard/decks/${deckId}`)}
             >
-              End Session
-            </Button>
-          </Flex>
-
-          <CardReview
-            key={cards[currentIndex].id}
-            card={cards[currentIndex]}
-            onReview={handleReview}
-          />
-        </VStack>
-      </Box>
-
-      {/* End Session Confirmation Modal */}
-      <Modal
-        isOpen={showEndConfirmation}
-        onClose={() => setShowEndConfirmation(false)}
-        isCentered
-      >
-        <ModalOverlay />
-        <ModalContent
-          bg="gray.800"
-          border="2px solid"
-          borderColor="blue.900"
-          boxShadow="0 0 5px rgba(66, 153, 225, 0.3)"
-        >
-          <ModalHeader color="white">End Study Session</ModalHeader>
-          <ModalCloseButton color="white" />
-          <ModalBody>
-            <ChakraText color="white">
-              Are you sure you want to end this study session? Your progress will be saved.
-            </ChakraText>
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              variant="ghost"
-              color="white"
-              mr={3}
-              onClick={() => setShowEndConfirmation(false)}
-              aria-label="Cancel ending session"
-            >
-              Cancel
-            </Button>
-            <Button
-              bg="red.800"
-              border="2px solid"
-              borderColor="blue.900"
-              color="white"
-              _hover={{
-                bg: "red.700",
-                boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
-              }}
-              _active={{ bg: "red.900" }}
-              onClick={endSession}
-              isLoading={isEnding}
-              aria-label="Confirm end session"
-            >
-              End Session
+              Back to Deck
             </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
-    </>
+    </Box>
   );
 }

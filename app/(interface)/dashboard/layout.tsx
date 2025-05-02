@@ -6,8 +6,8 @@ import { ReactNode } from "react";
 import { FaCog, FaHome, FaLayerGroup, FaStickyNote } from "react-icons/fa";
 
 const sidebarButtons = [
-  { icon: FaHome, path: "/dashboard", labelText: "Dashboard" },
-  { icon: FaLayerGroup, path: "/dashboard/decks", labelText: "Decks" },
+  { icon: FaHome, path: "/dashboard", labelText: "Community decks" },
+  { icon: FaLayerGroup, path: "/dashboard/decks", labelText: "Deck" },
   { icon: FaStickyNote, path: "/dashboard/cards", labelText: "Cards" },
   { icon: FaCog, path: "/dashboard/settings", labelText: "Settings",
   },

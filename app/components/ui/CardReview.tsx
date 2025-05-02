@@ -1,5 +1,5 @@
 import { Box, Button, Text, Image, HStack, VStack } from "@chakra-ui/react";
-import { CardDto } from "@/app/lib/api";
+import { CardDto } from "@/app/interfaces";
 import { useState } from "react";
 
 interface CardReviewProps {

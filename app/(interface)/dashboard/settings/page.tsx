@@ -17,7 +17,8 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
-import { fetchApi, UserSettingsDto, UpdateUserSettingsRequestDto, LearningMode } from "@/app/lib/api";
+import { UserSettingsDto, UpdateUserSettingsRequestDto, LearningMode } from "@/app/interfaces";
+import { fetchApi } from "@/app/lib/api"
 
 export default function SettingsPage() {
   const { isAuthenticated, loading: authLoading } = useAuth();

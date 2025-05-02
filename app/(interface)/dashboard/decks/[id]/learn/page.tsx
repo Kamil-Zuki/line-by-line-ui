@@ -28,37 +28,11 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
-import { fetchApi, CardDto, UserSettingsDto } from "@/app/lib/api";
+import { CardDto, ReviewResponseDto, SessionDetails, StartSessionResponse, UserSettingsDto } from "@/app/interfaces";
 import { CardReview } from "@/app/components/ui/CardReview";
+import { fetchApi } from "@/app/lib/api"
 
-// Define session-related types (adjusted based on API responses)
-interface StartSessionResponse {
-  sessionId: string;
-}
 
-interface SessionDetails {
-  id: string;
-  startTime: string; // ISO 8601 format
-  endTime: string | null; // ISO 8601 format
-  reviewedCards: Array<{
-    cardId: string;
-    quality: number; // 0-5
-    reviewedAt: string; // ISO 8601 format
-  }>;
-  averageQuality: number;
-  totalCardsReviewed: number;
-}
-
-interface ReviewFeedbackDto {
-  nextReviewDate: string;
-  interval: number;
-  message: string;
-}
-
-interface ReviewResponseDto {
-  card: CardDto;
-  feedback: ReviewFeedbackDto;
-}
 
 export default function LearnPage({
   params,

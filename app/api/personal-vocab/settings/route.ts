@@ -12,7 +12,7 @@ export async function PUT(req: NextRequest) {
   const body = await req.json();
 
   const response = await fetch(`${API_URL}`, {
-    method: "GET",
+    method: "PUT",
     headers: {
       Authorization: `Bearer ${accessToken}`,
       "Content-type": "application/json",

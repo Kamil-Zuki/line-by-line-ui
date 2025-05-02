@@ -13,7 +13,8 @@ import {
   CloseButton,
 } from "@chakra-ui/react";
 import { useAuth } from "@/app/hooks/useAuth";
-import { fetchApi, DeckResponse } from "@/app/lib/api";
+import { DeckResponse } from "@/app/interfaces";
+import { fetchApi } from "@/app/lib/api"
 
 interface CardResponse {
   id: string;

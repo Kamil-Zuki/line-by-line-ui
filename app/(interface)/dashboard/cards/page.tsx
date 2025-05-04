@@ -24,6 +24,25 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { FaEdit, FaSortUp, FaSortDown } from "react-icons/fa";
 
+import { css } from "@emotion/react";
+
+  const selectStyles = css`
+{
+            "&": {
+              backgroundColor: "#1A202C",
+              color: "white",
+            },
+            "& > option": {
+              backgroundColor: "#1A202C",
+              color: "white",
+            },
+          }}
+          _focus={{
+            borderColor: "blue.700",
+            boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
+          }`
+
+
 export default function AllCardsPage() {
   const { cards, loading, error } = useCards();
   const router = useRouter();
@@ -85,7 +104,7 @@ export default function AllCardsPage() {
   };
 
   return (
-    <Box p={6} maxW="1200px" mx="auto">
+    <Box p={6} maxW="1700px" mx="auto">
       <Heading as="h1" size="2xl" mb={6} textAlign="center">
         All Cards
       </Heading>
@@ -99,20 +118,7 @@ export default function AllCardsPage() {
           bg="gray.700"
           borderColor="blue.900"
           color="white"
-          css={{
-            "&": {
-              backgroundColor: "#1A202C",
-              color: "white",
-            },
-            "& > option": {
-              backgroundColor: "#1A202C",
-              color: "white",
-            },
-          }}
-          _focus={{
-            borderColor: "blue.700",
-            boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
-          }}
+          css={selectStyles}
         >
           {deckTitles.map((title) => (
             <option
@@ -142,11 +148,18 @@ export default function AllCardsPage() {
           No cards found.
         </Text>
       ) : (
-        <Box overflowX="auto">
+        <Box overflowX="auto" maxWidth="100%">
           <Table variant="simple" size="md">
             <Thead>
               <Tr>
-                <Th>Front</Th>
+                {/* <Th>Front</Th> */}
+                <Th cursor="pointer" onClick={toggleSort}>
+                  <Flex alignItems="center">
+                  Front
+                    {sortOrder === "asc" && <Icon as={FaSortUp} ml={2} />}
+                    {sortOrder === "desc" && <Icon as={FaSortDown} ml={2} />}
+                  </Flex>
+                </Th>
                 <Th>Back</Th>
                 <Th>Hint</Th>
                 <Th>Deck Title</Th>

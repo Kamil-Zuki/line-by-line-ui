@@ -19,6 +19,19 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
 import { UserSettingsDto, UpdateUserSettingsRequestDto, LearningMode } from "@/app/interfaces";
 import { fetchApi } from "@/app/lib/api"
+import { css } from "@emotion/react";
+
+  const selectStyles = css`
+    & option {
+      background-color: #2D3748; /* gray.800 */
+      color: white;
+    }
+    &:focus option {
+      background-color: #2D3748; /* gray.800 */
+      color: white;
+    }
+  `;
+
 
 export default function SettingsPage() {
   const { isAuthenticated, loading: authLoading } = useAuth();
@@ -81,6 +94,7 @@ export default function SettingsPage() {
       try {
         console.log("Try to load settings")
         const response = await fetchApi<UserSettingsDto>("/settings", { method: "GET" });
+        console.log(response)
         setSettings(response);
         setFormValues({
           dailyNewCardLimit: response.dailyNewCardLimit,
@@ -244,6 +258,7 @@ export default function SettingsPage() {
                 bg="gray.600"
                 color="white"
                 value={formValues.preferredMode}
+                css={selectStyles}
                 onChange={(e) =>
                   setFormValues({
                     ...formValues,

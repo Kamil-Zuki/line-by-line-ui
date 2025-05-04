@@ -22,6 +22,19 @@ import { DeckCard } from "@/app/components/ui/DeckCard";
 import { FilterControls } from "@/app/components/ui/FilterControls";
 import { DeckDetailsModal } from "@/app/components/ui/DeckDetailsModal";
 import { fetchApi } from "@/app/lib/api"
+import { css } from "@emotion/react";
+
+  const selectStyles = css`
+    & option {
+      background-color: #2D3748; /* gray.800 */
+      color: white;
+    }
+    &:focus option {
+      background-color: #2D3748; /* gray.800 */
+      color: white;
+    }
+  `;
+
 
 interface Stats {
   deckCount: number;

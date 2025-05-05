@@ -26,7 +26,7 @@ export async function middleware(req: NextRequest) {
       console.log(`Token validation failed with status: ${res.status}`);
       return NextResponse.redirect(new URL("/login", req.url));
     }
-
+    
     const user = await res.json();
     console.log("Token validated:", { id: user.id, name: user.userName });
 

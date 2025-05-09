@@ -1,4 +1,3 @@
-//app\(interface)\dashboard\decks\page.tsx
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -12,13 +11,18 @@ import {
   Spinner,
   VStack,
   CloseButton,
+  Stat,
+  StatLabel,
+  StatNumber,
+  StatGroup,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
-import { fetchApi, DeckResponse } from "@/app/lib/api";
+import { fetchApi } from "@/app/lib/api";
 import { DeckCard } from "@/app/components/ui/DeckCard";
 import { FilterControls } from "@/app/components/ui/FilterControls";
 import { DeckDetailsModal } from "@/app/components/ui/DeckDetailsModal";
+import { CardDto, DeckResponse, UserSettingsDto } from "@/app/interfaces";
 
 type FilterOption = "all" | "owned" | "subscribed";
 type SortOption = "newest" | "title";
@@ -51,6 +55,8 @@ export default function MyDecksPage() {
   const [filter, setFilter] = useState<FilterOption>("all");
   const [sortOption, setSortOption] = useState<SortOption>("newest");
   const [selectedDeck, setSelectedDeck] = useState<DeckResponse | null>(null);
+  const [userSettings, setUserSettings] = useState<UserSettingsDto | null>(null);
+  const [decksWithDueCards, setDecksWithDueCards] = useState<number>(0);
   const router = useRouter();
   const toast = useToast();
 
@@ -93,9 +99,7 @@ export default function MyDecksPage() {
       const myDecks: DeckResponse[] = await fetchApi("/deck/my-decks");
       setDecks(myDecks);
     } catch (error: any) {
-      console.error("Error fetching decks:", error.message, {
-        status: error.status,
-      });
+      console.error("Error fetching decks:", error.message, { status: error.status });
       showToast("Error", "Failed to load decks. Please try again.", "error");
       router.push("/dashboard");
     } finally {
@@ -103,6 +107,35 @@ export default function MyDecksPage() {
     }
   }, [router]);
 
+  // Fetch user settings
+  const fetchUserSettings = useCallback(async () => {
+    try {
+      const settings = await fetchApi<UserSettingsDto>("/settings");
+      setUserSettings(settings);
+    } catch (error: any) {
+      console.error("Error fetching user settings:", error.message, { status: error.status });
+      showToast("Error", "Failed to load user settings.", "error");
+    }
+  }, []);
+
+  // Fetch decks with due cards
+  const fetchDecksWithDueCards = useCallback(async () => {
+    try {
+      let count = 0;
+      for (const deck of decks) {
+        const dueCards: CardDto[] = await fetchApi<CardDto[]>(`/card/due?deckId=${deck.id}&mode=learn`);
+        if (dueCards.length > 0) {
+          count++;
+        }
+      }
+      setDecksWithDueCards(count);
+    } catch (error: any) {
+      console.error("Error fetching due cards:", error.message, { status: error.status });
+      showToast("Error", "Failed to load due cards for decks.", "error");
+    }
+  }, [decks]);
+
+  // Initial data load
   useEffect(() => {
     if (!isAuthenticated || authLoading) {
       if (!authLoading) {
@@ -110,8 +143,42 @@ export default function MyDecksPage() {
       }
       return;
     }
-    fetchDecks();
-  }, [isAuthenticated, authLoading, fetchDecks, router]);
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        await Promise.all([fetchDecks(), fetchUserSettings()]);
+      } catch (error) {
+        console.error("Error during initial data load:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, [isAuthenticated, authLoading, fetchDecks, fetchUserSettings]);
+
+  // Fetch decks with due cards after decks are loaded
+  useEffect(() => {
+    if (decks.length > 0) {
+      fetchDecksWithDueCards();
+    }
+  }, [decks, fetchDecksWithDueCards]);
+
+  // Calculate total cards
+  const totalCards = decks.reduce((sum, deck) => sum + (deck.cardCount || 0), 0);
+
+  // Filter and sort decks
+  const filteredDecks = decks
+    .filter((deck) => {
+      if (filter === "owned") return deck.ownerId === user?.id;
+      if (filter === "subscribed") return deck.isSubscribed;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortOption === "newest") {
+        return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
+      }
+      return a.title.localeCompare(b.title);
+    });
 
   // Handle edit action
   const handleEdit = (deckId: string) => {
@@ -128,9 +195,7 @@ export default function MyDecksPage() {
       setSelectedDeck(null);
       showToast("Success", "Deck deleted successfully.", "success");
     } catch (error: any) {
-      console.error("Error deleting deck:", error.message, {
-        status: error.status,
-      });
+      console.error("Error deleting deck:", error.message, { status: error.status });
       showToast("Error", "Failed to delete deck. Please try again.", "error");
     }
   };
@@ -144,22 +209,6 @@ export default function MyDecksPage() {
   const handleLearn = (deckId: string) => {
     router.push(`/dashboard/decks/${deckId}/learn`);
   };
-
-  // Filter and sort decks
-  const filteredDecks = decks
-    .filter((deck) => {
-      if (filter === "owned") return deck.ownerId === user?.id;
-      if (filter === "subscribed") return deck.isSubscribed;
-      return true;
-    })
-    .sort((a, b) => {
-      if (sortOption === "newest") {
-        return (
-          new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
-        );
-      }
-      return a.title.localeCompare(b.title);
-    });
 
   // Handle create new deck
   const handleCreateDeck = () => {
@@ -253,6 +302,39 @@ export default function MyDecksPage() {
             Create New Deck
           </Button>
         </Flex>
+
+        {/* Informational Panel */}
+        <Box
+          bg="gray.900"
+          border="2px solid"
+          borderColor="blue.500"
+          borderRadius="md"
+          p={4}
+          mb={6}
+          boxShadow="0 0 10px rgba(59, 130, 246, 0.5)"
+          _hover={{ bg: "gray.800" }}
+        >
+          <StatGroup>
+            <Stat>
+              <StatLabel color="gray.400">Total Decks</StatLabel>
+              <StatNumber>{filteredDecks.length}</StatNumber>
+            </Stat>
+            <Stat>
+              <StatLabel color="gray.400">Total Cards</StatLabel>
+              <StatNumber>{totalCards}</StatNumber>
+            </Stat>
+            <Stat>
+              <StatLabel color="gray.400">Decks with Due Cards</StatLabel>
+              <StatNumber>{decksWithDueCards}</StatNumber>
+            </Stat>
+            {userSettings && (
+              <Stat>
+                <StatLabel color="gray.400">Cards Reviewed Today</StatLabel>
+                <StatNumber>{userSettings.reviewsCompletedToday}</StatNumber>
+              </Stat>
+            )}
+          </StatGroup>
+        </Box>
 
         {isLoading ? (
           <Flex justify="center" py={10}>

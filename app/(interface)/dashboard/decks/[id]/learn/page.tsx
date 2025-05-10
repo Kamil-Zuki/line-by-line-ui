@@ -1,3 +1,4 @@
+// app/(interface)/dashboard/decks/[id]/learn/page.tsx
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
@@ -28,11 +29,15 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
-import { CardDto, ReviewResponseDto, SessionDetails, StartSessionResponse, UserSettingsDto } from "@/app/interfaces";
+import {
+  CardDto,
+  ReviewResponseDto,
+  StudySessionDto,
+  StartSessionResponse,
+  UserSettingsDto,
+} from "@/app/interfaces";
 import { CardReview } from "@/app/components/ui/CardReview";
-import { fetchApi } from "@/app/lib/api"
-
-
+import { fetchApi } from "@/app/lib/api";
 
 export default function LearnPage({
   params,
@@ -46,11 +51,12 @@ export default function LearnPage({
   const [cards, setCards] = useState<CardDto[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [sessionDetails, setSessionDetails] = useState<SessionDetails | null>(null);
+  const [sessionDetails, setSessionDetails] = useState<StudySessionDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStartingSession, setIsStartingSession] = useState(false);
   const [isEndingSession, setIsEndingSession] = useState(false);
   const [userSettings, setUserSettings] = useState<UserSettingsDto | null>(null);
+  const [hasCompletedCards, setHasCompletedCards] = useState(false); // Track if all cards are reviewed
 
   // Resolve deckId from params
   useEffect(() => {
@@ -134,23 +140,32 @@ export default function LearnPage({
 
   // Start a study session
   const startSession = useCallback(async () => {
-    if (!deckId) return;
+    if (!deckId) {
+      console.log("startSession: deckId is missing");
+      return;
+    }
+    console.log("startSession: Starting session for deckId:", deckId);
     setIsStartingSession(true);
     try {
       const response = await fetchApi<StartSessionResponse>("/study/start", {
         method: "POST",
         body: JSON.stringify({ deckId }),
       });
+      console.log("startSession: API response:", response);
       setSessionId(response.sessionId);
+      console.log("startSession: Session ID set to:", response.sessionId);
+      setHasCompletedCards(false); // Reset completion state
+      setCurrentIndex(0); // Reset to the first card
       showToast("Success", "Study session started!", "success");
     } catch (error: any) {
-      console.error("Error starting session:", error.message, {
+      console.error("startSession: Error starting session:", error.message, {
         status: error.status,
       });
       showToast("Error", "Failed to start session. Please try again.", "error");
       router.push(`/dashboard/decks/${deckId}`);
     } finally {
       setIsStartingSession(false);
+      console.log("startSession: Finished, isStartingSession set to false");
     }
   }, [deckId, router]);
 
@@ -159,16 +174,13 @@ export default function LearnPage({
     if (!sessionId || !deckId) return;
     setIsEndingSession(true);
     try {
-      const endResponse = await fetchApi<SessionDetails>(
+      const endResponse = await fetchApi<StudySessionDto>(
         `/study/end/${sessionId}`,
         { method: "POST" }
       );
-      const response = await fetchApi<SessionDetails>(
-        `/study/${sessionId}`,
-        { method: "GET" }
-      );
-      setSessionDetails(response);
+      setSessionDetails(endResponse);
       setSessionId(null); // Reset session
+      setHasCompletedCards(false); // Reset completion state
       showToast("Success", "Study session ended!", "success");
     } catch (error: any) {
       console.error("Error ending session:", error.message, {
@@ -199,11 +211,11 @@ export default function LearnPage({
           quality >= 3 ? "success" : "error"
         );
 
-        // Move to the next card or end the session
+        // Move to the next card or mark as completed
         if (currentIndex + 1 < cards.length) {
           setCurrentIndex(currentIndex + 1);
         } else {
-          await endSession();
+          setHasCompletedCards(true); // Mark as completed but don't end session
         }
       } catch (error: any) {
         console.error("Error submitting review:", error.message, {
@@ -212,8 +224,15 @@ export default function LearnPage({
         showToast("Error", "Failed to submit review. Please try again.", "error");
       }
     },
-    [sessionId, deckId, currentIndex, cards, endSession]
+    [sessionId, deckId, currentIndex, cards]
   );
+
+  // Restart card review from the beginning
+  const restartCards = useCallback(() => {
+    setCurrentIndex(0);
+    setHasCompletedCards(false);
+    showToast("Success", "Restarted card review!", "success");
+  }, []);
 
   // Initial data load
   useEffect(() => {
@@ -232,6 +251,11 @@ export default function LearnPage({
 
     loadData();
   }, [isAuthenticated, authLoading, deckId, fetchUserSettings, fetchDueCards]);
+
+  // Debug state transitions
+  useEffect(() => {
+    console.log("State Update - sessionId:", sessionId, "sessionDetails:", sessionDetails);
+  }, [sessionId, sessionDetails]);
 
   // Authentication and loading states
   if (authLoading || isLoading || !deckId) {
@@ -330,7 +354,10 @@ export default function LearnPage({
               _active={{ bg: "red.900" }}
               transition="all 0.2s"
               isLoading={isStartingSession}
-              onClick={startSession}
+              onClick={() => {
+                console.log("Start Learning button clicked");
+                startSession();
+              }}
             >
               Start Learning ({cards.length} cards)
             </Button>
@@ -340,7 +367,7 @@ export default function LearnPage({
     );
   }
 
-  // Session active: Show card review
+  // Session active: Show card review or completion message
   if (sessionId && !sessionDetails) {
     return (
       <Box
@@ -358,7 +385,9 @@ export default function LearnPage({
               color="white"
               textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(66, 153, 225, 0.3)"
             >
-              Card {currentIndex + 1} of {cards.length}
+              {hasCompletedCards
+                ? "All Cards Reviewed!"
+                : `Card ${currentIndex + 1} of ${cards.length}`}
             </Heading>
             <Button
               bg="gray.600"
@@ -370,19 +399,46 @@ export default function LearnPage({
               End Session
             </Button>
           </Flex>
-          <Progress
-            value={(currentIndex / cards.length) * 100}
-            size="sm"
-            colorScheme="blue"
-            bg="gray.600"
-            borderRadius="md"
-          />
-          <CardReview
-            key={cards[currentIndex].id}
-            card={cards[currentIndex]}
-            onReview={handleReview}
-            imageSize="500px"
-          />
+          {!hasCompletedCards && (
+            <>
+              <Progress
+                value={(currentIndex / cards.length) * 100}
+                size="sm"
+                colorScheme="blue"
+                bg="gray.600"
+                borderRadius="md"
+              />
+              <CardReview
+                key={cards[currentIndex].id}
+                card={cards[currentIndex]}
+                onReview={handleReview}
+                imageSize="500px"
+              />
+            </>
+          )}
+          {hasCompletedCards && (
+            <VStack spacing={4}>
+              <ChakraText color="gray.300" fontSize="lg" textAlign="center">
+                You’ve reviewed all cards in this session!
+              </ChakraText>
+              <Button
+                bg="blue.800"
+                border="2px solid"
+                borderColor="blue.900"
+                color="white"
+                _hover={{
+                  bg: "blue.700",
+                  boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
+                  transform: "scale(1.02)",
+                }}
+                _active={{ bg: "blue.900" }}
+                transition="all 0.2s"
+                onClick={restartCards}
+              >
+                Restart Cards
+              </Button>
+            </VStack>
+          )}
         </VStack>
       </Box>
     );
@@ -439,7 +495,8 @@ export default function LearnPage({
                   <Table variant="simple" colorScheme="gray">
                     <Thead>
                       <Tr>
-                        <Th color="gray.300">Card ID</Th>
+                        <Th color="gray.300">Front</Th>
+                        <Th color="gray.300">Back</Th>
                         <Th color="gray.300">Quality</Th>
                         <Th color="gray.300">Reviewed At</Th>
                       </Tr>
@@ -447,7 +504,8 @@ export default function LearnPage({
                     <Tbody>
                       {sessionDetails.reviewedCards.map((card, index) => (
                         <Tr key={index}>
-                          <Td>{card.cardId}</Td>
+                          <Td>{card.front}</Td>
+                          <Td>{card.back}</Td>
                           <Td>{card.quality}</Td>
                           <Td>{new Date(card.reviewedAt).toLocaleString()}</Td>
                         </Tr>
@@ -468,7 +526,7 @@ export default function LearnPage({
               color="white"
               _hover={{
                 bg: "red.700",
-                boxShadow: "0 0 5px rgba(66, 153, 225, 0 - 0 0 5px rgba(66, 153, 225, 0.3)",
+                boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
                 transform: "scale(1.02)",
               }}
               _active={{ bg: "red.900" }}

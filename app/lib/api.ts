@@ -1,22 +1,20 @@
+// app/lib/api.ts
 import { useAuth } from "../hooks/useAuth";
 
-// Utility to fetch data from Next.js API routes
 export async function fetchApi<T>(
   endpoint: string,
   options: RequestInit = {},
-  basePath: string = "/api/personal-vocab" // Default to personal_vocab
+  basePath: string = "/api/personal-vocab"
 ): Promise<T> {
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     ...options.headers,
   };
 
-  const url = `${basePath}${
-    endpoint.startsWith("/") ? endpoint : `/${endpoint}`
-  }`;
+  const url = `${basePath}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
 
   try {
-    console.log(url)
+    console.log("Fetching:", url);
     const res = await fetch(url, {
       ...options,
       headers,
@@ -46,9 +44,7 @@ export async function fetchApi<T>(
           errorMessage = `Bad request: ${errorBody || "Invalid data provided"}`;
           break;
         case 401:
-          errorMessage = `Unauthorized: ${
-            errorBody || "Authentication required"
-          }`;
+          errorMessage = `Unauthorized: ${errorBody || "Authentication required"}`;
           break;
         case 403:
           errorMessage = `Forbidden: ${errorBody || "Access denied"}`;
@@ -57,9 +53,7 @@ export async function fetchApi<T>(
           errorMessage = `Not found: ${errorBody || "Resource not available"}`;
           break;
         case 500:
-          errorMessage = `Server error: ${
-            errorBody || "Internal server issue"
-          }`;
+          errorMessage = `Server error: ${errorBody || "Internal server issue"}`;
           break;
         default:
           errorMessage = errorBody
@@ -67,12 +61,21 @@ export async function fetchApi<T>(
             : `API request failed with status ${res.status}`;
       }
 
-      const error = new Error(errorMessage);
-      (error as any).status = res.status; // Attach status for downstream handling
+      const error = new Error(errorMessage) as Error & { status?: number };
+      error.status = res.status; // Attach status for downstream handling
       throw error;
     }
 
-    return (await res.json()) as T;
+    // Handle cases where response might not be JSON
+    const contentType = res.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      const data = await res.json();
+      return data as T;
+    } else {
+      const text = await res.text();
+      console.warn(`Non-JSON response from ${url}:`, text);
+      return text as unknown as T; // Fallback to text, cast to T (use with caution)
+    }
   } catch (error: any) {
     console.error("Network or fetch error:", {
       url,
@@ -88,27 +91,37 @@ export async function fetchApi<T>(
 
 // Hook-based API client for authenticated requests
 export function useApi(basePath: string = "/api/personal-vocab") {
-  const { loading } = useAuth(); // Use loading to delay calls until auth is ready
+  const { loading, isAuthenticated } = useAuth(); // Include isAuthenticated
 
   return {
     get: <T>(endpoint: string) =>
-      fetchApi<T>(endpoint, { method: "GET" }, basePath),
+      loading || !isAuthenticated
+        ? Promise.reject(new Error("Authentication in progress or failed"))
+        : fetchApi<T>(endpoint, { method: "GET" }, basePath),
     post: <T>(endpoint: string, body: any) =>
-      fetchApi<T>(
-        endpoint,
-        { method: "POST", body: JSON.stringify(body) },
-        basePath
-      ),
+      loading || !isAuthenticated
+        ? Promise.reject(new Error("Authentication in progress or failed"))
+        : fetchApi<T>(
+            endpoint,
+            { method: "POST", body: JSON.stringify(body) },
+            basePath
+          ),
     put: <T>(endpoint: string, body: any) =>
-      fetchApi<T>(
-        endpoint,
-        { method: "PUT", body: JSON.stringify(body) },
-        basePath
-      ),
+      loading || !isAuthenticated
+        ? Promise.reject(new Error("Authentication in progress or failed"))
+        : fetchApi<T>(
+            endpoint,
+            { method: "PUT", body: JSON.stringify(body) },
+            basePath
+          ),
     delete: <T>(endpoint: string) =>
-      fetchApi<T>(endpoint, { method: "DELETE" }, basePath),
+      loading || !isAuthenticated
+        ? Promise.reject(new Error("Authentication in progress or failed"))
+        : fetchApi<T>(endpoint, { method: "DELETE" }, basePath),
   };
 }
+
+// Existing type definitions remain the same, with additions above
 
 // Type definitions for common API responses
 export interface ApiError {
@@ -135,18 +148,6 @@ export interface DeckResponse {
   authorAvatar?: string; // New
   generationPrompt?: string; // New
   llmModel?: string; // New
-}
-
-export interface CardDto {
-  id: string;
-  deckId: string;
-  front: string;
-  back: string;
-  hint?: string;
-  mediaUrl?: string;
-  skill: SkillType;
-  createdDate: string; // Added
-  progress?: UserCardProgressDto; // Added
 }
 
 export type SkillType = "Reading" | "Writing" | "Speaking" | "Listening";

@@ -1,85 +1,63 @@
-// interfaces.ts
-export interface Card {
-  id: string;
-  text: string;
-  transcription: string;
-  meaning: string;
-  example: string;
-  image: string;
-  deckId: string;
-}
-export interface Deck{
-  id: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  groupId: string;
-}
-
-
-// Type definitions for common API responses
-export interface ApiError {
-  error: string;
-  status?: number; // For status code access
-  details?: Record<string, any>;
-}
-
-export interface DeckResponse {
-  id: string;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  isPublic: boolean;
-  ownerId: string;
-  createdDate: string;
-  lastReviewedDate?: string;
-  tags: string[];
-  cardCount: number;
-  subscriberCount: number;
-  isSubscribed: boolean;
-  averageDifficulty: number;
-  authorNickname?: string; // New
-  authorAvatar?: string; // New
-  generationPrompt?: string; // New
-  llmModel?: string; // New
-}
-
+// app/interfaces.ts
 export interface CardDto {
   id: string;
-  deckId: string;
   front: string;
   back: string;
   hint?: string;
   mediaUrl?: string;
-  skill: SkillType;
-  createdDate: string; // Added
-  progress?: UserCardProgressDto; // Added
+  skill: string;
+  deckId: string;
+  creatorId: string;
+  createdDate: string;
+  progress?: UserCardProgressDto;
 }
-
-export type SkillType = "Reading" | "Writing" | "Speaking" | "Listening";
 
 export interface UserCardProgressDto {
-  interval: number;
-  easiness: number;
-  repetitions: number;
-  nextReviewDate?: string;
-}
-
-export interface UserCardProgress {
   id: string;
+  userId: string;
+  cardId: string;
   repetitions: number;
   interval: number;
   easiness: number;
   nextReviewDate: string;
   lastReviewedDate?: string;
   lastQuality: number;
+  stability: number;
+  difficulty: number;
+  lapses: number;
+  state: string;
 }
 
-// Types for settings
-export enum LearningMode {
-  Learn = "Learn",
-  Review = "Review",
-  Cram = "Cram",
+export interface ReviewResponseDto {
+  card: CardDto;
+  feedback: ReviewFeedbackDto;
+}
+
+export interface ReviewFeedbackDto {
+  nextReviewDate: string;
+  interval: number;
+  message: string;
+}
+
+export interface StudySessionCardDto {
+  cardId: string;
+  front: string;
+  back: string;
+  quality: number;
+  reviewedAt: string;
+}
+
+export interface StudySessionDto {
+  id: string;
+  startTime: string;
+  endTime?: string;
+  reviewedCards: StudySessionCardDto[];
+  averageQuality: number;
+  totalCardsReviewed: number;
+}
+
+export interface StartSessionResponse {
+  sessionId: string;
 }
 
 export interface UserSettingsDto {
@@ -91,42 +69,26 @@ export interface UserSettingsDto {
   reviewsCompletedToday: number;
   rolloverHour: number;
   lastResetDate: string;
-  preferredMode: LearningMode;
-}
-
-export interface UpdateUserSettingsRequestDto {
-  dailyNewCardLimit: number;
-  dailyReviewLimit: number;
-  rolloverHour: number;
-  preferredMode: LearningMode;
+  preferredMode: string;
 }
 
 export interface StartSessionResponse {
   sessionId: string;
 }
 
-export interface SessionDetails {
+export interface StudySessionCardDto {
+  cardId: string;
+  front: string;
+  back: string;
+  quality: number;
+  reviewedAt: string;
+}
+
+export interface StudySessionDto {
   id: string;
-  startTime: string; // ISO 8601 format
-  endTime: string | null; // ISO 8601 format
+  startTime: string;
+  endTime?: string;
   reviewedCards: StudySessionCardDto[];
   averageQuality: number;
   totalCardsReviewed: number;
-}
-
-export interface StudySessionCardDto{
-  cardId: string;
-  quality: number; // 0-5
-  reviewedAt: string; // ISO 8601 format
-}
-
-export interface ReviewFeedbackDto {
-  nextReviewDate: string;
-  interval: number;
-  message: string;
-}
-
-export interface ReviewResponseDto {
-  card: CardDto;
-  feedback: ReviewFeedbackDto;
 }

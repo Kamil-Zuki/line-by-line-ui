@@ -37,9 +37,9 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
-import { fetchApi, DeckResponse } from "@/app/lib/api";
+import { fetchApi } from "@/app/lib/api";
 import { format } from "date-fns";
-import { CardDto } from "@/app/interfaces";
+import { CardDto, DeckResponse } from "@/app/interfaces";
 
 export default function DeckCardsPage({
   params,

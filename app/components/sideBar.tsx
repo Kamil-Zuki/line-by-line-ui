@@ -16,10 +16,6 @@ import ProfileMenu from "./ProfileMenu";
 import { IconType } from "react-icons";
 import React from "react";
 
-const MyComponent = React.forwardRef((props, ref) => {
-  return <Box ref={ref} {...props} />
-})
-
 interface SideBarButtonData {
   icon: IconType;
   path: string;

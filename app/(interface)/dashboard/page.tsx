@@ -21,8 +21,7 @@ import { DeckResponse } from "@/app/interfaces";
 import { DeckCard } from "@/app/components/ui/DeckCard";
 import { FilterControls } from "@/app/components/ui/FilterControls";
 import { DeckDetailsModal } from "@/app/components/ui/DeckDetailsModal";
-import { fetchApi } from "@/app/lib/api"
-
+import { fetchApi } from "@/app/lib/api";
 
 interface Stats {
   deckCount: number;
@@ -166,7 +165,8 @@ export default function DashboardPage() {
         left: "0",
         right: "0",
         bottom: "0",
-        background: "linear-gradient(45deg, rgba(255, 255, 255, 0.05), transparent)",
+        background:
+          "linear-gradient(45deg, rgba(255, 255, 255, 0.05), transparent)",
         opacity: 0.3,
         zIndex: 1,
       }}
@@ -277,7 +277,9 @@ export default function DashboardPage() {
               color="white"
               thickness="3px"
               speed="0.65s"
-              _hover={{ filter: "drop-shadow(0 0 5px rgba(255, 255, 255, 0.3))" }}
+              _hover={{
+                filter: "drop-shadow(0 0 5px rgba(255, 255, 255, 0.3))",
+              }}
             />
           </Flex>
         ) : filteredDecks.length > 0 ? (
@@ -313,7 +315,9 @@ export default function DashboardPage() {
             onManageCards={
               selectedDeck.ownerId === user?.id ? handleManageCards : undefined
             }
-            onLearn={selectedDeck.ownerId === user?.id ? handleLearn : undefined}
+            onLearn={
+              selectedDeck.ownerId === user?.id ? handleLearn : undefined
+            }
           />
         )}
       </Box>

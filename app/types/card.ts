@@ -3,7 +3,7 @@ export interface CardTableRow {
   front: string;
   back: string;
   hint: string | null;
-  deckTitle: string; // Renamed from deckName
+  deckTitle: string;
   deckId: string;
   createdDate: string;
   nextReviewDate: string | null;

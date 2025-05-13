@@ -115,10 +115,10 @@ export interface DeckResponse {
   subscriberCount: number;
   isSubscribed: boolean;
   averageDifficulty: number;
-  authorNickname?: string; // New
-  authorAvatar?: string; // New
-  generationPrompt?: string; // New
-  llmModel?: string; // New
+  authorNickname?: string;
+  authorAvatar?: string;
+  generationPrompt?: string;
+  llmModel?: string;
 }
 
 export type SkillType = "Reading" | "Writing" | "Speaking" | "Listening";

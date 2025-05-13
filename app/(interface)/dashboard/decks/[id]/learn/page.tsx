@@ -51,11 +51,15 @@ export default function LearnPage({
   const [cards, setCards] = useState<CardDto[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [sessionDetails, setSessionDetails] = useState<StudySessionDto | null>(null);
+  const [sessionDetails, setSessionDetails] = useState<StudySessionDto | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isStartingSession, setIsStartingSession] = useState(false);
   const [isEndingSession, setIsEndingSession] = useState(false);
-  const [userSettings, setUserSettings] = useState<UserSettingsDto | null>(null);
+  const [userSettings, setUserSettings] = useState<UserSettingsDto | null>(
+    null
+  );
   const [hasCompletedCards, setHasCompletedCards] = useState(false); // Track if all cards are reviewed
 
   // Resolve deckId from params
@@ -132,7 +136,11 @@ export default function LearnPage({
       console.error("Error fetching due cards:", error.message, {
         status: error.status,
       });
-      showToast("Error", "Failed to load due cards. Please try again.", "error");
+      showToast(
+        "Error",
+        "Failed to load due cards. Please try again.",
+        "error"
+      );
       router.push(`/dashboard/decks/${deckId}`);
       throw error;
     }
@@ -221,7 +229,11 @@ export default function LearnPage({
         console.error("Error submitting review:", error.message, {
           status: error.status,
         });
-        showToast("Error", "Failed to submit review. Please try again.", "error");
+        showToast(
+          "Error",
+          "Failed to submit review. Please try again.",
+          "error"
+        );
       }
     },
     [sessionId, deckId, currentIndex, cards]
@@ -254,7 +266,12 @@ export default function LearnPage({
 
   // Debug state transitions
   useEffect(() => {
-    console.log("State Update - sessionId:", sessionId, "sessionDetails:", sessionDetails);
+    console.log(
+      "State Update - sessionId:",
+      sessionId,
+      "sessionDetails:",
+      sessionDetails
+    );
   }, [sessionId, sessionDetails]);
 
   // Authentication and loading states
@@ -307,21 +324,22 @@ export default function LearnPage({
             <>
               <ChakraText color="gray.300" mb={4} textAlign="center">
                 {userSettings &&
-                userSettings.newCardsCompletedToday >= userSettings.dailyNewCardLimit
-                  ? (
-                    <>
-                      You’ve reached your daily new card limit.{" "}
-                      <Link
-                        href="/dashboard/settings"
-                        color="blue.300"
-                        textDecoration="underline"
-                      >
-                        Adjust your settings
-                      </Link>{" "}
-                      to learn more cards.
-                    </>
-                  )
-                  : "No due cards for this deck."}
+                userSettings.newCardsCompletedToday >=
+                  userSettings.dailyNewCardLimit ? (
+                  <>
+                    You’ve reached your daily new card limit.{" "}
+                    <Link
+                      href="/dashboard/settings"
+                      color="blue.300"
+                      textDecoration="underline"
+                    >
+                      Adjust your settings
+                    </Link>{" "}
+                    to learn more cards.
+                  </>
+                ) : (
+                  "No due cards for this deck."
+                )}
               </ChakraText>
               <Button
                 bg="red.800"
@@ -480,14 +498,15 @@ export default function LearnPage({
                 Total Cards Reviewed: {sessionDetails?.totalCardsReviewed}
               </ChakraText>
               <ChakraText fontSize="lg">
-                Average Quality:{" "}
-                {sessionDetails?.averageQuality.toFixed(1)} / 5
+                Average Quality: {sessionDetails?.averageQuality.toFixed(1)} / 5
               </ChakraText>
               <ChakraText fontSize="lg">
-                Start Time: {new Date(sessionDetails?.startTime || "").toLocaleString()}
+                Start Time:{" "}
+                {new Date(sessionDetails?.startTime || "").toLocaleString()}
               </ChakraText>
               <ChakraText fontSize="lg">
-                End Time: {new Date(sessionDetails?.endTime || "").toLocaleString()}
+                End Time:{" "}
+                {new Date(sessionDetails?.endTime || "").toLocaleString()}
               </ChakraText>
 
               {sessionDetails?.reviewedCards?.length ? (

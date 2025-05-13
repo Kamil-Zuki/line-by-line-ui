@@ -1,18 +1,30 @@
 // app/components/ui/CardReview.tsx
-import { Box, Button, Text, Image, HStack, VStack, Spinner } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Text,
+  Image,
+  HStack,
+  VStack,
+  Spinner,
+} from "@chakra-ui/react";
 import { CardDto } from "@/app/interfaces";
 import { useState } from "react";
 
 interface CardReviewProps {
   card: CardDto;
   onReview: (quality: number) => void;
-  imageSize?: string; // Prop to control image dimensions
+  imageSize?: string;
 }
 
-export function CardReview({ card, onReview, imageSize = "200px" }: CardReviewProps) {
+export function CardReview({
+  card,
+  onReview,
+  imageSize = "200px",
+}: CardReviewProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isLoadingImage, setIsLoadingImage] = useState(!!card.mediaUrl);
-  const [isSubmitting, setIsSubmitting] = useState(false); // Track submission state
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Handle flip with keyboard accessibility
   const handleFlip = () => setIsFlipped(!isFlipped);

@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = "http://85.175.218.17/api/v1";
+const API_URL = `${process.env.API_SERVER_ADDRESS}/api/v1/auth/username`;
 
 export async function PUT(req: NextRequest) {
   const cookieStore = await cookies();
@@ -14,7 +14,7 @@ export async function PUT(req: NextRequest) {
   }
 
   try {
-    const res = await fetch(`${API_URL}/auth/username`, {
+    const res = await fetch(`${API_URL}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -23,7 +23,7 @@ export async function PUT(req: NextRequest) {
       },
       body: JSON.stringify(body),
     });
-    console.log(res)
+    console.log(res);
     if (!res.ok) {
       return NextResponse.json(
         { error: "Failed to update password info" },
@@ -32,7 +32,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const result = await res.json();
-    return NextResponse.json(result, {status: 200});
+    return NextResponse.json(result, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       { error: "Internal server error" },

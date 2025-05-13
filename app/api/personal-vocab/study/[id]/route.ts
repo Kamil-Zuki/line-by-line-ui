@@ -1,7 +1,7 @@
 // app/api/personal-vocab/study/route.ts
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = "http://85.175.218.17/api/v1/study";
+const API_URL = `${process.env.API_SERVER_ADDRESS}/api/v1/study`;
 
 export async function GET(
   req: NextRequest,
@@ -23,10 +23,7 @@ export async function GET(
     });
 
     if (!response.ok)
-      throw NextResponse.json(
-        { error: "Failed" },
-        { status: response.status }
-      );
+      throw NextResponse.json({ error: "Failed" }, { status: response.status });
 
     const result = await response.json();
     console.log("Study session result:", result);

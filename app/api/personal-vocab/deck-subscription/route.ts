@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = "http://85.175.218.17/api/v1/deck-subscription";
+const API_URL = `${process.env.API_SERVER_ADDRESS}/api/v1/deck-subscription`;
 
 export async function GET(req: NextRequest) {
   //#region Access token
   const accessToken = req.cookies.get("accessToken")?.value;
   if (!accessToken)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-     //#endregion
+  //#endregion
 
   try {
     const response = await fetch(`${API_URL}`, {
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
 
     const result = await response.json();
 
-    return NextResponse.json(result, {status: 200});
+    return NextResponse.json(result, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       { error: "Internal server error" },

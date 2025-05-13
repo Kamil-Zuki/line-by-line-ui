@@ -1,23 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BASE_URL = "http://85.175.218.17/api/v1/deck/public";
-
+const BASE_URL = `${process.env.API_SERVER_ADDRESS}/api/v1/deck/public`;
 
 export async function GET(req: NextRequest) {
-//#region Access token
-   const accessToken = req?.cookies.get("accessToken")?.value;
-   if (!accessToken)
-     return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
-   //#endregion
+  //#region Access token
+  const accessToken = req?.cookies.get("accessToken")?.value;
+  if (!accessToken)
+    return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
+  //#endregion
 
   try {
-
     const response = await fetch(`${BASE_URL}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
-      }
+      },
     });
 
     if (!response.ok) {

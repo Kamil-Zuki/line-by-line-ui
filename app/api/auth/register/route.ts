@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const API_URL = `${process.env.API_SERVER_ADDRESS}/api/v1/auth/register`;
+
 export async function POST(req: NextRequest) {
   const { email, password, confirmPassword } = await req.json();
-  const res = await fetch("http://85.175.218.17/api/v1/auth/register", {
+  const res = await fetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password, confirmPassword }),

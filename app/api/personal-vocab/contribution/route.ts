@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = "http://85.175.218.17/api/v1/contribution";
+const API_URL = `${process.env.API_SERVER_ADDRESS}/api/v1/contribution`;
 
-export async function POST(
-  req: NextRequest
-) {
+export async function POST(req: NextRequest) {
   //#region Access token
   const accessToken = req?.cookies.get("accessToken")?.value;
   if (!accessToken)
@@ -22,10 +20,7 @@ export async function POST(
   });
 
   if (!response.ok)
-    return NextResponse.json(
-      { error: "Failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed" }, { status: 500 });
 
   const result = await response.json();
 

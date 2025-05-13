@@ -1,14 +1,11 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = "http://85.175.218.17/api/v1";
+const API_URL = `${process.env.API_SERVER_ADDRESS}/api/v1/auth/password`;
 
 export async function PUT(req: NextRequest) {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
-
-  console.log(accessToken);
-  //   const { currentPassword, newPassword } = await req.json();
 
   const body = await req.json();
 
@@ -20,7 +17,7 @@ export async function PUT(req: NextRequest) {
   }
 
   try {
-    const res = await fetch("http://85.175.218.17/api/v1/auth/password", {
+    const res = await fetch(API_URL, {
       method: "PUT",
       headers: {
         accept: "*/*",

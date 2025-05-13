@@ -11,7 +11,9 @@ export async function fetchApi<T>(
     ...options.headers,
   };
 
-  const url = `${basePath}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+  const url = `${basePath}${
+    endpoint.startsWith("/") ? endpoint : `/${endpoint}`
+  }`;
 
   try {
     console.log("Fetching:", url);
@@ -44,7 +46,9 @@ export async function fetchApi<T>(
           errorMessage = `Bad request: ${errorBody || "Invalid data provided"}`;
           break;
         case 401:
-          errorMessage = `Unauthorized: ${errorBody || "Authentication required"}`;
+          errorMessage = `Unauthorized: ${
+            errorBody || "Authentication required"
+          }`;
           break;
         case 403:
           errorMessage = `Forbidden: ${errorBody || "Access denied"}`;
@@ -53,7 +57,9 @@ export async function fetchApi<T>(
           errorMessage = `Not found: ${errorBody || "Resource not available"}`;
           break;
         case 500:
-          errorMessage = `Server error: ${errorBody || "Internal server issue"}`;
+          errorMessage = `Server error: ${
+            errorBody || "Internal server issue"
+          }`;
           break;
         default:
           errorMessage = errorBody

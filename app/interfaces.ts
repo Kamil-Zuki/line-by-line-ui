@@ -26,6 +26,7 @@ export interface UserCardProgressDto {
   difficulty: number;
   lapses: number;
   state: string;
+  skill: SkillType;
 }
 
 export interface ReviewResponseDto {
@@ -91,4 +92,57 @@ export interface StudySessionDto {
   reviewedCards: StudySessionCardDto[];
   averageQuality: number;
   totalCardsReviewed: number;
+}
+
+///
+export interface ApiError {
+  error: string;
+  status?: number; // For status code access
+  details?: Record<string, any>;
+}
+
+export interface DeckResponse {
+  id: string;
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  isPublic: boolean;
+  ownerId: string;
+  createdDate: string;
+  lastReviewedDate?: string;
+  tags: string[];
+  cardCount: number;
+  subscriberCount: number;
+  isSubscribed: boolean;
+  averageDifficulty: number;
+  authorNickname?: string; // New
+  authorAvatar?: string; // New
+  generationPrompt?: string; // New
+  llmModel?: string; // New
+}
+
+export type SkillType = "Reading" | "Writing" | "Speaking" | "Listening";
+
+export interface UserCardProgress {
+  id: string;
+  repetitions: number;
+  interval: number;
+  easiness: number;
+  nextReviewDate: string;
+  lastReviewedDate?: string;
+  lastQuality: number;
+}
+
+// Types for settings
+export enum LearningMode {
+  Learn = "Learn",
+  Review = "Review",
+  Cram = "Cram",
+}
+
+export interface UpdateUserSettingsRequestDto {
+  dailyNewCardLimit: number;
+  dailyReviewLimit: number;
+  rolloverHour: number;
+  preferredMode: LearningMode;
 }

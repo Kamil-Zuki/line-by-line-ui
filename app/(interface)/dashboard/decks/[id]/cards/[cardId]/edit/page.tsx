@@ -17,7 +17,8 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
-import { fetchApi, CardDto, DeckResponse } from "@/app/lib/api";
+import { fetchApi } from "@/app/lib/api";
+import { CardDto, DeckResponse } from "@/app/interfaces";
 
 export default function EditCardPage({
   params,
@@ -32,7 +33,7 @@ export default function EditCardPage({
     back: "",
     hint: "",
     mediaUrl: "",
-    skill: "Reading" as "Reading" | "Writing" | "Speaking" | "Listening",
+    skill: "",
   });
   const [errors, setErrors] = useState({ front: "", back: "", mediaUrl: "" });
   const router = useRouter();

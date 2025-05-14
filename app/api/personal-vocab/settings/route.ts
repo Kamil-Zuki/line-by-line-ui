@@ -11,7 +11,8 @@ export async function PUT(req: NextRequest) {
 
   const body = await req.json();
 
-  const response = await fetch(`${API_URL}`, {
+  console.log("API_URL", API_URL);
+  const response = await fetch(API_URL, {
     method: "PUT",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -32,13 +33,14 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+  console.log("API_URL", API_URL);
   //#region Access token
   const accessToken = req?.cookies.get("accessToken")?.value;
   if (!accessToken)
     return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
   //#endregion
   console.log("Settings get method method");
-  const response = await fetch(`${API_URL}`, {
+  const response = await fetch(API_URL, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,

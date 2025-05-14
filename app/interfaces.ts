@@ -146,3 +146,17 @@ export interface UpdateUserSettingsRequestDto {
   rolloverHour: number;
   preferredMode: LearningMode;
 }
+
+export interface CardTableRow {
+  id: string;
+  front: string;
+  back: string;
+  hint: string | null;
+  deckTitle: string;
+  deckId: string;
+  createdDate: string;
+  nextReviewDate: string | null;
+  interval: number;
+  easiness: number;
+  repetitions: number;
+}

@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
   //#endregion
 
+  console.log("The method next started");
   const response = await fetch(`${API_URL}`, {
     method: "GET",
     headers: {
@@ -17,6 +18,7 @@ export async function GET(req: NextRequest) {
     },
   });
 
+  console.log(response);
   if (!response.ok)
     return NextResponse.json({ error: "Failed to get cards" }, { status: 500 });
 

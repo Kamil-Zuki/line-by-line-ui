@@ -26,7 +26,8 @@ import {
   StatNumber,
   SimpleGrid,
 } from "@chakra-ui/react";
-import { DeckResponse } from "@/app/interfaces";
+import { DeckResponse } from "@/app/lib/api";
+// import { DeckResponse } from "@/app/interfaces";
 
 interface DeckDetailsModalProps {
   deck: DeckResponse;

@@ -1,4 +1,3 @@
-// app/(interface)/dashboard/decks/[id]/learn/page.tsx
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
@@ -11,7 +10,6 @@ import {
   Spinner,
   VStack,
   Flex,
-  Progress,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -48,15 +46,13 @@ export default function LearnPage({
   const router = useRouter();
   const toast = useToast();
   const [deckId, setDeckId] = useState<string | null>(null);
-  const [cards, setCards] = useState<CardDto[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentCard, setCurrentCard] = useState<CardDto | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionDetails, setSessionDetails] = useState<StudySessionDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStartingSession, setIsStartingSession] = useState(false);
   const [isEndingSession, setIsEndingSession] = useState(false);
   const [userSettings, setUserSettings] = useState<UserSettingsDto | null>(null);
-  const [hasCompletedCards, setHasCompletedCards] = useState(false); // Track if all cards are reviewed
 
   // Resolve deckId from params
   useEffect(() => {
@@ -118,25 +114,47 @@ export default function LearnPage({
     }
   }, []);
 
-  // Fetch due cards
-  const fetchDueCards = useCallback(async () => {
-    if (!deckId) return;
-    console.log("Fetching due cards for deck:", deckId);
+  // Check if there are due cards
+  const checkDueCards = useCallback(async () => {
+    if (!deckId) return false;
+    console.log("Checking due cards for deck:", deckId);
     try {
-      const response = await fetchApi<CardDto[]>(
-        `/card/due?deckId=${deckId}&mode=learn&sortBy=nextReviewDate`
+      const response = await fetchApi<{ hasDueCards: boolean }>(
+        `/card/due?deckId=${deckId}`,
+        { method: "GET" }
       );
-      console.log("Due cards fetched:", response);
-      setCards(response);
+      console.log("Due cards check response:", response);
+      return response.hasDueCards;
     } catch (error: any) {
-      console.error("Error fetching due cards:", error.message, {
+      console.error("Error checking due cards:", error.message, {
         status: error.status,
       });
-      showToast("Error", "Failed to load due cards. Please try again.", "error");
-      router.push(`/dashboard/decks/${deckId}`);
-      throw error;
+      return false;
     }
-  }, [deckId, router]);
+  }, [deckId]);
+
+  // Fetch the next card to review
+  const fetchNextCard = useCallback(async () => {
+    if (!sessionId) return;
+    try {
+      const card = await fetchApi<CardDto | null>(
+        `/card/next`,
+        { method: "GET" }
+      );
+      console.log("Fetched next card:", card);
+      setCurrentCard(card);
+      if (!card) {
+        // No more cards to review, end the session automatically
+        await endSession();
+      }
+    } catch (error: any) {
+      console.error("Error fetching next card:", error.message, {
+        status: error.status,
+      });
+      showToast("Error", "Failed to load the next card.", "error");
+      await endSession();
+    }
+  }, [sessionId]);
 
   // Start a study session
   const startSession = useCallback(async () => {
@@ -154,20 +172,37 @@ export default function LearnPage({
       console.log("startSession: API response:", response);
       setSessionId(response.sessionId);
       console.log("startSession: Session ID set to:", response.sessionId);
-      setHasCompletedCards(false); // Reset completion state
-      setCurrentIndex(0); // Reset to the first card
-      showToast("Success", "Study session started!", "success");
+
+      // Wait briefly to ensure session is persisted (adjust delay based on backend latency)
+      await new Promise((resolve) => setTimeout(resolve, 300)); // Reduced to 300ms
+
+      // Verify session is active before fetching the next card
+      const verifySession = async () => {
+        const sessionCheck = await fetchApi<{ active: boolean }>(
+          `/study/${response.sessionId}/check`,
+          { method: "GET" }
+        );
+        return sessionCheck.active;
+      };
+
+      const isSessionActive = await verifySession();
+      if (isSessionActive) {
+        await fetchNextCard();
+        showToast("Success", "Study session started!", "success");
+      } else {
+        throw new Error("Session failed to activate");
+      }
     } catch (error: any) {
       console.error("startSession: Error starting session:", error.message, {
         status: error.status,
       });
-      showToast("Error", "Failed to start session. Please try again.", "error");
+      showToast("Error", `Failed to start session: ${error.message}`, "error");
       router.push(`/dashboard/decks/${deckId}`);
     } finally {
       setIsStartingSession(false);
       console.log("startSession: Finished, isStartingSession set to false");
     }
-  }, [deckId, router]);
+  }, [deckId, router, fetchNextCard]);
 
   // End the study session and fetch session details
   const endSession = useCallback(async () => {
@@ -179,8 +214,8 @@ export default function LearnPage({
         { method: "POST" }
       );
       setSessionDetails(endResponse);
-      setSessionId(null); // Reset session
-      setHasCompletedCards(false); // Reset completion state
+      setSessionId(null);
+      setCurrentCard(null);
       showToast("Success", "Study session ended!", "success");
     } catch (error: any) {
       console.error("Error ending session:", error.message, {
@@ -195,11 +230,10 @@ export default function LearnPage({
   // Handle card review
   const handleReview = useCallback(
     async (quality: number) => {
-      if (!sessionId || !deckId || currentIndex >= cards.length) return;
-      const card = cards[currentIndex];
+      if (!sessionId || !deckId || !currentCard) return;
       try {
         const response = await fetchApi<ReviewResponseDto>(
-          `/card/review/${card.id}`,
+          `/card/review/${currentCard.id}`,
           {
             method: "POST",
             body: JSON.stringify({ quality, sessionId }),
@@ -208,15 +242,11 @@ export default function LearnPage({
         showToast(
           "Review Submitted",
           response.feedback.message,
-          quality >= 3 ? "success" : "error"
+          quality >= 2 ? "success" : "error" // Adjusted for FSRS: Good (2) and Easy (3) are positive
         );
 
-        // Move to the next card or mark as completed
-        if (currentIndex + 1 < cards.length) {
-          setCurrentIndex(currentIndex + 1);
-        } else {
-          setHasCompletedCards(true); // Mark as completed but don't end session
-        }
+        // Fetch the next card after review
+        await fetchNextCard();
       } catch (error: any) {
         console.error("Error submitting review:", error.message, {
           status: error.status,
@@ -224,15 +254,8 @@ export default function LearnPage({
         showToast("Error", "Failed to submit review. Please try again.", "error");
       }
     },
-    [sessionId, deckId, currentIndex, cards]
+    [sessionId, deckId, currentCard, fetchNextCard]
   );
-
-  // Restart card review from the beginning
-  const restartCards = useCallback(() => {
-    setCurrentIndex(0);
-    setHasCompletedCards(false);
-    showToast("Success", "Restarted card review!", "success");
-  }, []);
 
   // Initial data load
   useEffect(() => {
@@ -241,7 +264,7 @@ export default function LearnPage({
     const loadData = async () => {
       setIsLoading(true);
       try {
-        await Promise.all([fetchUserSettings(), fetchDueCards()]);
+        await fetchUserSettings();
       } catch (error) {
         console.error("Error during initial data load:", error);
       } finally {
@@ -250,12 +273,12 @@ export default function LearnPage({
     };
 
     loadData();
-  }, [isAuthenticated, authLoading, deckId, fetchUserSettings, fetchDueCards]);
+  }, [isAuthenticated, authLoading, deckId, fetchUserSettings]);
 
   // Debug state transitions
   useEffect(() => {
-    console.log("State Update - sessionId:", sessionId, "sessionDetails:", sessionDetails);
-  }, [sessionId, sessionDetails]);
+    console.log("State Update - sessionId:", sessionId, "sessionDetails:", sessionDetails, "currentCard:", currentCard);
+  }, [sessionId, sessionDetails, currentCard]);
 
   // Authentication and loading states
   if (authLoading || isLoading || !deckId) {
@@ -283,7 +306,7 @@ export default function LearnPage({
     return null;
   }
 
-  // Initial state: Show cards to review or "no cards" message
+  // Initial state: Check for due cards and start session
   if (!sessionId && !sessionDetails) {
     return (
       <Box
@@ -303,25 +326,18 @@ export default function LearnPage({
           >
             Learn Deck
           </Heading>
-          {cards.length === 0 ? (
+          {userSettings && userSettings.newCardsCompletedToday >= userSettings.dailyNewCardLimit ? (
             <>
               <ChakraText color="gray.300" mb={4} textAlign="center">
-                {userSettings &&
-                userSettings.newCardsCompletedToday >= userSettings.dailyNewCardLimit
-                  ? (
-                    <>
-                      You’ve reached your daily new card limit.{" "}
-                      <Link
-                        href="/dashboard/settings"
-                        color="blue.300"
-                        textDecoration="underline"
-                      >
-                        Adjust your settings
-                      </Link>{" "}
-                      to learn more cards.
-                    </>
-                  )
-                  : "No due cards for this deck."}
+                You’ve reached your daily new card limit.{" "}
+                <Link
+                  href="/dashboard/settings"
+                  color="blue.300"
+                  textDecoration="underline"
+                >
+                  Adjust your settings
+                </Link>{" "}
+                to learn more cards.
               </ChakraText>
               <Button
                 bg="red.800"
@@ -354,12 +370,18 @@ export default function LearnPage({
               _active={{ bg: "red.900" }}
               transition="all 0.2s"
               isLoading={isStartingSession}
-              onClick={() => {
+              onClick={async () => {
                 console.log("Start Learning button clicked");
-                startSession();
+                const hasDueCards = await checkDueCards();
+                if (hasDueCards) {
+                  startSession();
+                } else {
+                  showToast("Info", "No due cards for this deck.", "error");
+                  router.push(`/dashboard/decks/${deckId}`);
+                }
               }}
             >
-              Start Learning ({cards.length} cards)
+              Start Learning
             </Button>
           )}
         </VStack>
@@ -367,8 +389,8 @@ export default function LearnPage({
     );
   }
 
-  // Session active: Show card review or completion message
-  if (sessionId && !sessionDetails) {
+  // Session active: Show card review
+  if (sessionId && !sessionDetails && currentCard) {
     return (
       <Box
         minH="100vh"
@@ -385,9 +407,7 @@ export default function LearnPage({
               color="white"
               textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(66, 153, 225, 0.3)"
             >
-              {hasCompletedCards
-                ? "All Cards Reviewed!"
-                : `Card ${currentIndex + 1} of ${cards.length}`}
+              Reviewing Card
             </Heading>
             <Button
               bg="gray.600"
@@ -399,46 +419,12 @@ export default function LearnPage({
               End Session
             </Button>
           </Flex>
-          {!hasCompletedCards && (
-            <>
-              <Progress
-                value={(currentIndex / cards.length) * 100}
-                size="sm"
-                colorScheme="blue"
-                bg="gray.600"
-                borderRadius="md"
-              />
-              <CardReview
-                key={cards[currentIndex].id}
-                card={cards[currentIndex]}
-                onReview={handleReview}
-                imageSize="500px"
-              />
-            </>
-          )}
-          {hasCompletedCards && (
-            <VStack spacing={4}>
-              <ChakraText color="gray.300" fontSize="lg" textAlign="center">
-                You’ve reviewed all cards in this session!
-              </ChakraText>
-              <Button
-                bg="blue.800"
-                border="2px solid"
-                borderColor="blue.900"
-                color="white"
-                _hover={{
-                  bg: "blue.700",
-                  boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
-                  transform: "scale(1.02)",
-                }}
-                _active={{ bg: "blue.900" }}
-                transition="all 0.2s"
-                onClick={restartCards}
-              >
-                Restart Cards
-              </Button>
-            </VStack>
-          )}
+          <CardReview
+            key={currentCard.id}
+            card={currentCard}
+            onReview={handleReview}
+            imageSize="500px"
+          />
         </VStack>
       </Box>
     );
@@ -481,7 +467,7 @@ export default function LearnPage({
               </ChakraText>
               <ChakraText fontSize="lg">
                 Average Quality:{" "}
-                {sessionDetails?.averageQuality.toFixed(1)} / 5
+                {sessionDetails?.averageQuality.toFixed(1)} / 3
               </ChakraText>
               <ChakraText fontSize="lg">
                 Start Time: {new Date(sessionDetails?.startTime || "").toLocaleString()}

@@ -70,7 +70,7 @@ export interface UserSettingsDto {
   reviewsCompletedToday: number;
   rolloverHour: number;
   lastResetDate: string;
-  preferredMode: string;
+  preferredMode: LearningMode;
 }
 
 export interface StartSessionResponse {

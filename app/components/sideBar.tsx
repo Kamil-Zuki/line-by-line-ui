@@ -61,7 +61,7 @@ export default function SideBar({ buttonData }: SideBarProps) {
     {
       label: "Open Profile",
       onClick: () => handleNavigation("/profile"),
-      color: "white",
+      color: "black",
     },
     { label: "Logout", onClick: () => logout(), color: "red.800" },
   ];

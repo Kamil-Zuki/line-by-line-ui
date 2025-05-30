@@ -15,13 +15,15 @@ type ProfileMenuProps = {
 const ProfileMenu: FC<ProfileMenuProps> = ({ userName, actions }) => {
   return (
     <Menu>
-      <MenuButton >
-        {userName}
-      </MenuButton>
+      <MenuButton>{userName}</MenuButton>
       <Portal>
         <MenuList>
           {actions.map((action, index) => (
-            <MenuItem textColor={action.color} key={index} onClick={action.onClick}>
+            <MenuItem
+              textColor={action.color}
+              key={index}
+              onClick={action.onClick}
+            >
               {action.label}
             </MenuItem>
           ))}

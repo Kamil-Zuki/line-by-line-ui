@@ -47,7 +47,6 @@ const SettingsSidebar = ({
         <IconButton
           icon={<FiChevronLeft color="white" />}
           height={7}
-          width={1}
           aria-label="Back"
           variant="ghost"
           onClick={() => router.back()}

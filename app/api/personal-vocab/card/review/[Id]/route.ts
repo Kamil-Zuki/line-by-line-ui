@@ -25,11 +25,10 @@ export async function POST(
     body: JSON.stringify(body),
   });
 
-  if (!response.ok)
-    return NextResponse.json(
-      { error: "Failed to review a card" },
-      { status: 500 }
-    );
+  if (!response.ok){
+    console.log(response)
+    return NextResponse.json({ error: response.statusText }, { status: response.status });
+}
 
   const result = await response.json();
 

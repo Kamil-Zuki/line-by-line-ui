@@ -16,22 +16,21 @@ export interface UserCardProgressDto {
   id: string;
   userId: string;
   cardId: string;
-  repetitions: number;
-  interval: number;
-  easiness: number;
-  nextReviewDate: string;
-  lastReviewedDate?: string;
   lastQuality: number;
+  
+  due: string;
   stability: number;
   difficulty: number;
-  lapses: number;
+  elapsedDays: number,
+  scheduledDays: number,
+  reps: number;
   state: string;
-  skill: SkillType;
+  lapses: number;
+  lastReview?: string;
 }
 
 export interface ReviewResponseDto {
   card: CardDto;
-  feedback: ReviewFeedbackDto;
 }
 
 export interface ReviewFeedbackDto {

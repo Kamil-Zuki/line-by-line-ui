@@ -210,6 +210,7 @@ export default function LearnPage({
     async (quality: number) => {
       if (!sessionId || !deckId || !currentCard) return;
       try {
+        console.log(currentCard.id)
         const response = await fetchApi<ReviewResponseDto>(
           `/card/review/${currentCard.id}`,
           {
@@ -217,14 +218,12 @@ export default function LearnPage({
             body: JSON.stringify({ quality }),
           }
         );
-        showToast(
-          "Review Submitted",
-          response.feedback.message,
-          quality >= 3 ? "success" : "error"
-        );
+        console.log("The review response:", response)
         const nextCard = await fetchApi<CardDto>(
-          `/card/next?sessionId=${sessionId}`
+          `/card/next`
+
         );
+        console.log("The next card:", nextCard)
         if (nextCard) {
           setCurrentCard(nextCard);
           setCardHistory((prev) => [...prev, nextCard]);
@@ -232,14 +231,20 @@ export default function LearnPage({
           setHasCompletedCards(true);
         }
       } catch (error: any) {
-        console.error("Error submitting review:", error.message, {
-          status: error.status,
-        });
-        showToast(
-          "Error",
-          "Failed to submit review. Please try again.",
-          "error"
-        );
+        if(error.status == 404){
+          setHasCompletedCards(true);
+        }
+        else {
+          console.error("Error submitting review:", error.message, {
+            status: error.status,
+          });
+          showToast(
+            "Error",
+            "Failed to submit review. Please try again.",
+            "error"
+          );
+        }
+
       }
     },
     [sessionId, deckId, currentCard]
@@ -347,7 +352,7 @@ export default function LearnPage({
                 {userSettings &&
                 userSettings.newCardsCompletedToday >=
                   userSettings.dailyNewCardLimit
-                  ? 'You’ve reached your daily new card limit. <Link href="/dashboard/settings" color="blue.300" textDecoration="underline">Adjust your settings</Link> to learn more cards.'
+                  ? 'You’ve reached your daily new card limit. Adjust your settings to learn more cards.'
                   : "No due cards for this deck."}
               </ChakraText>
               <Button
@@ -402,7 +407,7 @@ export default function LearnPage({
         p={4}
       >
         <VStack spacing={4} align="stretch" maxW="800px" w="100%">
-          <Flex justify="space-between" align="center">
+          <Flex  align="center">
             <Heading
               as="h1"
               size={{ base: "lg", md: "xl" }}
@@ -413,7 +418,7 @@ export default function LearnPage({
                 ? "All Cards Reviewed!"
                 : `Card ${cardHistory.length + 1} of Unknown`}
             </Heading>
-            <Button
+            {/* <Button
               bg="gray.600"
               color="white"
               _hover={{ bg: "gray.500" }}
@@ -421,7 +426,7 @@ export default function LearnPage({
               isLoading={isEndingSession}
             >
               End Session
-            </Button>
+            </Button> */}
           </Flex>
           {!hasCompletedCards && currentCard && (
             <>

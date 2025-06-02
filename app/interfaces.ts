@@ -1,11 +1,12 @@
 // app/interfaces.ts
+
 export interface CardDto {
   id: string;
   front: string;
   back: string;
   hint?: string;
   mediaUrl?: string;
-  skill: string;
+  skill: SkillType;
   deckId: string;
   creatorId: string;
   createdDate: string;
@@ -17,14 +18,13 @@ export interface UserCardProgressDto {
   userId: string;
   cardId: string;
   lastQuality: number;
-
   due: string;
   stability: number;
   difficulty: number;
   elapsedDays: number;
   scheduledDays: number;
   reps: number;
-  state: string;
+  state: string; // e.g., "New", "Learning", "Review", "Relearning"
   lapses: number;
   lastReview?: string;
 }
@@ -41,6 +41,7 @@ export interface ReviewFeedbackDto {
 
 export interface StudySessionCardDto {
   cardId: string;
+  deckId: string;
   front: string;
   back: string;
   quality: number;
@@ -72,32 +73,15 @@ export interface UserSettingsDto {
   preferredMode: LearningMode;
 }
 
-export interface StartSessionResponse {
-  sessionId: string;
+export interface CardStatsDto {
+  newCount: number;
+  reviewCount: number;
+  learningCount: number;
 }
 
-export interface StudySessionCardDto {
-  cardId: string;
-  deckId: string;
-  front: string;
-  back: string;
-  quality: number;
-  reviewedAt: string;
-}
-
-export interface StudySessionDto {
-  id: string;
-  startTime: string;
-  endTime?: string;
-  reviewedCards: StudySessionCardDto[];
-  averageQuality: number;
-  totalCardsReviewed: number;
-}
-
-///
 export interface ApiError {
   error: string;
-  status?: number; // For status code access
+  status?: number;
   details?: Record<string, any>;
 }
 
@@ -133,7 +117,6 @@ export interface UserCardProgress {
   lastQuality: number;
 }
 
-// Types for settings
 export enum LearningMode {
   Learn = "Learn",
   Review = "Review",
@@ -159,10 +142,4 @@ export interface CardTableRow {
   interval: number;
   easiness: number;
   repetitions: number;
-}
-
-export interface CardStatsDto {
-  newCount: number;
-  reviewCount: number;
-  learningCount: number;
 }

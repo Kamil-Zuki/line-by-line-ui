@@ -171,11 +171,10 @@ export default function LearnPage({
       setHasCompletedCards(false);
 
       await fetchSessionStats();
-      // const firstCard = await fetchApi<CardDto>(
-      //   `/card/next?sessionId=${response.sessionId}`
-      // );
+      const firstCard = await fetchApi<CardDto>(
+        `/card/next/${response.sessionId}`
+      );
 
-      const firstCard = await fetchApi<CardDto>(`/card/next`);
       if (firstCard) {
         setCurrentCard(firstCard);
         setCardHistory([firstCard]);
@@ -230,9 +229,7 @@ export default function LearnPage({
           body: JSON.stringify({ quality }),
         });
         await fetchSessionStats();
-        const nextCard = await fetchApi<CardDto>(
-          `/card/next?sessionId=${sessionId}`
-        );
+        const nextCard = await fetchApi<CardDto>(`/card/next/${sessionId}`);
         if (nextCard) {
           setCurrentCard(nextCard);
           setCardHistory((prev) => [...prev, nextCard]);
@@ -264,11 +261,8 @@ export default function LearnPage({
     setCurrentCard(null);
     setCardHistory([]);
     try {
-      // const firstCard = await fetchApi<CardDto>(
-      //   `/card/next?sessionId=${sessionId}`
-      // );
+      const firstCard = await fetchApi<CardDto>(`/card/next/${sessionId}`);
 
-      const firstCard = await fetchApi<CardDto>(`/card/next`);
       if (firstCard) {
         setCurrentCard(firstCard);
         setCardHistory([firstCard]);

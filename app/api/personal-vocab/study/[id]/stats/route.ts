@@ -12,6 +12,7 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
+    console.log("The route stats started");
     const awaitedParams = await params;
     const id = awaitedParams.id;
 
@@ -22,11 +23,12 @@ export async function GET(
       },
     });
 
+    console.log(response);
+
     if (!response.ok)
       throw NextResponse.json({ error: "Failed" }, { status: response.status });
 
     const result = await response.json();
-    console.log("Study session result:", result);
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
     return NextResponse.json(

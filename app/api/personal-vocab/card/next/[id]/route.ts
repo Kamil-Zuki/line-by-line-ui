@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 const API_URL = `${process.env.API_SERVER_ADDRESS}/api/v1/card/next`;
 
-export async function GET(req: NextRequest) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   //#region Access token
   const accessToken = req?.cookies.get("accessToken")?.value;
   if (!accessToken)
@@ -10,7 +13,10 @@ export async function GET(req: NextRequest) {
   //#endregion
 
   console.log("The method next started");
-  const response = await fetch(`${API_URL}`, {
+  const awaitedParams = await params;
+  const id = awaitedParams.id;
+
+  const response = await fetch(`${API_URL}/${id}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -19,9 +25,12 @@ export async function GET(req: NextRequest) {
   });
 
   console.log(response);
-  if (!response.ok){
-      console.log(response)
-      return NextResponse.json({ error: response.statusText }, { status: response.status });
+  if (!response.ok) {
+    console.log(response);
+    return NextResponse.json(
+      { error: response.statusText },
+      { status: response.status }
+    );
   }
 
   const result = await response.json();

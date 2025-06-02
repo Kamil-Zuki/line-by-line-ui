@@ -17,12 +17,12 @@ export interface UserCardProgressDto {
   userId: string;
   cardId: string;
   lastQuality: number;
-  
+
   due: string;
   stability: number;
   difficulty: number;
-  elapsedDays: number,
-  scheduledDays: number,
+  elapsedDays: number;
+  scheduledDays: number;
   reps: number;
   state: string;
   lapses: number;
@@ -78,6 +78,7 @@ export interface StartSessionResponse {
 
 export interface StudySessionCardDto {
   cardId: string;
+  deckId: string;
   front: string;
   back: string;
   quality: number;
@@ -158,4 +159,10 @@ export interface CardTableRow {
   interval: number;
   easiness: number;
   repetitions: number;
+}
+
+export interface CardStatsDto {
+  newCount: number;
+  reviewCount: number;
+  learningCount: number;
 }

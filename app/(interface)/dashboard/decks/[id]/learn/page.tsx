@@ -24,7 +24,6 @@ import {
   Tr,
   Th,
   Td,
-  Link,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
@@ -34,6 +33,7 @@ import {
   StudySessionDto,
   StartSessionResponse,
   UserSettingsDto,
+  CardStatsDto,
 } from "@/app/interfaces";
 import { CardReview } from "@/app/components/ui/CardReview";
 import { fetchApi } from "@/app/lib/api";
@@ -61,6 +61,7 @@ export default function LearnPage({
     null
   );
   const [hasCompletedCards, setHasCompletedCards] = useState(false);
+  const [stats, setStats] = useState<CardStatsDto | null>(null);
 
   // Resolve deckId from params
   useEffect(() => {
@@ -71,7 +72,7 @@ export default function LearnPage({
     resolveParams();
   }, [params]);
 
-  // Custom toast renderer for Ultimate Spider-Man style
+  // Custom toast renderer
   const showToast = (
     title: string,
     description: string,
@@ -125,14 +126,11 @@ export default function LearnPage({
   // Check for due cards
   const fetchDueCards = useCallback(async () => {
     if (!deckId) return;
-    console.log("Checking due cards for deck:", deckId);
     try {
       const response = await fetchApi<{ hasDueCards: boolean }>(
         `/card/due?deckId=${deckId}&mode=learn&sortBy=nextReviewDate`
       );
-      console.log("Due cards check result:", response);
       setHasDueCards(response.hasDueCards);
-      console.log("response.hasDueCards", response.hasDueCards);
     } catch (error: any) {
       console.error("Error checking due cards:", error.message, {
         status: error.status,
@@ -146,31 +144,47 @@ export default function LearnPage({
     }
   }, [deckId, router]);
 
+  // Fetch session stats
+  const fetchSessionStats = useCallback(async () => {
+    if (!sessionId) return;
+    try {
+      const stats = await fetchApi<CardStatsDto>(`/study/${sessionId}/stats`);
+      setStats(stats);
+    } catch (error: any) {
+      console.error("Error fetching session stats:", error.message, {
+        status: error.status,
+      });
+      showToast("Error", "Failed to load session stats.", "error");
+    }
+  }, [sessionId]);
+
   // Start a study session and fetch the first card
   const startSession = useCallback(async () => {
-    if (!deckId || !hasDueCards) {
-      console.log("startSession: No deckId or no due cards");
-      return;
-    }
-    console.log("startSession: Starting session for deckId:", deckId);
+    if (!deckId || !hasDueCards) return;
     setIsStartingSession(true);
     try {
       const response = await fetchApi<StartSessionResponse>("/study/start", {
         method: "POST",
         body: JSON.stringify({ deckId }),
       });
-      console.log("startSession: API response:", response);
       setSessionId(response.sessionId);
       setHasCompletedCards(false);
+
+      await fetchSessionStats();
       // const firstCard = await fetchApi<CardDto>(
       //   `/card/next?sessionId=${response.sessionId}`
       // );
+
       const firstCard = await fetchApi<CardDto>(`/card/next`);
-      setCurrentCard(firstCard);
-      setCardHistory([firstCard]);
+      if (firstCard) {
+        setCurrentCard(firstCard);
+        setCardHistory([firstCard]);
+      } else {
+        setHasCompletedCards(true);
+      }
       showToast("Success", "Study session started!", "success");
     } catch (error: any) {
-      console.error("startSession: Error starting session:", error.message, {
+      console.error("Error starting session:", error.message, {
         status: error.status,
       });
       showToast("Error", "Failed to start session. Please try again.", "error");
@@ -178,7 +192,7 @@ export default function LearnPage({
     } finally {
       setIsStartingSession(false);
     }
-  }, [deckId, hasDueCards, router]);
+  }, [deckId, hasDueCards, router, fetchSessionStats]);
 
   // End the study session and fetch session details
   const endSession = useCallback(async () => {
@@ -194,6 +208,7 @@ export default function LearnPage({
       setHasCompletedCards(false);
       setCurrentCard(null);
       setCardHistory([]);
+      setStats(null);
       showToast("Success", "Study session ended!", "success");
     } catch (error: any) {
       console.error("Error ending session:", error.message, {
@@ -210,20 +225,14 @@ export default function LearnPage({
     async (quality: number) => {
       if (!sessionId || !deckId || !currentCard) return;
       try {
-        console.log(currentCard.id)
-        const response = await fetchApi<ReviewResponseDto>(
-          `/card/review/${currentCard.id}`,
-          {
-            method: "POST",
-            body: JSON.stringify({ quality }),
-          }
-        );
-        console.log("The review response:", response)
+        await fetchApi<ReviewResponseDto>(`/card/review/${currentCard.id}`, {
+          method: "POST",
+          body: JSON.stringify({ quality }),
+        });
+        await fetchSessionStats();
         const nextCard = await fetchApi<CardDto>(
-          `/card/next`
-
+          `/card/next?sessionId=${sessionId}`
         );
-        console.log("The next card:", nextCard)
         if (nextCard) {
           setCurrentCard(nextCard);
           setCardHistory((prev) => [...prev, nextCard]);
@@ -231,10 +240,9 @@ export default function LearnPage({
           setHasCompletedCards(true);
         }
       } catch (error: any) {
-        if(error.status == 404){
+        if (error.status === 404) {
           setHasCompletedCards(true);
-        }
-        else {
+        } else {
           console.error("Error submitting review:", error.message, {
             status: error.status,
           });
@@ -244,30 +252,39 @@ export default function LearnPage({
             "error"
           );
         }
-
       }
     },
-    [sessionId, deckId, currentCard]
+    [sessionId, deckId, currentCard, fetchSessionStats]
   );
 
-  // Restart card review from the beginning
+  // Restart card review
   const restartCards = useCallback(async () => {
     if (!sessionId || !deckId) return;
     setHasCompletedCards(false);
     setCurrentCard(null);
     setCardHistory([]);
-    const firstCard = await fetchApi<CardDto>(
-      `/card/next?sessionId=${sessionId}`
-    );
-    if (firstCard) {
-      setCurrentCard(firstCard);
-      setCardHistory([firstCard]);
-      showToast("Success", "Restarted card review!", "success");
-    } else {
-      setHasCompletedCards(true);
-      showToast("Info", "No cards available to restart.", "success");
+    try {
+      // const firstCard = await fetchApi<CardDto>(
+      //   `/card/next?sessionId=${sessionId}`
+      // );
+
+      const firstCard = await fetchApi<CardDto>(`/card/next`);
+      if (firstCard) {
+        setCurrentCard(firstCard);
+        setCardHistory([firstCard]);
+        await fetchSessionStats();
+        showToast("Success", "Restarted card review!", "success");
+      } else {
+        setHasCompletedCards(true);
+        showToast("Info", "No cards available to restart.", "success");
+      }
+    } catch (error: any) {
+      console.error("Error restarting cards:", error.message, {
+        status: error.status,
+      });
+      showToast("Error", "Failed to restart cards.", "error");
     }
-  }, [sessionId, deckId]);
+  }, [sessionId, deckId, fetchSessionStats]);
 
   // Initial data load
   useEffect(() => {
@@ -293,9 +310,11 @@ export default function LearnPage({
       "sessionDetails:",
       sessionDetails,
       "currentCard:",
-      currentCard
+      currentCard,
+      "stats:",
+      stats
     );
-  }, [sessionId, sessionDetails, currentCard]);
+  }, [sessionId, sessionDetails, currentCard, stats]);
 
   // Authentication and loading states
   if (authLoading || isLoading || !deckId) {
@@ -306,13 +325,7 @@ export default function LearnPage({
         justifyContent="center"
         alignItems="center"
       >
-        <Spinner
-          size="xl"
-          color="white"
-          thickness="3px"
-          speed="0.65s"
-          _hover={{ filter: "drop-shadow(0 0 5px rgba(255, 255, 255, 0.3))" }}
-        />
+        <Spinner size="xl" color="white" thickness="3px" speed="0.65s" />
       </Box>
     );
   }
@@ -323,7 +336,7 @@ export default function LearnPage({
     return null;
   }
 
-  // Initial state: Show option to start session or "no cards" message
+  // Initial state: Start session or no cards
   if (!sessionId && !sessionDetails) {
     return (
       <Box
@@ -352,7 +365,7 @@ export default function LearnPage({
                 {userSettings &&
                 userSettings.newCardsCompletedToday >=
                   userSettings.dailyNewCardLimit
-                  ? 'You’ve reached your daily new card limit. Adjust your settings to learn more cards.'
+                  ? "You’ve reached your daily new card limit. Adjust your settings to learn more cards."
                   : "No due cards for this deck."}
               </ChakraText>
               <Button
@@ -396,8 +409,16 @@ export default function LearnPage({
     );
   }
 
-  // Session active: Show current card review or completion message
+  // Session active: Show card review or completion
   if (sessionId && !sessionDetails) {
+    const totalRemaining = stats
+      ? stats.newCount + stats.reviewCount + stats.learningCount
+      : 0;
+    const totalReviewed =
+      cardHistory.length - (currentCard && !hasCompletedCards ? 1 : 0);
+    const totalCards = totalReviewed + totalRemaining;
+    const progress = totalCards > 0 ? (totalReviewed / totalCards) * 100 : 0;
+
     return (
       <Box
         minH="100vh"
@@ -407,7 +428,7 @@ export default function LearnPage({
         p={4}
       >
         <VStack spacing={4} align="stretch" maxW="800px" w="100%">
-          <Flex  align="center">
+          <Flex justify="space-between" align="center">
             <Heading
               as="h1"
               size={{ base: "lg", md: "xl" }}
@@ -416,9 +437,9 @@ export default function LearnPage({
             >
               {hasCompletedCards
                 ? "All Cards Reviewed!"
-                : `Card ${cardHistory.length + 1} of Unknown`}
+                : `Card ${cardHistory.length} of ${totalCards || "Loading..."}`}
             </Heading>
-            {/* <Button
+            <Button
               bg="gray.600"
               color="white"
               _hover={{ bg: "gray.500" }}
@@ -426,12 +447,18 @@ export default function LearnPage({
               isLoading={isEndingSession}
             >
               End Session
-            </Button> */}
+            </Button>
           </Flex>
+          {stats && (
+            <ChakraText color="gray.300" fontSize="md">
+              New: {stats.newCount} | Review: {stats.reviewCount} | Learning:{" "}
+              {stats.learningCount}
+            </ChakraText>
+          )}
           {!hasCompletedCards && currentCard && (
             <>
               <Progress
-                value={(cardHistory.length / (cardHistory.length + 1)) * 100}
+                value={progress}
                 size="sm"
                 colorScheme="blue"
                 bg="gray.600"
@@ -473,7 +500,7 @@ export default function LearnPage({
     );
   }
 
-  // Session ended: Show session stats
+  // Session ended: Show summary
   return (
     <Box
       minH="100vh"

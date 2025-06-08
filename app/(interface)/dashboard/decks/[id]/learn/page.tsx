@@ -37,7 +37,6 @@ import {
 } from "@/app/interfaces";
 import { CardReview } from "@/app/components/ui/CardReview";
 import { fetchApi } from "@/app/lib/api";
-
 export default function LearnPage({
   params,
 }: {
@@ -62,6 +61,7 @@ export default function LearnPage({
   );
   const [hasCompletedCards, setHasCompletedCards] = useState(false);
   const [stats, setStats] = useState<CardStatsDto | null>(null);
+
 
   // Resolve deckId from params
   useEffect(() => {
@@ -193,32 +193,6 @@ export default function LearnPage({
     }
   }, [deckId, hasDueCards, router, fetchSessionStats]);
 
-  // End the study session and fetch session details
-  const endSession = useCallback(async () => {
-    if (!sessionId || !deckId) return;
-    setIsEndingSession(true);
-    try {
-      const endResponse = await fetchApi<StudySessionDto>(
-        `/study/end/${sessionId}`,
-        { method: "POST" }
-      );
-      setSessionDetails(endResponse);
-      setSessionId(null);
-      setHasCompletedCards(false);
-      setCurrentCard(null);
-      setCardHistory([]);
-      setStats(null);
-      showToast("Success", "Study session ended!", "success");
-    } catch (error: any) {
-      console.error("Error ending session:", error.message, {
-        status: error.status,
-      });
-      showToast("Error", "Failed to end session. Please try again.", "error");
-    } finally {
-      setIsEndingSession(false);
-    }
-  }, [sessionId, deckId]);
-
   // Handle card review and fetch next card
   const handleReview = useCallback(
     async (quality: number) => {
@@ -229,11 +203,19 @@ export default function LearnPage({
           body: JSON.stringify({ quality }),
         });
         await fetchSessionStats();
-        const nextCard = await fetchApi<CardDto>(`/card/next/${sessionId}`);
-        if (nextCard) {
+        const nextCard = await fetchApi<any>(`/card/next/${sessionId}`);
+        console.log("Next card", nextCard)
+
+        const isCardDto = nextCard && typeof nextCard === "object" && "id" in nextCard;
+        const isStatus204 = nextCard && typeof nextCard === "object" && nextCard.status === 204;
+        console.log(isStatus204)
+        if (isCardDto) {
           setCurrentCard(nextCard);
           setCardHistory((prev) => [...prev, nextCard]);
-        } else {
+        } else if(isStatus204) {
+          setHasCompletedCards(true)
+        }
+         else {
           setHasCompletedCards(true);
         }
       } catch (error: any) {
@@ -253,32 +235,6 @@ export default function LearnPage({
     },
     [sessionId, deckId, currentCard, fetchSessionStats]
   );
-
-  // Restart card review
-  const restartCards = useCallback(async () => {
-    if (!sessionId || !deckId) return;
-    setHasCompletedCards(false);
-    setCurrentCard(null);
-    setCardHistory([]);
-    try {
-      const firstCard = await fetchApi<CardDto>(`/card/next/${sessionId}`);
-
-      if (firstCard) {
-        setCurrentCard(firstCard);
-        setCardHistory([firstCard]);
-        await fetchSessionStats();
-        showToast("Success", "Restarted card review!", "success");
-      } else {
-        setHasCompletedCards(true);
-        showToast("Info", "No cards available to restart.", "success");
-      }
-    } catch (error: any) {
-      console.error("Error restarting cards:", error.message, {
-        status: error.status,
-      });
-      showToast("Error", "Failed to restart cards.", "error");
-    }
-  }, [sessionId, deckId, fetchSessionStats]);
 
   // Initial data load
   useEffect(() => {
@@ -421,7 +377,7 @@ export default function LearnPage({
         alignItems="center"
         p={4}
       >
-        <VStack spacing={4} align="stretch" maxW="800px" w="100%">
+        <VStack spacing={4} align="center" maxW="800px" w="100%">
           <Flex justify="space-between" align="center">
             <Heading
               as="h1"
@@ -433,15 +389,6 @@ export default function LearnPage({
                 ? "All Cards Reviewed!"
                 : `Card ${cardHistory.length} of ${totalCards || "Loading..."}`}
             </Heading>
-            <Button
-              bg="gray.600"
-              color="white"
-              _hover={{ bg: "gray.500" }}
-              onClick={endSession}
-              isLoading={isEndingSession}
-            >
-              End Session
-            </Button>
           </Flex>
           {stats && (
             <ChakraText color="gray.300" fontSize="md">
@@ -471,22 +418,6 @@ export default function LearnPage({
               <ChakraText color="gray.300" fontSize="lg" textAlign="center">
                 You’ve reviewed all cards in this session!
               </ChakraText>
-              <Button
-                bg="blue.800"
-                border="2px solid"
-                borderColor="blue.900"
-                color="white"
-                _hover={{
-                  bg: "blue.700",
-                  boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
-                  transform: "scale(1.02)",
-                }}
-                _active={{ bg: "blue.900" }}
-                transition="all 0.2s"
-                onClick={restartCards}
-              >
-                Restart Cards
-              </Button>
             </VStack>
           )}
         </VStack>

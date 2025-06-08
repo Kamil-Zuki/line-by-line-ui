@@ -25,7 +25,7 @@ export async function POST(
     body: JSON.stringify(body),
   });
 
-  if (!response.ok){
+  if (!response.ok){  
     console.log(response)
     return NextResponse.json({ error: response.statusText }, { status: response.status });
 }

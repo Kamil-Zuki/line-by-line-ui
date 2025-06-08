@@ -23,7 +23,7 @@ export async function fetchApi<T>(
       credentials: "include", // Rely on httpOnly accessToken cookie
       cache: "no-store", // Ensure fresh data
     });
-
+    
     if (!res.ok) {
       let errorBody: string;
       try {
@@ -72,10 +72,12 @@ export async function fetchApi<T>(
       throw error;
     }
 
+    
     // Handle cases where response might not be JSON
     const contentType = res.headers.get("content-type");
     if (contentType && contentType.includes("application/json")) {
       const data = await res.json();
+      console.log("Handle cases where response might not be JSON")
       return data as T;
     } else {
       const text = await res.text();

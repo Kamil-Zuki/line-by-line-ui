@@ -32,8 +32,9 @@ export async function GET(
       { status: response.status }
     );
   }
-
-  const result = await response.json();
-
-  return NextResponse.json(result, { status: 200 });
+  if(response.body != null){
+    console.log(response)
+    return NextResponse.json(await response.json(), { status: 200 });
+  }
+  return NextResponse.json({ status: 204 });
 }

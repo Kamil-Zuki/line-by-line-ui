@@ -114,6 +114,7 @@ export default function LearnPage({
   const fetchUserSettings = useCallback(async () => {
     try {
       const settings = await fetchApi<UserSettingsDto>("/settings");
+      console.log("Settings:", settings)
       setUserSettings(settings);
     } catch (error: any) {
       console.error("Error fetching user settings:", error.message, {
@@ -128,8 +129,10 @@ export default function LearnPage({
     if (!deckId) return;
     try {
       const response = await fetchApi<{ hasDueCards: boolean }>(
-        `/card/due?deckId=${deckId}&mode=learn&sortBy=nextReviewDate`
+        `/card/due?deckId=${deckId}`
       );
+      console.log("Has due cards", response)
+
       setHasDueCards(response.hasDueCards);
     } catch (error: any) {
       console.error("Error checking due cards:", error.message, {
@@ -171,13 +174,21 @@ export default function LearnPage({
       setHasCompletedCards(false);
 
       await fetchSessionStats();
-      const firstCard = await fetchApi<CardDto>(
-        `/card/next/${response.sessionId}`
-      );
+      const nextCard = await fetchApi<any>(`/card/next/${response.sessionId}`);
+      console.log("Next card", nextCard)
 
-      if (firstCard) {
-        setCurrentCard(firstCard);
-        setCardHistory([firstCard]);
+      const isCardDto = nextCard && typeof nextCard === "object" && "id" in nextCard;
+      const isStatus204 = nextCard && typeof nextCard === "object" && nextCard.status === 204;
+      console.log(isStatus204)
+      if (isCardDto) {
+        setCurrentCard(nextCard);
+        setCardHistory((prev) => [...prev, nextCard]);
+      } else if(isStatus204) {
+        setHasCompletedCards(true)
+      }
+      if (nextCard) {
+        setCurrentCard(nextCard);
+        setCardHistory([nextCard]);
       } else {
         setHasCompletedCards(true);
       }
@@ -236,7 +247,6 @@ export default function LearnPage({
     [sessionId, deckId, currentCard, fetchSessionStats]
   );
 
-  // Initial data load
   useEffect(() => {
     if (!isAuthenticated || authLoading || !deckId) return;
     const loadData = async () => {

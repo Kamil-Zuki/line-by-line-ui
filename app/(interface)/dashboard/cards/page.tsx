@@ -1,7 +1,7 @@
 "use client";
 
 import { useCards } from "@/app/hooks/useCards";
-import { CardTableRow } from "@/app/types/card";
+import { CardTableRow } from "@/app/interfaces";
 import {
   Box,
   Heading,
@@ -26,7 +26,7 @@ import { FaEdit, FaSortUp, FaSortDown } from "react-icons/fa";
 
 import { css } from "@emotion/react";
 
-  const selectStyles = css`
+const selectStyles = css`
 {
             "&": {
               backgroundColor: "#1A202C",
@@ -40,8 +40,7 @@ import { css } from "@emotion/react";
           _focus={{
             borderColor: "blue.700",
             boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
-          }`
-
+          }`;
 
 export default function AllCardsPage() {
   const { cards, loading, error } = useCards();
@@ -155,7 +154,7 @@ export default function AllCardsPage() {
                 {/* <Th>Front</Th> */}
                 <Th cursor="pointer" onClick={toggleSort}>
                   <Flex alignItems="center">
-                  Front
+                    Front
                     {sortOrder === "asc" && <Icon as={FaSortUp} ml={2} />}
                     {sortOrder === "desc" && <Icon as={FaSortDown} ml={2} />}
                   </Flex>

@@ -17,21 +17,24 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
-import { UserSettingsDto, UpdateUserSettingsRequestDto, LearningMode } from "@/app/interfaces";
-import { fetchApi } from "@/app/lib/api"
+import {
+  UserSettingsDto,
+  UpdateUserSettingsRequestDto,
+  LearningMode,
+} from "@/app/interfaces";
+import { fetchApi } from "@/app/lib/api";
 import { css } from "@emotion/react";
 
-  const selectStyles = css`
-    & option {
-      background-color: #2D3748; /* gray.800 */
-      color: white;
-    }
-    &:focus option {
-      background-color: #2D3748; /* gray.800 */
-      color: white;
-    }
-  `;
-
+const selectStyles = css`
+  & option {
+    background-color: #2d3748; /* gray.800 */
+    color: white;
+  }
+  &:focus option {
+    background-color: #2d3748; /* gray.800 */
+    color: white;
+  }
+`;
 
 export default function SettingsPage() {
   const { isAuthenticated, loading: authLoading } = useAuth();
@@ -47,7 +50,6 @@ export default function SettingsPage() {
   const router = useRouter();
   const toast = useToast();
 
-  // Custom toast renderer for Ultimate Spider-Man style
   const showToast = (
     title: string,
     description: string,
@@ -92,9 +94,11 @@ export default function SettingsPage() {
     const loadSettings = async () => {
       setIsLoading(true);
       try {
-        console.log("Try to load settings")
-        const response = await fetchApi<UserSettingsDto>("/settings", { method: "GET" });
-        console.log(response)
+        console.log("Try to load settings");
+        const response = await fetchApi<UserSettingsDto>("/settings", {
+          method: "GET",
+        });
+        console.log(response);
         setSettings(response);
         setFormValues({
           dailyNewCardLimit: response.dailyNewCardLimit,
@@ -106,7 +110,11 @@ export default function SettingsPage() {
         console.error("Error fetching settings:", error.message, {
           status: error.status,
         });
-        showToast("Error", "Failed to load settings. Please try again.", "error");
+        showToast(
+          "Error",
+          "Failed to load settings. Please try again.",
+          "error"
+        );
         router.push("/dashboard");
       } finally {
         setIsLoading(false);
@@ -130,7 +138,11 @@ export default function SettingsPage() {
       console.error("Error updating settings:", error.message, {
         status: error.status,
       });
-      showToast("Error", "Failed to update settings. Please try again.", "error");
+      showToast(
+        "Error",
+        "Failed to update settings. Please try again.",
+        "error"
+      );
     } finally {
       setIsSaving(false);
     }
@@ -206,7 +218,8 @@ export default function SettingsPage() {
                 <NumberInputField bg="gray.600" color="white" />
               </NumberInput>
               <ChakraText fontSize="sm" color="gray.300" mt={1}>
-                Number of new cards you can learn each day (Current: {settings?.newCardsCompletedToday} learned today)
+                Number of new cards you can learn each day (Current:{" "}
+                {settings?.newCardsCompletedToday} learned today)
               </ChakraText>
             </FormControl>
 
@@ -226,7 +239,8 @@ export default function SettingsPage() {
                 <NumberInputField bg="gray.600" color="white" />
               </NumberInput>
               <ChakraText fontSize="sm" color="gray.300" mt={1}>
-                Number of review cards you can study each day (Current: {settings?.reviewsCompletedToday} reviewed today)
+                Number of review cards you can study each day (Current:{" "}
+                {settings?.reviewsCompletedToday} reviewed today)
               </ChakraText>
             </FormControl>
 

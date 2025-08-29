@@ -1,6 +1,5 @@
 // app/api/personal-vocab/card/due/route.ts
 import { NextRequest, NextResponse } from "next/server";
-
 const API_URL = "http://85.175.218.17/api/v1/card";
 
 export async function GET(req: NextRequest) {

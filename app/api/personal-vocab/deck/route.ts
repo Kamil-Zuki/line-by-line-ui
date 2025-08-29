@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BASE_URL = "http://85.175.218.17/api/v1/deck";
-
+const BASE_URL = `${process.env.API_SERVER_ADDRESS}/api/v1/deck`;
 
 export async function POST(req: NextRequest) {
-   //#region Access token
-   const accessToken = req?.cookies.get("accessToken")?.value;
-   if (!accessToken)
-     return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
-   //#endregion
+  //#region Access token
+  const accessToken = req?.cookies.get("accessToken")?.value;
+  if (!accessToken)
+    return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
+  //#endregion
 
   try {
     const body = await req.json();
@@ -23,10 +22,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!res.ok) {
-      return NextResponse.json(
-        { error: "Failed" },
-        { status: res.status }
-      );
+      return NextResponse.json({ error: "Failed" }, { status: res.status });
     }
 
     const result = await res.json();

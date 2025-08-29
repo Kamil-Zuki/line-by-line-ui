@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = "http://85.175.218.17/api/v1/deck-subscription";
+const API_URL = `${process.env.API_SERVER_ADDRESS}/api/v1/deck-subscription`;
 
 export async function POST(
   req: NextRequest,
@@ -13,7 +13,7 @@ export async function POST(
   //#endregion
 
   try {
-    const awatedParams =  await params; 
+    const awatedParams = await params;
     const id = awatedParams.id;
 
     const response = await fetch(`${API_URL}/${id}`, {
@@ -21,7 +21,7 @@ export async function POST(
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
-      }
+      },
     });
 
     if (!response.ok) {
@@ -45,18 +45,18 @@ export async function POST(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } } 
+  { params }: { params: { id: string } }
 ) {
   //#region Access token
   const accessToken = req.cookies.get("accessToken")?.value;
   if (!accessToken)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   //#endregion
-  console.log("Delete method")
+  console.log("Delete method");
   try {
-    const awatedParams =  await params; 
+    const awatedParams = await params;
     const id = awatedParams.id;
-    console.log(id)
+    console.log(id);
     const response = await fetch(`${API_URL}/${id}`, {
       method: "DELETE",
       headers: {
@@ -73,9 +73,9 @@ export async function DELETE(
 
     // const result = await response.json();
 
-    return NextResponse.json( {status: 200} );
+    return NextResponse.json({ status: 200 });
   } catch (error) {
-     console.error("Error in DELETE handler:", error); 
+    console.error("Error in DELETE handler:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

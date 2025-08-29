@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = "http://85.175.218.17/api/v1/card";
+const API_URL = `${process.env.API_SERVER_ADDRESS}/api/v1/card`;
 
 export async function POST(
   req: NextRequest,
@@ -15,7 +15,7 @@ export async function POST(
 
   const awaitedParams = await params;
   const id = awaitedParams.id;
-  console.log(id)
+  console.log(id);
   const response = await fetch(`${API_URL}/review/${id}`, {
     method: "POST",
     headers: {
@@ -25,11 +25,10 @@ export async function POST(
     body: JSON.stringify(body),
   });
 
-  if (!response.ok)
-    return NextResponse.json(
-      { error: "Failed to review a card" },
-      { status: 500 }
-    );
+  if (!response.ok){  
+    console.log(response)
+    return NextResponse.json({ error: response.statusText }, { status: response.status });
+}
 
   const result = await response.json();
 

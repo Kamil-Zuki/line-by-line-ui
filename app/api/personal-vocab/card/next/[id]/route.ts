@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = `${process.env.API_SERVER_ADDRESS}/api/v1/contribution`;
+const API_URL = `${process.env.API_SERVER_ADDRESS}/api/v1/card/next`;
 
 export async function GET(
   req: NextRequest,
@@ -12,10 +12,11 @@ export async function GET(
     return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
   //#endregion
 
+  console.log("The method next started");
   const awaitedParams = await params;
   const id = awaitedParams.id;
 
-  const response = await fetch(`${API_URL}/deck/${id}`, {
+  const response = await fetch(`${API_URL}/${id}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -23,10 +24,17 @@ export async function GET(
     },
   });
 
-  if (!response.ok)
-    return NextResponse.json({ error: "Failed" }, { status: 500 });
-
-  const result = await response.json();
-
-  return NextResponse.json(result, { status: 200 });
+  console.log(response);
+  if (!response.ok) {
+    console.log(response);
+    return NextResponse.json(
+      { error: response.statusText },
+      { status: response.status }
+    );
+  }
+  if(response.body != null){
+    console.log(response)
+    return NextResponse.json(await response.json(), { status: 200 });
+  }
+  return NextResponse.json({ status: 204 });
 }

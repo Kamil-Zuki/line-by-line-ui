@@ -1,11 +1,12 @@
 // app/interfaces.ts
+
 export interface CardDto {
   id: string;
   front: string;
   back: string;
   hint?: string;
   mediaUrl?: string;
-  skill: string;
+  skill: SkillType;
   deckId: string;
   creatorId: string;
   createdDate: string;
@@ -16,22 +17,20 @@ export interface UserCardProgressDto {
   id: string;
   userId: string;
   cardId: string;
-  repetitions: number;
-  interval: number;
-  easiness: number;
-  nextReviewDate: string;
-  lastReviewedDate?: string;
   lastQuality: number;
+  due: string;
   stability: number;
   difficulty: number;
+  elapsedDays: number;
+  scheduledDays: number;
+  reps: number;
+  state: string; // e.g., "New", "Learning", "Review", "Relearning"
   lapses: number;
-  state: string;
-  skill: SkillType;
+  lastReview?: string;
 }
 
 export interface ReviewResponseDto {
   card: CardDto;
-  feedback: ReviewFeedbackDto;
 }
 
 export interface ReviewFeedbackDto {
@@ -42,6 +41,7 @@ export interface ReviewFeedbackDto {
 
 export interface StudySessionCardDto {
   cardId: string;
+  deckId: string;
   front: string;
   back: string;
   quality: number;
@@ -70,34 +70,18 @@ export interface UserSettingsDto {
   reviewsCompletedToday: number;
   rolloverHour: number;
   lastResetDate: string;
-  preferredMode: string;
+  preferredMode: LearningMode;
 }
 
-export interface StartSessionResponse {
-  sessionId: string;
+export interface CardStatsDto {
+  newCount: number;
+  reviewCount: number;
+  learningCount: number;
 }
 
-export interface StudySessionCardDto {
-  cardId: string;
-  front: string;
-  back: string;
-  quality: number;
-  reviewedAt: string;
-}
-
-export interface StudySessionDto {
-  id: string;
-  startTime: string;
-  endTime?: string;
-  reviewedCards: StudySessionCardDto[];
-  averageQuality: number;
-  totalCardsReviewed: number;
-}
-
-///
 export interface ApiError {
   error: string;
-  status?: number; // For status code access
+  status?: number;
   details?: Record<string, any>;
 }
 
@@ -115,10 +99,10 @@ export interface DeckResponse {
   subscriberCount: number;
   isSubscribed: boolean;
   averageDifficulty: number;
-  authorNickname?: string; // New
-  authorAvatar?: string; // New
-  generationPrompt?: string; // New
-  llmModel?: string; // New
+  authorNickname?: string;
+  authorAvatar?: string;
+  generationPrompt?: string;
+  llmModel?: string;
 }
 
 export type SkillType = "Reading" | "Writing" | "Speaking" | "Listening";
@@ -133,7 +117,6 @@ export interface UserCardProgress {
   lastQuality: number;
 }
 
-// Types for settings
 export enum LearningMode {
   Learn = "Learn",
   Review = "Review",
@@ -145,4 +128,18 @@ export interface UpdateUserSettingsRequestDto {
   dailyReviewLimit: number;
   rolloverHour: number;
   preferredMode: LearningMode;
+}
+
+export interface CardTableRow {
+  id: string;
+  front: string;
+  back: string;
+  hint: string | null;
+  deckTitle: string;
+  deckId: string;
+  createdDate: string;
+  nextReviewDate: string | null;
+  interval: number;
+  easiness: number;
+  repetitions: number;
 }

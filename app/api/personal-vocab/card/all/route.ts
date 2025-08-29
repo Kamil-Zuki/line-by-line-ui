@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = "http://85.175.218.17/api/v1/card/all";
+const API_URL = `${process.env.API_SERVER_ADDRESS}/api/v1/card/all`;
 
 export async function GET(req: NextRequest) {
   //#region Access token
@@ -18,10 +18,7 @@ export async function GET(req: NextRequest) {
   });
 
   if (!response.ok)
-    return NextResponse.json(
-      { error: "Failed to get cards" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to get cards" }, { status: 500 });
 
   const result = await response.json();
 

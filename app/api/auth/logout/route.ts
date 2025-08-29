@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
+const API_URL = `${process.env.API_SERVER_ADDRESS}/api/v1/auth/logout`;
+
 export async function POST() {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
@@ -14,17 +16,14 @@ export async function POST() {
   }
 
   try {
-    const backendResponse = await fetch(
-      "http://85.175.218.17/api/v1/auth/logout",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ refreshToken }),
-      }
-    );
+    const backendResponse = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ refreshToken }),
+    });
 
     if (!backendResponse.ok) {
       const errorData = await backendResponse.json();

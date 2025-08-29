@@ -1,6 +1,8 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
+const API_URL = `${process.env.API_SERVER_ADDRESS}/api/v1/auth/me`;
+
 export async function GET() {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
@@ -10,7 +12,7 @@ export async function GET() {
   }
 
   try {
-    const res = await fetch("http://85.175.218.17/api/v1/auth/me", {
+    const res = await fetch(API_URL, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,

@@ -23,7 +23,7 @@ export async function fetchApi<T>(
       credentials: "include", // Rely on httpOnly accessToken cookie
       cache: "no-store", // Ensure fresh data
     });
-
+    
     if (!res.ok) {
       let errorBody: string;
       try {
@@ -72,10 +72,12 @@ export async function fetchApi<T>(
       throw error;
     }
 
+    
     // Handle cases where response might not be JSON
     const contentType = res.headers.get("content-type");
     if (contentType && contentType.includes("application/json")) {
       const data = await res.json();
+      console.log("Handle cases where response might not be JSON")
       return data as T;
     } else {
       const text = await res.text();
@@ -125,78 +127,4 @@ export function useApi(basePath: string = "/api/personal-vocab") {
         ? Promise.reject(new Error("Authentication in progress or failed"))
         : fetchApi<T>(endpoint, { method: "DELETE" }, basePath),
   };
-}
-
-// Existing type definitions remain the same, with additions above
-
-// Type definitions for common API responses
-export interface ApiError {
-  error: string;
-  status?: number; // For status code access
-  details?: Record<string, any>;
-}
-
-export interface DeckResponse {
-  id: string;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  isPublic: boolean;
-  ownerId: string;
-  createdDate: string;
-  lastReviewedDate?: string;
-  tags: string[];
-  cardCount: number;
-  subscriberCount: number;
-  isSubscribed: boolean;
-  averageDifficulty: number;
-  authorNickname?: string; // New
-  authorAvatar?: string; // New
-  generationPrompt?: string; // New
-  llmModel?: string; // New
-}
-
-export type SkillType = "Reading" | "Writing" | "Speaking" | "Listening";
-
-export interface UserCardProgressDto {
-  interval: number;
-  easiness: number;
-  repetitions: number;
-  nextReviewDate?: string;
-}
-
-export interface UserCardProgress {
-  id: string;
-  repetitions: number;
-  interval: number;
-  easiness: number;
-  nextReviewDate: string;
-  lastReviewedDate?: string;
-  lastQuality: number;
-}
-
-// Types for settings
-export enum LearningMode {
-  Learn = "Learn",
-  Review = "Review",
-  Cram = "Cram",
-}
-
-export interface UserSettingsDto {
-  id: string;
-  userId: string;
-  dailyNewCardLimit: number;
-  dailyReviewLimit: number;
-  newCardsCompletedToday: number;
-  reviewsCompletedToday: number;
-  rolloverHour: number;
-  lastResetDate: string;
-  preferredMode: LearningMode;
-}
-
-export interface UpdateUserSettingsRequestDto {
-  dailyNewCardLimit: number;
-  dailyReviewLimit: number;
-  rolloverHour: number;
-  preferredMode: LearningMode;
 }

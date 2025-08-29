@@ -16,10 +16,6 @@ import ProfileMenu from "./ProfileMenu";
 import { IconType } from "react-icons";
 import React from "react";
 
-const MyComponent = React.forwardRef((props, ref) => {
-  return <Box ref={ref} {...props} />
-})
-
 interface SideBarButtonData {
   icon: IconType;
   path: string;
@@ -65,7 +61,7 @@ export default function SideBar({ buttonData }: SideBarProps) {
     {
       label: "Open Profile",
       onClick: () => handleNavigation("/profile"),
-      color: "white",
+      color: "black",
     },
     { label: "Logout", onClick: () => logout(), color: "red.800" },
   ];

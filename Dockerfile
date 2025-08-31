@@ -1,17 +1,22 @@
-FROM python:3.11-slim
+# Use the official Node.js 20 image (Next.js 15.4 recommends Node.js 18 or later)
+FROM node:20-slim
 
-# Set work directory
+# Set working directory
 WORKDIR /app
 
 # Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy package.json and package-lock.json (or yarn.lock/pnpm-lock.yaml if used)
+COPY package*.json ./
+RUN npm install --production
 
-# Copy project files
+# Copy the rest of the application code
 COPY . .
 
-# Expose FastAPI port
-EXPOSE 8000
+# Build the Next.js app
+RUN npm run build
 
-# Run FastAPI
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Expose the port Next.js runs on
+EXPOSE 3000
+
+# Start the Next.js app
+CMD ["npm", "run", "start"]

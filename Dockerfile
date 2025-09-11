@@ -1,22 +1,45 @@
-# Use the official Node.js 20 image (Next.js 15.4 recommends Node.js 18 or later)
-FROM node:20-slim
+# --------------------
+# 1. Build stage
+# --------------------
+FROM node:20-slim AS builder
 
-# Set working directory
-WORKDIR /app
+# Рабочая директория (не совпадает с "app" из Next.js)
+WORKDIR /usr/src/app
 
-# Install dependencies
-# Copy package.json and package-lock.json (or yarn.lock/pnpm-lock.yaml if used)
+# Копируем только package.json и lock-файлы для кэша
 COPY package*.json ./
-RUN npm install --production
 
-# Copy the rest of the application code
+# Устанавливаем все зависимости (и dev, и prod — нужны для билда)
+RUN npm install
+
+# Копируем весь проект
 COPY . .
 
-# Build the Next.js app
+# Сборка Next.js (SSR + статические ассеты)
 RUN npm run build
 
-# Expose the port Next.js runs on
+
+# --------------------
+# 2. Production stage
+# --------------------
+FROM node:20-slim AS runner
+
+WORKDIR /usr/src/app
+
+# Устанавливаем только прод-зависимости
+COPY package*.json ./
+RUN npm install --omit=dev
+
+# Копируем собранное приложение из builder
+COPY --from=builder /usr/src/app/.next ./.next
+COPY --from=builder /usr/src/app/public ./public
+COPY --from=builder /usr/src/app/node_modules ./node_modules
+COPY --from=builder /usr/src/app/package.json ./package.json
+COPY --from=builder /usr/src/app/next.config.* ./ 
+COPY --from=builder /usr/src/app/tsconfig.json ./ 
+
+# Экспонируем порт
 EXPOSE 3000
 
-# Start the Next.js app
+# Запускаем Next.js
 CMD ["npm", "run", "start"]

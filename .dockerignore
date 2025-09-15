@@ -37,3 +37,15 @@ Thumbs.db
 # Docker-specific
 Dockerfile
 .dockerignore
+
+# Git
+.git
+.gitignore
+
+# IDE files
+.vscode
+.idea
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CardTableRow } from "@/app/types/card";
+import { CardTableRow } from "@/app/interfaces";
 
 export const useCards = () => {
   const [cards, setCards] = useState<CardTableRow[]>([]);
@@ -12,7 +12,9 @@ export const useCards = () => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch("/api/personal-vocab/card/all", { credentials: "include" });
+        const response = await fetch("/api/personal-vocab/card/all", {
+          credentials: "include",
+        });
 
         if (!response.ok) {
           throw new Error("Failed to fetch cards");

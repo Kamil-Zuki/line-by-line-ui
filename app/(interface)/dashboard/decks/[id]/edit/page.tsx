@@ -24,7 +24,8 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
-import { fetchApi, DeckResponse } from "@/app/lib/api";
+import { fetchApi } from "@/app/lib/api";
+import { DeckResponse } from "@/app/interfaces";
 
 export default function DeckEditPage({
   params,
@@ -47,7 +48,11 @@ export default function DeckEditPage({
   const toast = useToast();
 
   // Custom toast renderer for Ultimate Spider-Man style
-  const showToast = (title: string, description: string, status: "success" | "error") => {
+  const showToast = (
+    title: string,
+    description: string,
+    status: "success" | "error"
+  ) => {
     toast({
       position: "top",
       duration: 3000,
@@ -88,7 +93,11 @@ export default function DeckEditPage({
       try {
         const response = await fetchApi<DeckResponse>(`/deck/${id}`);
         if (response.ownerId !== user?.id) {
-          showToast("Access Denied", "You can only edit your own decks.", "error");
+          showToast(
+            "Access Denied",
+            "You can only edit your own decks.",
+            "error"
+          );
           router.push("/dashboard/decks");
           return;
         }
@@ -237,7 +246,8 @@ export default function DeckEditPage({
         left: "0",
         right: "0",
         bottom: "0",
-        background: "linear-gradient(45deg, rgba(255, 255, 255, 0.05), transparent)",
+        background:
+          "linear-gradient(45deg, rgba(255, 255, 255, 0.05), transparent)",
         opacity: 0.3,
         zIndex: 1,
       }}
@@ -354,7 +364,9 @@ export default function DeckEditPage({
                     _checked: { bg: "white" },
                   },
                 }}
-                _hover={{ ".chakra-switch__track": { borderColor: "blue.800" } }}
+                _hover={{
+                  ".chakra-switch__track": { borderColor: "blue.800" },
+                }}
               />
             </FormControl>
 

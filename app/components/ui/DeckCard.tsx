@@ -1,5 +1,5 @@
 import { Box, Heading, Text, VStack, Badge } from "@chakra-ui/react";
-import { DeckResponse } from "@/app/lib/api";
+import { DeckResponse } from "@/app/interfaces";
 
 interface DeckCardProps {
   deck: DeckResponse;
@@ -7,7 +7,11 @@ interface DeckCardProps {
   "aria-label": string;
 }
 
-export function DeckCard({ deck, onClick, "aria-label": ariaLabel }: DeckCardProps) {
+export function DeckCard({
+  deck,
+  onClick,
+  "aria-label": ariaLabel,
+}: DeckCardProps) {
   return (
     <Box
       as="button"
@@ -30,7 +34,8 @@ export function DeckCard({ deck, onClick, "aria-label": ariaLabel }: DeckCardPro
         left: "0",
         right: "0",
         bottom: "0",
-        background: "linear-gradient(45deg, rgba(255, 255, 255, 0.05), transparent)",
+        background:
+          "linear-gradient(45deg, rgba(255, 255, 255, 0.05), transparent)",
         opacity: 0.3,
         zIndex: 1,
       }}
@@ -45,7 +50,13 @@ export function DeckCard({ deck, onClick, "aria-label": ariaLabel }: DeckCardPro
       }}
       transition="all 0.2s"
     >
-      <VStack align="start" spacing={2} height="100%" position="relative" zIndex={2}>
+      <VStack
+        align="start"
+        spacing={2}
+        height="100%"
+        position="relative"
+        zIndex={2}
+      >
         <Heading
           as="h3"
           size="md"

@@ -86,111 +86,63 @@ export function DeckDetailsModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
-      <ModalOverlay bg="blackAlpha.800" />
-      <ModalContent
-        bg="gray.900"
-        color="white"
-        borderRadius="0"
-        border="3px solid"
-        borderColor="white"
-        boxShadow="0 0 10px rgba(255, 255, 255, 0.3)"
-        position="relative"
-        _before={{
-          content: '""',
-          position: "absolute",
-          top: "-3px",
-          left: "-3px",
-          right: "-3px",
-          bottom: "-3px",
-          border: "2px solid",
-          borderColor: "red.600",
-          boxShadow: "0 0 15px rgba(229, 62, 62, 0.5)",
-        }}
-      >
-        <ModalHeader p={4}>
-          <HStack justify="space-between" align="center">
-            <HStack spacing={3}>
-              <Avatar
-                name={deck.authorNickname || "Unknown"}
-                size="sm"
-                bg="blue.500"
-                color="white"
-                border="2px solid"
-                borderColor="white"
-              />
-              <Text fontSize="sm" fontWeight="bold" textShadow="1px 1px 2px rgba(0, 0, 0, 0.8)">
-                {deck.authorNickname || "Unknown"}
-              </Text>
-              {!isOwner && (
-                <>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    borderColor="blue.500"
-                    color="blue.500"
-                    fontWeight="bold"
-                    textTransform="uppercase"
-                    _hover={{ bg: "blue.500", color: "white", boxShadow: "0 0 10px rgba(49, 130, 206, 0.7)" }}
-                    onClick={handleFollow}
-                  >
-                    Follow
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    borderColor="red.600"
-                    color="red.600"
-                    fontWeight="bold"
-                    textTransform="uppercase"
-                    _hover={{ bg: "red.600", color: "white", boxShadow: "0 0 10px rgba(229, 62, 62, 0.7)" }}
-                    onClick={handleSubscribe}
-                  >
-                    {deck.isSubscribed ? "Unsubscribe" : "Subscribe"}
-                  </Button>
-                </>
-              )}
-            </HStack>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>
+          <HStack spacing={3} mb={2}>
+            <Avatar
+              name={deck.authorNickname || "Unknown"}
+              size="sm"
+            />
+            <Text fontSize="sm" fontWeight="medium">
+              {deck.authorNickname || "Unknown"}
+            </Text>
+            {!isOwner && (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  colorScheme="brand"
+                  onClick={handleFollow}
+                >
+                  Follow
+                </Button>
+                <Button
+                  size="sm"
+                  colorScheme="brand"
+                  onClick={handleSubscribe}
+                >
+                  {deck.isSubscribed ? "Unsubscribe" : "Subscribe"}
+                </Button>
+              </>
+            )}
           </HStack>
-          <Text
-            fontSize="2xl"
-            mt={2}
-            fontWeight="extrabold"
-            color="white"
-            textTransform="uppercase"
-            letterSpacing="wide"
-            textShadow="2px 2px 4px rgba(0, 0, 0, 0.9), 0 0 8px rgba(255, 255, 255, 0.3)"
-          >
+          <Text fontSize="2xl" fontWeight="bold">
             {deck.title}
           </Text>
         </ModalHeader>
-        <ModalCloseButton color="white" _hover={{ color: "red.600", transform: "scale(1.1)" }} />
-        <ModalBody p={4}>
-          <VStack spacing={6} align="stretch">
+        <ModalCloseButton />
+        <ModalBody>
+          <VStack spacing={4} align="stretch">
             {/* Deck Image */}
             {deck.imageUrl ? (
               <Image
                 src={deck.imageUrl}
                 alt={`${deck.title} image`}
-                borderRadius="0"
+                borderRadius="md"
                 maxH="200px"
                 objectFit="cover"
-                border="2px solid"
-                borderColor="white"
-                boxShadow="4px 4px 0 rgba(0, 0, 0, 0.8)"
               />
             ) : (
               <Box
-                bg="gray.800"
-                borderRadius="0"
+                bg="gray.100"
+                borderRadius="md"
                 h="200px"
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
-                border="2px solid"
-                borderColor="white"
-                boxShadow="4px 4px 0 rgba(0, 0, 0, 0.8)"
               >
-                <Text color="gray.400" fontWeight="bold" textTransform="uppercase">
+                <Text color="gray.500">
                   No Image Available
                 </Text>
               </Box>
@@ -198,17 +150,17 @@ export function DeckDetailsModal({
 
             {/* Deck Stats */}
             <SimpleGrid columns={{ base: 1, sm: 3 }} spacing={4}>
-              <Stat bg="gray.800" p={2} border="1px solid" borderColor="white" boxShadow="2px 2px 0 rgba(0, 0, 0, 0.8)">
-                <StatLabel color="gray.400" fontWeight="bold" textTransform="uppercase">Cards</StatLabel>
-                <StatNumber color="white">{deck.cardCount ?? "N/A"}</StatNumber>
+              <Stat bg="gray.50" p={4} borderRadius="md">
+                <StatLabel>Cards</StatLabel>
+                <StatNumber>{deck.cardCount ?? "N/A"}</StatNumber>
               </Stat>
-              <Stat bg="gray.800" p={2} border="1px solid" borderColor="white" boxShadow="2px 2px 0 rgba(0, 0, 0, 0.8)">
-                <StatLabel color="gray.400" fontWeight="bold" textTransform="uppercase">Subscribers</StatLabel>
-                <StatNumber color="white">{deck.subscriberCount ?? "N/A"}</StatNumber>
+              <Stat bg="gray.50" p={4} borderRadius="md">
+                <StatLabel>Subscribers</StatLabel>
+                <StatNumber>{deck.subscriberCount ?? "N/A"}</StatNumber>
               </Stat>
-              <Stat bg="gray.800" p={2} border="1px solid" borderColor="white" boxShadow="2px 2px 0 rgba(0, 0, 0, 0.8)">
-                <StatLabel color="gray.400" fontWeight="bold" textTransform="uppercase">Difficulty</StatLabel>
-                <StatNumber color="white">
+              <Stat bg="gray.50" p={4} borderRadius="md">
+                <StatLabel>Difficulty</StatLabel>
+                <StatNumber>
                   {deck.averageDifficulty ? deck.averageDifficulty.toFixed(1) : "N/A"}
                 </StatNumber>
               </Stat>
@@ -216,30 +168,24 @@ export function DeckDetailsModal({
 
             {/* Description */}
             <VStack align="start" spacing={2}>
-              <Text fontSize="md" fontWeight="extrabold" color="red.600" textTransform="uppercase" textShadow="1px 1px 2px rgba(0, 0, 0, 0.8)">
+              <Text fontSize="md" fontWeight="semibold">
                 Description
               </Text>
-              <Text color="gray.300" fontSize="sm">{deck.description || "No description available"}</Text>
+              <Text color="gray.600" fontSize="sm">{deck.description || "No description available"}</Text>
             </VStack>
 
             {/* Tags */}
             {deck.tags && deck.tags.length > 0 && (
               <VStack align="start" spacing={2}>
-                <Text fontSize="md" fontWeight="extrabold" color="red.600" textTransform="uppercase" textShadow="1px 1px 2px rgba(0, 0, 0, 0.8)">
+                <Text fontSize="md" fontWeight="semibold">
                   Tags
                 </Text>
                 <HStack spacing={2} flexWrap="wrap">
                   {deck.tags.map((tag) => (
                     <Tag
                       key={tag}
-                      size="sm"
-                      variant="solid"
-                      bg="blue.500"
-                      color="white"
-                      fontWeight="bold"
-                      textTransform="uppercase"
-                      border="1px solid"
-                      borderColor="white"
+                      size="md"
+                      colorScheme="brand"
                     >
                       <TagLabel>{tag}</TagLabel>
                     </Tag>
@@ -249,7 +195,7 @@ export function DeckDetailsModal({
             )}
 
             {/* Created Date */}
-            <Text fontSize="sm" color="gray.400" fontWeight="bold">
+            <Text fontSize="sm" color="gray.500">
               Created: {new Date(deck.createdDate).toLocaleString()}
             </Text>
 
@@ -257,68 +203,34 @@ export function DeckDetailsModal({
             <Button
               onClick={() => setShowAIFeatures(!showAIFeatures)}
               variant="outline"
-              borderColor="green.500"
-              color="green.500"
-              fontWeight="bold"
-              textTransform="uppercase"
-              _hover={{ bg: "green.500", color: "white", boxShadow: "0 0 10px rgba(72, 187, 120, 0.7)" }}
-              size="md"
-              mb={2}
+              colorScheme="green"
+              size="sm"
             >
               {showAIFeatures ? "Hide AI Features" : "Show AI Features"}
             </Button>
 
             {/* AI Features Section */}
             {showAIFeatures && (
-              <VStack spacing={4} align="stretch" border="2px solid" borderColor="white" p={4} boxShadow="4px 4px 0 rgba(0, 0, 0, 0.8)">
+              <VStack spacing={4} align="stretch" borderWidth="1px" borderColor="gray.200" p={4} borderRadius="md">
                 <VStack align="start">
-                  <Text fontSize="md" fontWeight="extrabold" color="blue.500" textTransform="uppercase" textShadow="1px 1px 2px rgba(0, 0, 0, 0.8)">
+                  <Text fontSize="md" fontWeight="semibold">
                     Prompt Details
                   </Text>
                   <Textarea
                     value={deck.description || "No description available"}
                     isDisabled
                     resize="none"
-                    bg="gray.800"
-                    borderColor="white"
-                    color="white"
                     minH="100px"
-                    borderRadius="0"
-                    borderWidth="2px"
                   />
                 </VStack>
-                <HStack spacing={2}>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    borderColor="white"
-                    color="white"
-                    fontWeight="bold"
-                    textTransform="uppercase"
-                    _hover={{ bg: "gray.700", boxShadow: "0 0 10px rgba(255, 255, 255, 0.3)" }}
-                  >
+                <HStack spacing={2} flexWrap="wrap">
+                  <Button size="sm" variant="outline">
                     LLM Model
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    borderColor="white"
-                    color="white"
-                    fontWeight="bold"
-                    textTransform="uppercase"
-                    _hover={{ bg: "gray.700", boxShadow: "0 0 10px rgba(255, 255, 255, 0.3)" }}
-                  >
+                  <Button size="sm" variant="outline">
                     LLM Model
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    borderColor="white"
-                    color="white"
-                    fontWeight="bold"
-                    textTransform="uppercase"
-                    _hover={{ bg: "gray.700", boxShadow: "0 0 10px rgba(255, 255, 255, 0.3)" }}
-                  >
+                  <Button size="sm" variant="outline">
                     LLM Model
                   </Button>
                 </HStack>
@@ -326,33 +238,23 @@ export function DeckDetailsModal({
             )}
           </VStack>
         </ModalBody>
-        <ModalFooter p={4}>
+        <ModalFooter>
           <VStack spacing={3} width="100%">
             {showAIFeatures && (
               <Button
                 width="100%"
-                bgGradient="linear(to-r, gray.900, blue.500)"
-                color="white"
-                fontWeight="extrabold"
-                textTransform="uppercase"
-                border="2px solid"
-                borderColor="white"
-                _hover={{ opacity: 0.9, boxShadow: "0 0 15px rgba(49, 130, 206, 0.7)", transform: "scale(0.98)" }}
+                colorScheme="brand"
                 onClick={handleGenerate}
               >
                 Generate with this Model
               </Button>
             )}
-            <HStack spacing={2} justify="center" width="100%">
+            <HStack spacing={2} justify="center" width="100%" flexWrap="wrap">
               {onEdit && isOwner && (
                 <Button
                   size="sm"
                   variant="outline"
-                  borderColor="blue.500"
-                  color="blue.500"
-                  fontWeight="bold"
-                  textTransform="uppercase"
-                  _hover={{ bg: "blue.500", color: "white", boxShadow: "0 0 10px rgba(49, 130, 206, 0.7)" }}
+                  colorScheme="brand"
                   onClick={() => onEdit(deck.id)}
                 >
                   Edit Deck
@@ -362,11 +264,7 @@ export function DeckDetailsModal({
                 <Button
                   size="sm"
                   variant="outline"
-                  borderColor="red.600"
-                  color="red.600"
-                  fontWeight="bold"
-                  textTransform="uppercase"
-                  _hover={{ bg: "red.600", color: "white", boxShadow: "0 0 10px rgba(229, 62, 62, 0.7)" }}
+                  colorScheme="red"
                   onClick={() => onDelete(deck.id)}
                 >
                   Delete Deck
@@ -375,13 +273,7 @@ export function DeckDetailsModal({
               {onManageCards && isOwner && (
                 <Button
                   size="sm"
-                  bg="blue.500"
-                  color="white"
-                  fontWeight="bold"
-                  textTransform="uppercase"
-                  border="2px solid"
-                  borderColor="white"
-                  _hover={{ bg: "blue.600", boxShadow: "0 0 10px rgba(49, 130, 206, 0.7)", transform: "scale(0.98)" }}
+                  colorScheme="brand"
                   onClick={() => onManageCards(deck.id)}
                 >
                   Manage Cards
@@ -390,13 +282,7 @@ export function DeckDetailsModal({
               {onLearn && isOwner && (
                 <Button
                   size="sm"
-                  bg="red.600"
-                  color="white"
-                  fontWeight="bold"
-                  textTransform="uppercase"
-                  border="2px solid"
-                  borderColor="white"
-                  _hover={{ bg: "red.700", boxShadow: "0 0 10px rgba(229, 62, 62, 0.7)", transform: "scale(0.98)" }}
+                  colorScheme="green"
                   onClick={() => onLearn(deck.id)}
                 >
                   Learn

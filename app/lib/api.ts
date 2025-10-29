@@ -1,26 +1,38 @@
 // app/lib/api.ts
 import { useAuth } from "../hooks/useAuth";
 
+// Helper to get cookie value (for non-httpOnly cookies only)
+const getCookie = (name: string): string | undefined => {
+  if (typeof document === 'undefined') return undefined;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift();
+  return undefined;
+};
+
 export async function fetchApi<T>(
   endpoint: string,
   options: RequestInit = {},
-  basePath: string = "/api/personal-vocab"
+  basePath: string = "/personal-vocab"
 ): Promise<T> {
+  // Always use Next.js API routes (which proxy to backend) instead of calling backend directly
+  // This ensures cookies are forwarded properly
+  // basePath should be relative to /api (e.g., "/personal-vocab" not "/api/personal-vocab")
+  const url = `/api${basePath}${
+    endpoint.startsWith("/") ? endpoint : `/${endpoint}`
+  }`;
+
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     ...options.headers,
   };
-
-  const url = `${basePath}${
-    endpoint.startsWith("/") ? endpoint : `/${endpoint}`
-  }`;
 
   try {
     console.log("Fetching:", url);
     const res = await fetch(url, {
       ...options,
       headers,
-      credentials: "include", // Rely on httpOnly accessToken cookie
+      credentials: "include", // Include cookies
       cache: "no-store", // Ensure fresh data
     });
     
@@ -98,7 +110,7 @@ export async function fetchApi<T>(
 }
 
 // Hook-based API client for authenticated requests
-export function useApi(basePath: string = "/api/personal-vocab") {
+export function useApi(basePath: string = "/personal-vocab") {
   const { loading, isAuthenticated } = useAuth(); // Include isAuthenticated
 
   return {

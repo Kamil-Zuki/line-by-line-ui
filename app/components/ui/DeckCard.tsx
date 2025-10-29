@@ -1,4 +1,4 @@
-import { Box, Heading, Text, VStack, Badge } from "@chakra-ui/react";
+import { Box, Heading, Text, VStack, Badge, HStack } from "@chakra-ui/react";
 import { DeckResponse } from "@/app/interfaces";
 
 interface DeckCardProps {
@@ -17,94 +17,55 @@ export function DeckCard({
       as="button"
       onClick={onClick}
       aria-label={ariaLabel}
-      bg="gray.700"
-      p={4}
-      border="2px solid"
-      borderColor="blue.900"
-      boxShadow="4px 4px 8px rgba(0, 0, 0, 0.5)" // Comic panel shadow
+      bg="white"
+      p={5}
+      borderWidth="1px"
+      borderColor="gray.200"
+      boxShadow="sm"
       width={{ base: "100%", sm: "300px" }}
-      height="200px"
-      borderRadius="md"
-      position="relative"
-      overflow="hidden"
-      _before={{
-        content: '""',
-        position: "absolute",
-        top: "0",
-        left: "0",
-        right: "0",
-        bottom: "0",
-        background:
-          "linear-gradient(45deg, rgba(255, 255, 255, 0.05), transparent)",
-        opacity: 0.3,
-        zIndex: 1,
-      }}
+      minHeight="180px"
+      borderRadius="lg"
       _hover={{
-        transform: "scale(1.02)",
-        boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)", // Soft blue glow
-        borderColor: "blue.800",
+        boxShadow: "md",
+        borderColor: "brand.500",
+        transform: "translateY(-2px)",
       }}
       _focus={{
         outline: "none",
-        boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.5)",
+        boxShadow: "outline",
       }}
       transition="all 0.2s"
+      textAlign="left"
     >
       <VStack
         align="start"
-        spacing={2}
+        spacing={3}
         height="100%"
-        position="relative"
-        zIndex={2}
       >
         <Heading
           as="h3"
           size="md"
-          color="white"
-          textShadow="1px 1px 2px rgba(0, 0, 0, 0.8)"
-          noOfLines={1}
+          color="gray.800"
+          noOfLines={2}
         >
           {deck.title}
         </Heading>
         <Text
           fontSize="sm"
-          color="gray.400"
+          color="gray.600"
           noOfLines={2}
           flex="1"
-          textAlign="left"
         >
           {deck.description || "No description available."}
         </Text>
-        <Box display="flex" gap={2}>
-          <Badge
-            colorScheme="blue"
-            borderRadius="md"
-            border="1px solid"
-            borderColor="blue.900"
-            px={2}
-            py={1}
-            fontSize="xs"
-            textTransform="uppercase"
-            bg="blue.800"
-            color="white"
-          >
-            Cards: {deck.cardCount}
+        <HStack spacing={2}>
+          <Badge colorScheme="blue" borderRadius="md">
+            {deck.cardCount} cards
           </Badge>
-          <Badge
-            colorScheme="red"
-            borderRadius="md"
-            border="1px solid"
-            borderColor="red.800"
-            px={2}
-            py={1}
-            fontSize="xs"
-            textTransform="uppercase"
-            bg="red.800"
-            color="white"
-          >
-            Subs: {deck.subscriberCount}
+          <Badge colorScheme="green" borderRadius="md">
+            {deck.subscriberCount} subs
           </Badge>
-        </Box>
+        </HStack>
       </VStack>
     </Box>
   );

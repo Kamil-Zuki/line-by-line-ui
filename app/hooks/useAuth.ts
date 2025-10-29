@@ -233,18 +233,21 @@ export function useAuth() {
         body: JSON.stringify({ refreshToken: tokens.refreshToken }),
       });
       console.log("Tokens", tokens);
-      if (!res.ok) {
-        console.log(res);
+
+      // Even if the server returns 401/403 (already logged out/expired), proceed to clear client state
+      if (!res.ok && res.status >= 500) {
+        console.log("Logout backend error status:", res.status);
         throw new Error("Logout failed");
       }
-
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      // Always clear client state and navigate away
       setIsAuthenticated(false);
       setTokens({ refreshToken: "" });
       setUser(null);
       document.cookie = "refreshToken=; path=/; max-age=0; sameSite=lax";
       router.push("/login");
-    } catch (error) {
-      console.error("Logout error:", error);
     }
   };
 

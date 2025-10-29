@@ -2,46 +2,28 @@ html,
 body {
   margin: 0;
   padding: 0;
-  min-height: 100vh; /* Ensure the page takes up at least the viewport height */
-  overflow-y: auto; /* Enable vertical scrollbar when content overflows */
-  overflow-x: hidden; /* Prevent horizontal scrollbar from decorative elements */
-  color: white; /* Ensure text is white by default for the "Ultimate Spider-Man 2005" theme */
+  min-height: 100vh;
 }
 
-/* Webkit scrollbar styling */
+/* Clean scrollbar styling */
 body::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 body::-webkit-scrollbar-track {
-  background: #1a202c; /* gray.700 */
-  border: 1px solid;
-  border-color: #2a4365; /* blue.900 */
-  border-radius: 4px;
+  background: #f7fafc;
 }
 
 body::-webkit-scrollbar-thumb {
-  background: #2a4365; /* blue.900 */
-  border-radius: 4px;
-  box-shadow: 0 0 5px rgba(66, 153, 225, 0.3);
+  background: #cbd5e0;
+  border-radius: 5px;
 }
 
 body::-webkit-scrollbar-thumb:hover {
-  background: #2b6cb0; /* blue.800 */
-  box-shadow: 0 0 8px rgba(66, 153, 225, 0.5);
+  background: #a0aec0;
 }
 
-/* Firefox scrollbar styling */
 body {
   scrollbar-width: thin;
-  scrollbar-color: #2a4365 #1a202c; /* thumb track */
-}
-
-/* Hide vertical scrollbar when not needed (Webkit-specific) */
-body:not(:hover)::-webkit-scrollbar-thumb {
-  background: transparent; /* Hide thumb when not hovering */
-}
-
-body:not(:hover)::-webkit-scrollbar-track {
-  background: transparent; /* Hide track when not hovering */
+  scrollbar-color: #cbd5e0 #f7fafc;
 }

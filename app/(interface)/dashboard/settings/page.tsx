@@ -14,6 +14,9 @@ import {
   NumberInput,
   NumberInputField,
   Select,
+  Container,
+  Card,
+  CardBody,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
@@ -24,17 +27,6 @@ import {
 } from "@/app/interfaces";
 import { fetchApi } from "@/app/lib/api";
 import { css } from "@emotion/react";
-
-const selectStyles = css`
-  & option {
-    background-color: #2d3748; /* gray.800 */
-    color: white;
-  }
-  &:focus option {
-    background-color: #2d3748; /* gray.800 */
-    color: white;
-  }
-`;
 
 export default function SettingsPage() {
   const { isAuthenticated, loading: authLoading } = useAuth();
@@ -55,36 +47,7 @@ export default function SettingsPage() {
     description: string,
     status: "success" | "error"
   ) => {
-    toast({
-      position: "top",
-      duration: 3000,
-      isClosable: true,
-      render: ({ onClose }) => (
-        <Box
-          bg="gray.800"
-          border="2px solid"
-          borderColor="blue.900"
-          color="white"
-          p={4}
-          borderRadius="md"
-          boxShadow="0 0 5px rgba(66, 153, 225, 0.3)"
-          display="flex"
-          alignItems="center"
-          justifyContent="space-between"
-          _hover={{ bg: "gray.700" }}
-        >
-          <VStack align="start" spacing={1}>
-            <Heading as="h3" size="sm" color="white">
-              {title}
-            </Heading>
-            <ChakraText fontSize="sm">{description}</ChakraText>
-          </VStack>
-          <Button size="sm" variant="ghost" color="white" onClick={onClose}>
-            Close
-          </Button>
-        </Box>
-      ),
-    });
+    toast({ title, description, status, duration: 3000, isClosable: true, position: "top" });
   };
 
   // Fetch user settings on page load
@@ -151,19 +114,8 @@ export default function SettingsPage() {
   // Authentication and loading states
   if (authLoading || isLoading) {
     return (
-      <Box
-        minH="100vh"
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-      >
-        <Spinner
-          size="xl"
-          color="white"
-          thickness="3px"
-          speed="0.65s"
-          _hover={{ filter: "drop-shadow(0 0 5px rgba(255, 255, 255, 0.3))" }}
-        />
+      <Box minH="100vh" display="flex" justifyContent="center" alignItems="center">
+        <Spinner size="xl" thickness="3px" speed="0.65s" />
       </Box>
     );
   }
@@ -175,36 +127,18 @@ export default function SettingsPage() {
   }
 
   return (
-    <Box
-      minH="100vh"
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      p={4}
-    >
-      <VStack spacing={6} align="stretch" maxW="600px" w="100%">
-        <Heading
-          as="h1"
-          size={{ base: "lg", md: "xl" }}
-          color="white"
-          textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(66, 153, 225, 0.3)"
-          textAlign="center"
-        >
+    <Container maxW="xl" py={8}>
+      <VStack spacing={6} align="stretch">
+        <Heading as="h1" size={{ base: "lg", md: "xl" }} textAlign="center">
           Settings
         </Heading>
 
-        <Box
-          bg="gray.700"
-          border="2px solid"
-          borderColor="blue.900"
-          borderRadius="md"
-          boxShadow="0 0 5px rgba(66, 153, 225, 0.3)"
-          p={6}
-        >
-          <VStack spacing={4} align="stretch">
+        <Card>
+          <CardBody p={6}>
+            <VStack spacing={5} align="stretch">
             {/* Daily New Card Limit */}
             <FormControl>
-              <FormLabel color="white">Daily New Card Limit</FormLabel>
+              <FormLabel>Daily New Card Limit</FormLabel>
               <NumberInput
                 min={0}
                 value={formValues.dailyNewCardLimit}
@@ -215,9 +149,9 @@ export default function SettingsPage() {
                   })
                 }
               >
-                <NumberInputField bg="gray.600" color="white" />
+                <NumberInputField />
               </NumberInput>
-              <ChakraText fontSize="sm" color="gray.300" mt={1}>
+              <ChakraText fontSize="sm" color="gray.600" mt={1}>
                 Number of new cards you can learn each day (Current:{" "}
                 {settings?.newCardsCompletedToday} learned today)
               </ChakraText>
@@ -225,7 +159,7 @@ export default function SettingsPage() {
 
             {/* Daily Review Limit */}
             <FormControl>
-              <FormLabel color="white">Daily Review Limit</FormLabel>
+              <FormLabel>Daily Review Limit</FormLabel>
               <NumberInput
                 min={0}
                 value={formValues.dailyReviewLimit}
@@ -236,9 +170,9 @@ export default function SettingsPage() {
                   })
                 }
               >
-                <NumberInputField bg="gray.600" color="white" />
+                <NumberInputField />
               </NumberInput>
-              <ChakraText fontSize="sm" color="gray.300" mt={1}>
+              <ChakraText fontSize="sm" color="gray.600" mt={1}>
                 Number of review cards you can study each day (Current:{" "}
                 {settings?.reviewsCompletedToday} reviewed today)
               </ChakraText>
@@ -246,7 +180,7 @@ export default function SettingsPage() {
 
             {/* Rollover Hour */}
             <FormControl>
-              <FormLabel color="white">Rollover Hour (UTC)</FormLabel>
+              <FormLabel>Rollover Hour (UTC)</FormLabel>
               <NumberInput
                 min={0}
                 max={23}
@@ -258,21 +192,18 @@ export default function SettingsPage() {
                   })
                 }
               >
-                <NumberInputField bg="gray.600" color="white" />
+                <NumberInputField />
               </NumberInput>
-              <ChakraText fontSize="sm" color="gray.300" mt={1}>
+              <ChakraText fontSize="sm" color="gray.600" mt={1}>
                 The hour (in UTC) when daily limits reset (0-23)
               </ChakraText>
             </FormControl>
 
             {/* Preferred Mode */}
             <FormControl>
-              <FormLabel color="white">Preferred Learning Mode</FormLabel>
+              <FormLabel>Preferred Learning Mode</FormLabel>
               <Select
-                bg="gray.600"
-                color="white"
                 value={formValues.preferredMode}
-                css={selectStyles}
                 onChange={(e) =>
                   setFormValues({
                     ...formValues,
@@ -284,46 +215,24 @@ export default function SettingsPage() {
                 <option value={LearningMode.Review}>Review</option>
                 <option value={LearningMode.Cram}>Cram</option>
               </Select>
-              <ChakraText fontSize="sm" color="gray.300" mt={1}>
+              <ChakraText fontSize="sm" color="gray.600" mt={1}>
                 Default mode for study sessions
               </ChakraText>
             </FormControl>
 
             {/* Save Button */}
-            <Button
-              bg="red.800"
-              border="2px solid"
-              borderColor="blue.900"
-              color="white"
-              _hover={{
-                bg: "red.700",
-                boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
-                transform: "scale(1.02)",
-              }}
-              _active={{ bg: "red.900" }}
-              transition="all 0.2s"
-              isLoading={isSaving}
-              onClick={handleSubmit}
-            >
+            <Button colorScheme="brand" isLoading={isSaving} onClick={handleSubmit}>
               Save Settings
             </Button>
 
             {/* Back to Dashboard Button */}
-            <Button
-              variant="outline"
-              borderColor="blue.900"
-              color="white"
-              _hover={{
-                bg: "gray.600",
-                boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
-              }}
-              onClick={() => router.push("/dashboard")}
-            >
+            <Button variant="outline" onClick={() => router.push("/dashboard")}>
               Back to Dashboard
             </Button>
           </VStack>
-        </Box>
+          </CardBody>
+        </Card>
       </VStack>
-    </Box>
+    </Container>
   );
 }

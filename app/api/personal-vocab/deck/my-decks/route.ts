@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const API_SERVER = process.env.API_SERVER_ADDRESS || "http://localhost:8090";
-const BASE_URL = `${API_SERVER}/api/v1/deck/public`;
+const BASE_URL = `${API_SERVER}/api/v1/deck/my-decks`;
 
 export async function GET(req: NextRequest) {
   //#region Access token
@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   if (!accessToken)
     return NextResponse.json({ error: "Failed to log in" }, { status: 401 });
   //#endregion
-
+  
   try {
     console.log("Fetching from backend:", BASE_URL);
     const response = await fetch(`${BASE_URL}`, {
@@ -47,3 +47,4 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+

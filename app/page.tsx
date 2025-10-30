@@ -1,7 +1,19 @@
-import { Box, Heading, Button, Stack, Text, Container } from "@chakra-ui/react";
-import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import HomePageClient from "./HomePageClient";
+
+/**
+ * Main Landing Page - Server Component
+ * 
+ * Next.js 15 Optimizations:
+ * - Server-side authentication check
+ * - Zero client JavaScript for static content
+ * - Automatic redirect for authenticated users
+ * - Suspense for loading states
+ * 
+ * @see https://nextjs.org/docs/app/building-your-application/rendering/server-components
+ */
 
 export default async function MainPage() {
   const cookieStore = await cookies();
@@ -9,49 +21,26 @@ export default async function MainPage() {
 
   const isAuthenticated = !!accessToken;
 
-  // Redirect authenticated users to dashboard
+  // Server-side redirect - no client JavaScript needed
   if (isAuthenticated) {
     redirect("/dashboard/decks");
   }
 
   return (
-    <Box minH="100vh" display="flex" alignItems="center" justifyContent="center" bg="gray.50">
-      <Container maxW="container.md" textAlign="center">
-        <Heading
-          as="h1"
-          size="2xl"
-          mb={4}
-          color="gray.800"
-        >
-          Welcome to LineByLine
-        </Heading>
-        <Text
-          fontSize="lg"
-          mb={8}
-          color="gray.600"
-        >
-          Learn languages through gamified decks, collaboration, and AI-powered progress tracking.
-        </Text>
-        <Stack direction={{ base: "column", sm: "row" }} spacing={4} justify="center">
-          <Button
-            as={Link}
-            href="/login"
-            size="lg"
-            colorScheme="brand"
-          >
-            Login
-          </Button>
-          <Button
-            as={Link}
-            href="/register"
-            size="lg"
-            variant="outline"
-            colorScheme="brand"
-          >
-            Register
-          </Button>
-        </Stack>
-      </Container>
-    </Box>
+    <Suspense fallback={null}>
+      <HomePageClient />
+    </Suspense>
   );
 }
+
+// Metadata for SEO
+export const metadata = {
+  title: "LineByLine - Gamified Language Learning",
+  description: "Learn languages through gamified decks, collaboration, and AI-powered progress tracking. Start your language journey today.",
+  keywords: ["language learning", "flashcards", "spaced repetition", "gamification"],
+  openGraph: {
+    title: "LineByLine - Gamified Language Learning",
+    description: "Learn languages through gamified decks, collaboration, and AI-powered progress tracking.",
+    type: "website",
+  },
+};

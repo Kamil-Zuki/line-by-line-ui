@@ -25,6 +25,7 @@ import {
   VStack,
   useDisclosure,
   useToast,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { FiKey, FiUser, FiEye, FiEyeOff } from "react-icons/fi";
 
@@ -54,7 +55,17 @@ const AccountProfile = ({ user }: AccountProfileProps) => {
 
   const passwordModal = useDisclosure();
   const usernameModal = useDisclosure();
-  const toast = useToast(); // Use the useToast hook directly
+  const toast = useToast();
+
+  // Theme colors
+  const cardBg = useColorModeValue("white", "gray.800");
+  const cardBorder = useColorModeValue("gray.200", "gray.700");
+  const textColor = useColorModeValue("gray.800", "white");
+  const labelColor = useColorModeValue("gray.600", "gray.400");
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const inputBg = useColorModeValue("white", "gray.700");
+  const inputBorder = useColorModeValue("gray.300", "gray.600");
+  const modalBg = useColorModeValue("white", "gray.800");
 
   const showToast = (title: string, description: string, status: "success" | "error") => {
     toast({
@@ -172,17 +183,15 @@ const AccountProfile = ({ user }: AccountProfileProps) => {
 
   return (
     <Box
-      bg="gray.700"
-      border="2px solid"
-      borderColor="blue.900"
-      borderRadius="md"
-      p={4}
-      color="white"
-      boxShadow="2px 2px 4px rgba(0, 0, 0, 0.5)"
-      _hover={{ boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)" }}
-      transition="all 0.2s"
+      bg={cardBg}
+      border="1px solid"
+      borderColor={cardBorder}
+      borderRadius="lg"
+      p={6}
+      color={textColor}
+      boxShadow="sm"
     >
-      <ChakraText fontSize="xl" fontWeight="semibold" mb={4} textShadow="1px 1px 2px rgba(0, 0, 0, 0.8)">
+      <ChakraText fontSize="xl" fontWeight="semibold" mb={4}>
         Account
       </ChakraText>
 
@@ -193,27 +202,17 @@ const AccountProfile = ({ user }: AccountProfileProps) => {
         mb={4}
         pb={4}
         borderBottom="1px"
-        borderColor="gray.600"
+        borderColor={borderColor}
       >
         <Box>
-          <ChakraText fontSize="sm" color="gray.400" textTransform="uppercase">
+          <ChakraText fontSize="sm" color={labelColor} textTransform="uppercase">
             USERNAME
           </ChakraText>
           <ChakraText>{user.userName}</ChakraText>
         </Box>
         <Button
           size="sm"
-          bg="red.800"
-          border="2px solid"
-          borderColor="blue.900"
-          color="white"
-          _hover={{
-            bg: "red.700",
-            boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
-            transform: "scale(1.02)",
-          }}
-          _active={{ bg: "red.900" }}
-          transition="all 0.2s"
+          colorScheme="brand"
           onClick={usernameModal.onOpen}
         >
           Edit
@@ -227,10 +226,10 @@ const AccountProfile = ({ user }: AccountProfileProps) => {
         mb={4}
         pb={4}
         borderBottom="1px"
-        borderColor="gray.600"
+        borderColor={borderColor}
       >
         <Box>
-          <ChakraText fontSize="sm" color="gray.400" textTransform="uppercase">
+          <ChakraText fontSize="sm" color={labelColor} textTransform="uppercase">
             EMAIL
           </ChakraText>
           <ChakraText>{user.email}</ChakraText>
@@ -241,24 +240,14 @@ const AccountProfile = ({ user }: AccountProfileProps) => {
       {/* Password Section */}
       <Flex justify="space-between" align="center" mb={4}>
         <Box>
-          <ChakraText fontSize="sm" color="gray.400" textTransform="uppercase">
+          <ChakraText fontSize="sm" color={labelColor} textTransform="uppercase">
             PASSWORD
           </ChakraText>
           <ChakraText>••••••••</ChakraText>
         </Box>
         <Button
           size="sm"
-          bg="red.800"
-          border="2px solid"
-          borderColor="blue.900"
-          color="white"
-          _hover={{
-            bg: "red.700",
-            boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
-            transform: "scale(1.02)",
-          }}
-          _active={{ bg: "red.900" }}
-          transition="all 0.2s"
+          colorScheme="brand"
           onClick={passwordModal.onOpen}
         >
           Change Password
@@ -269,98 +258,68 @@ const AccountProfile = ({ user }: AccountProfileProps) => {
       <Modal isOpen={passwordModal.isOpen} onClose={passwordModal.onClose}>
         <ModalOverlay />
         <ModalContent
-          bg="gray.800"
-          color="white"
+          bg={modalBg}
+          color={textColor}
           border="2px solid"
-          borderColor="blue.900"
+          borderColor={cardBorder}
           borderRadius="md"
         >
-          <ModalHeader textShadow="1px 1px 2px rgba(0, 0, 0, 0.8)">Change Your Password</ModalHeader>
-          <ModalCloseButton color="white" />
+          <ModalHeader>Change Your Password</ModalHeader>
+          <ModalCloseButton />
           <ModalBody>
             <VStack spacing={4}>
               <FormControl isInvalid={!!errors.currentPassword}>
-                <FormLabel color="gray.400" textTransform="uppercase" fontSize="sm">
+                <FormLabel color={labelColor} textTransform="uppercase" fontSize="sm">
                   Current Password
                 </FormLabel>
                 <InputGroup>
                   <InputLeftElement pointerEvents="none">
-                    <FiKey color="gray.400" />
+                    <FiKey />
                   </InputLeftElement>
                   <Input
                     type={showPassword ? "text" : "password"}
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    bg="gray.700"
-                    border="2px solid"
-                    borderColor="blue.900"
-                    color="white"
-                    borderRadius="md"
-                    _focus={{ borderColor: "blue.700", boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)" }}
                   />
                   <InputRightElement>
                     <IconButton
                       aria-label={showPassword ? "Hide password" : "Show password"}
-                      icon={showPassword ? <FiEyeOff color="gray.400" /> : <FiEye color="gray.400" />}
+                      icon={showPassword ? <FiEyeOff /> : <FiEye />}
                       variant="ghost"
                       size="sm"
                       onClick={() => setShowPassword(!showPassword)}
                     />
                   </InputRightElement>
                 </InputGroup>
-                <FormErrorMessage
-                  color="red.500"
-                  fontWeight="bold"
-                  textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 3px rgba(229, 62, 62, 0.3)"
-                >
+                <FormErrorMessage>
                   {errors.currentPassword}
                 </FormErrorMessage>
               </FormControl>
 
               <FormControl isInvalid={!!errors.newPassword}>
-                <FormLabel color="gray.400" textTransform="uppercase" fontSize="sm">
+                <FormLabel color={labelColor} textTransform="uppercase" fontSize="sm">
                   New Password
                 </FormLabel>
                 <Input
                   type={showPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  bg="gray.700"
-                  border="2px solid"
-                  borderColor="blue.900"
-                  color="white"
-                  borderRadius="md"
-                  _focus={{ borderColor: "blue.700", boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)" }}
                 />
-                <FormErrorMessage
-                  color="red.500"
-                  fontWeight="bold"
-                  textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 3px rgba(229, 62, 62, 0.3)"
-                >
+                <FormErrorMessage>
                   {errors.newPassword}
                 </FormErrorMessage>
               </FormControl>
 
               <FormControl isInvalid={!!errors.confirmPassword}>
-                <FormLabel color="gray.400" textTransform="uppercase" fontSize="sm">
+                <FormLabel color={labelColor} textTransform="uppercase" fontSize="sm">
                   Confirm New Password
                 </FormLabel>
                 <Input
                   type={showPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  bg="gray.700"
-                  border="2px solid"
-                  borderColor="blue.900"
-                  color="white"
-                  borderRadius="md"
-                  _focus={{ borderColor: "blue.700", boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)" }}
                 />
-                <FormErrorMessage
-                  color="red.500"
-                  fontWeight="bold"
-                  textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 3px rgba(229, 62, 62, 0.3)"
-                >
+                <FormErrorMessage>
                   {errors.confirmPassword}
                 </FormErrorMessage>
               </FormControl>
@@ -371,23 +330,11 @@ const AccountProfile = ({ user }: AccountProfileProps) => {
               variant="ghost"
               mr={3}
               onClick={passwordModal.onClose}
-              color="white"
-              _hover={{ bg: "gray.700" }}
             >
               Cancel
             </Button>
             <Button
-              bg="red.800"
-              border="2px solid"
-              borderColor="blue.900"
-              color="white"
-              _hover={{
-                bg: "red.700",
-                boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
-                transform: "scale(1.02)",
-              }}
-              _active={{ bg: "red.900" }}
-              transition="all 0.2s"
+              colorScheme="brand"
               onClick={handlePasswordUpdate}
               isLoading={loading}
             >
@@ -401,39 +348,26 @@ const AccountProfile = ({ user }: AccountProfileProps) => {
       <Modal isOpen={usernameModal.isOpen} onClose={usernameModal.onClose}>
         <ModalOverlay />
         <ModalContent
-          bg="gray.800"
-          color="white"
-          border="2px solid"
-          borderColor="blue.900"
-          borderRadius="md"
+          bg={modalBg}
+          color={textColor}
         >
-          <ModalHeader textShadow="1px 1px 2px rgba(0, 0, 0, 0.8)">Change Your Username</ModalHeader>
-          <ModalCloseButton color="white" />
+          <ModalHeader>Change Your Username</ModalHeader>
+          <ModalCloseButton />
           <ModalBody>
             <FormControl isInvalid={!!errors.username}>
-              <FormLabel color="gray.400" textTransform="uppercase" fontSize="sm">
+              <FormLabel color={labelColor} textTransform="uppercase" fontSize="sm">
                 Username
               </FormLabel>
               <InputGroup>
                 <InputLeftElement pointerEvents="none">
-                  <FiUser color="gray.400" />
+                  <FiUser />
                 </InputLeftElement>
                 <Input
                   value={newUsername}
                   onChange={(e) => setNewUsername(e.target.value)}
-                  bg="gray.700"
-                  border="2px solid"
-                  borderColor="blue.900"
-                  color="white"
-                  borderRadius="md"
-                  _focus={{ borderColor: "blue.700", boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)" }}
                 />
               </InputGroup>
-              <FormErrorMessage
-                color="red.500"
-                fontWeight="bold"
-                textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 3px rgba(229, 62, 62, 0.3)"
-              >
+              <FormErrorMessage>
                 {errors.username}
               </FormErrorMessage>
             </FormControl>
@@ -443,23 +377,11 @@ const AccountProfile = ({ user }: AccountProfileProps) => {
               variant="ghost"
               mr={3}
               onClick={usernameModal.onClose}
-              color="white"
-              _hover={{ bg: "gray.700" }}
             >
               Cancel
             </Button>
             <Button
-              bg="red.800"
-              border="2px solid"
-              borderColor="blue.900"
-              color="white"
-              _hover={{
-                bg: "red.700",
-                boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
-                transform: "scale(1.02)",
-              }}
-              _active={{ bg: "red.900" }}
-              transition="all 0.2s"
+              colorScheme="brand"
               onClick={handleUsernameUpdate}
               isLoading={loading}
             >

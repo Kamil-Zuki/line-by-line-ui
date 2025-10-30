@@ -5,7 +5,7 @@ body {
   min-height: 100vh;
 }
 
-/* Clean scrollbar styling */
+/* Clean scrollbar styling for light mode */
 body::-webkit-scrollbar {
   width: 10px;
 }
@@ -26,4 +26,23 @@ body::-webkit-scrollbar-thumb:hover {
 body {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e0 #f7fafc;
+}
+
+/* Dark mode scrollbar styling */
+.dark body::-webkit-scrollbar-track {
+  background: #1a202c;
+}
+
+.dark body::-webkit-scrollbar-thumb {
+  background: #4a5568;
+  border-radius: 5px;
+}
+
+.dark body::-webkit-scrollbar-thumb:hover {
+  background: #718096;
+}
+
+.dark body {
+  scrollbar-width: thin;
+  scrollbar-color: #4a5568 #1a202c;
 }

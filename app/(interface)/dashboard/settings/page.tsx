@@ -17,6 +17,7 @@ import {
   Container,
   Card,
   CardBody,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
@@ -41,6 +42,8 @@ export default function SettingsPage() {
   });
   const router = useRouter();
   const toast = useToast();
+
+  const helpTextColor = useColorModeValue("gray.600", "gray.400");
 
   const showToast = (
     title: string,
@@ -151,7 +154,7 @@ export default function SettingsPage() {
               >
                 <NumberInputField />
               </NumberInput>
-              <ChakraText fontSize="sm" color="gray.600" mt={1}>
+              <ChakraText fontSize="sm" color={helpTextColor} mt={1}>
                 Number of new cards you can learn each day (Current:{" "}
                 {settings?.newCardsCompletedToday} learned today)
               </ChakraText>
@@ -172,7 +175,7 @@ export default function SettingsPage() {
               >
                 <NumberInputField />
               </NumberInput>
-              <ChakraText fontSize="sm" color="gray.600" mt={1}>
+              <ChakraText fontSize="sm" color={helpTextColor} mt={1}>
                 Number of review cards you can study each day (Current:{" "}
                 {settings?.reviewsCompletedToday} reviewed today)
               </ChakraText>
@@ -194,7 +197,7 @@ export default function SettingsPage() {
               >
                 <NumberInputField />
               </NumberInput>
-              <ChakraText fontSize="sm" color="gray.600" mt={1}>
+              <ChakraText fontSize="sm" color={helpTextColor} mt={1}>
                 The hour (in UTC) when daily limits reset (0-23)
               </ChakraText>
             </FormControl>
@@ -215,7 +218,7 @@ export default function SettingsPage() {
                 <option value={LearningMode.Review}>Review</option>
                 <option value={LearningMode.Cram}>Cram</option>
               </Select>
-              <ChakraText fontSize="sm" color="gray.600" mt={1}>
+              <ChakraText fontSize="sm" color={helpTextColor} mt={1}>
                 Default mode for study sessions
               </ChakraText>
             </FormControl>

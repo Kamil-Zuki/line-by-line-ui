@@ -12,6 +12,7 @@ import {
   StatLabel,
   StatNumber,
   SimpleGrid,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
@@ -130,6 +131,9 @@ export default function DashboardPage() {
       return 0;
     });
 
+  const statBg = useColorModeValue("white", "gray.800");
+  const statBorderColor = useColorModeValue("gray.200", "gray.700");
+
   return (
     <Box>
       <Heading as="h1" size="xl" mb={6}>
@@ -139,23 +143,23 @@ export default function DashboardPage() {
       {stats && (
         <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4} mb={6}>
           <Stat
-            bg="white"
+            bg={statBg}
             p={6}
             borderRadius="lg"
             boxShadow="sm"
             borderWidth="1px"
-            borderColor="gray.200"
+            borderColor={statBorderColor}
           >
             <StatLabel>Your Decks</StatLabel>
             <StatNumber>{stats.deckCount}</StatNumber>
           </Stat>
           <Stat
-            bg="white"
+            bg={statBg}
             p={6}
             borderRadius="lg"
             boxShadow="sm"
             borderWidth="1px"
-            borderColor="gray.200"
+            borderColor={statBorderColor}
           >
             <StatLabel>Total Cards</StatLabel>
             <StatNumber>{stats.totalCards}</StatNumber>

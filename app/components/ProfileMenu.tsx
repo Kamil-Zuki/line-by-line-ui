@@ -1,4 +1,6 @@
-import { Menu, MenuButton, MenuList, MenuItem, Portal, Button, Avatar, HStack, Text } from "@chakra-ui/react";
+"use client";
+
+import { Menu, MenuButton, MenuList, MenuItem, Portal, Button, Avatar, HStack, Text, useColorModeValue } from "@chakra-ui/react";
 import { FC } from "react";
 import { FaChevronDown } from "react-icons/fa";
 
@@ -14,6 +16,9 @@ type ProfileMenuProps = {
 };
 
 const ProfileMenu: FC<ProfileMenuProps> = ({ userName, actions }) => {
+  const menuBg = useColorModeValue("white", "gray.800");
+  const menuBorderColor = useColorModeValue("gray.200", "gray.700");
+
   return (
     <Menu>
       <MenuButton
@@ -31,7 +36,7 @@ const ProfileMenu: FC<ProfileMenuProps> = ({ userName, actions }) => {
         </HStack>
       </MenuButton>
       <Portal>
-        <MenuList>
+        <MenuList bg={menuBg} borderColor={menuBorderColor}>
           {actions.map((action, index) => (
             <MenuItem
               color={action.color}

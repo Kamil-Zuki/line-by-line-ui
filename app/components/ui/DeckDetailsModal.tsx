@@ -25,6 +25,7 @@ import {
   StatLabel,
   StatNumber,
   SimpleGrid,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { DeckResponse } from "@/app/interfaces";
 
@@ -84,6 +85,13 @@ export function DeckDetailsModal({
 
   const isOwner = deck.ownerId === userId;
 
+  const statBg = useColorModeValue("gray.50", "gray.700");
+  const noImageBg = useColorModeValue("gray.100", "gray.700");
+  const noImageColor = useColorModeValue("gray.500", "gray.400");
+  const descColor = useColorModeValue("gray.600", "gray.400");
+  const dateColor = useColorModeValue("gray.500", "gray.500");
+  const aiBorderColor = useColorModeValue("gray.200", "gray.700");
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <ModalOverlay />
@@ -135,14 +143,14 @@ export function DeckDetailsModal({
               />
             ) : (
               <Box
-                bg="gray.100"
+                bg={noImageBg}
                 borderRadius="md"
                 h="200px"
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
               >
-                <Text color="gray.500">
+                <Text color={noImageColor}>
                   No Image Available
                 </Text>
               </Box>
@@ -150,15 +158,15 @@ export function DeckDetailsModal({
 
             {/* Deck Stats */}
             <SimpleGrid columns={{ base: 1, sm: 3 }} spacing={4}>
-              <Stat bg="gray.50" p={4} borderRadius="md">
+              <Stat bg={statBg} p={4} borderRadius="md">
                 <StatLabel>Cards</StatLabel>
                 <StatNumber>{deck.cardCount ?? "N/A"}</StatNumber>
               </Stat>
-              <Stat bg="gray.50" p={4} borderRadius="md">
+              <Stat bg={statBg} p={4} borderRadius="md">
                 <StatLabel>Subscribers</StatLabel>
                 <StatNumber>{deck.subscriberCount ?? "N/A"}</StatNumber>
               </Stat>
-              <Stat bg="gray.50" p={4} borderRadius="md">
+              <Stat bg={statBg} p={4} borderRadius="md">
                 <StatLabel>Difficulty</StatLabel>
                 <StatNumber>
                   {deck.averageDifficulty ? deck.averageDifficulty.toFixed(1) : "N/A"}
@@ -171,7 +179,7 @@ export function DeckDetailsModal({
               <Text fontSize="md" fontWeight="semibold">
                 Description
               </Text>
-              <Text color="gray.600" fontSize="sm">{deck.description || "No description available"}</Text>
+              <Text color={descColor} fontSize="sm">{deck.description || "No description available"}</Text>
             </VStack>
 
             {/* Tags */}
@@ -195,7 +203,7 @@ export function DeckDetailsModal({
             )}
 
             {/* Created Date */}
-            <Text fontSize="sm" color="gray.500">
+            <Text fontSize="sm" color={dateColor}>
               Created: {new Date(deck.createdDate).toLocaleString()}
             </Text>
 
@@ -211,7 +219,7 @@ export function DeckDetailsModal({
 
             {/* AI Features Section */}
             {showAIFeatures && (
-              <VStack spacing={4} align="stretch" borderWidth="1px" borderColor="gray.200" p={4} borderRadius="md">
+              <VStack spacing={4} align="stretch" borderWidth="1px" borderColor={aiBorderColor} p={4} borderRadius="md">
                 <VStack align="start">
                   <Text fontSize="md" fontWeight="semibold">
                     Prompt Details

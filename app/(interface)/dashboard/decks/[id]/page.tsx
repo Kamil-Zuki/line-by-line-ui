@@ -16,6 +16,7 @@ import {
   CardBody,
   Spinner,
   Flex,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { useAuth } from "@/app/hooks/useAuth";
 import { DeckResponse } from "@/app/interfaces";
@@ -80,6 +81,11 @@ export default function DeckDetailPage() {
     router.push(`/dashboard/decks/${deckId}/learn`);
   };
 
+  const cardBg = useColorModeValue("gray.50", "gray.700");
+  const cardBorderColor = useColorModeValue("gray.200", "gray.600");
+  const textColor = useColorModeValue("gray.600", "gray.400");
+  const hintColor = useColorModeValue("gray.500", "gray.500");
+
   if (authLoading || !isAuthenticated) return null;
   if (loading) {
     return (
@@ -106,7 +112,7 @@ export default function DeckDetailPage() {
           <CardBody p={6}>
             <VStack spacing={4} align="stretch">
               <ChakraText>{deck.description || "No description"}</ChakraText>
-              <ChakraText fontSize="sm" color="gray.600">
+              <ChakraText fontSize="sm" color={textColor}>
                 Cards: {deck.cardCount} • Created:{" "}
                 {new Date(deck.createdDate).toLocaleDateString()}
                 {deck.isSubscribed ? " • Subscribed" : ""}
@@ -130,21 +136,21 @@ export default function DeckDetailPage() {
               <Heading size="md">Cards</Heading>
               {cards.length > 0 ? (
                 cards.map((card) => (
-                  <Box key={card.id} p={4} bg="gray.50" borderRadius="md" borderWidth="1px">
+                  <Box key={card.id} p={4} bg={cardBg} borderRadius="md" borderWidth="1px" borderColor={cardBorderColor}>
                     <ChakraText fontWeight="bold">{card.front}</ChakraText>
-                    <ChakraText color="gray.600">{card.back}</ChakraText>
+                    <ChakraText color={textColor}>{card.back}</ChakraText>
                     {card.hint && (
-                      <ChakraText fontSize="sm" color="gray.500">
+                      <ChakraText fontSize="sm" color={hintColor}>
                         Hint: {card.hint}
                       </ChakraText>
                     )}
-                    <ChakraText fontSize="sm" color="gray.500">
+                    <ChakraText fontSize="sm" color={hintColor}>
                       Skill: {card.skill}
                     </ChakraText>
                   </Box>
                 ))
               ) : (
-                <ChakraText color="gray.600">No cards in this deck yet.</ChakraText>
+                <ChakraText color={textColor}>No cards in this deck yet.</ChakraText>
               )}
             </VStack>
           </CardBody>

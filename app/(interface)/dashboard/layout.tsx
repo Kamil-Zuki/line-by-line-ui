@@ -1,7 +1,7 @@
 "use client";
 
 import SideBar from "@/app/components/sideBar";
-import { Box, Flex } from "@chakra-ui/react";
+import { Box, Flex, useColorModeValue } from "@chakra-ui/react";
 import { ReactNode } from "react";
 import { FaCog, FaHome, FaLayerGroup, FaStickyNote } from "react-icons/fa";
 
@@ -13,8 +13,10 @@ const sidebarButtons = [
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
+  const bgColor = useColorModeValue("gray.50", "gray.900");
+
   return (
-    <Flex minH="100vh" bg="gray.50">
+    <Flex minH="100vh" bg={bgColor}>
       <SideBar buttonData={sidebarButtons} />
       <Box
         flex="1"

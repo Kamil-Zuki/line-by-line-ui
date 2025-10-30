@@ -12,11 +12,17 @@ import {
   Switch,
   Button,
   useToast,
+  useColorModeValue,
 } from "@chakra-ui/react";
 
 const NotificationSettings = () => {
   const [emailNotifications, setEmailNotifications] = useState(true);
-  const toast = useToast(); // Use the useToast hook directly
+  const toast = useToast();
+
+  const cardBg = useColorModeValue("white", "gray.800");
+  const textColor = useColorModeValue("gray.800", "white");
+  const labelColor = useColorModeValue("gray.600", "gray.400");
+  const cardBorder = useColorModeValue("gray.200", "gray.700");
 
   const showToast = (title: string, description: string, status: "success") => {
     toast({
@@ -59,45 +65,32 @@ const NotificationSettings = () => {
         fontSize="20px"
         fontWeight="bold"
         mb={6}
-        color="white"
-        textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(66, 153, 225, 0.3)"
+        color={textColor}
       >
         Notifications
       </ChakraText>
       <Card
-        bg="gray.700"
-        color="white"
-        border="2px solid"
-        borderColor="blue.900"
-        borderRadius="md"
-        boxShadow="2px 2px 4px rgba(0, 0, 0, 0.5)"
-        _hover={{ boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)" }}
-        transition="all 0.2s"
+        bg={cardBg}
+        color={textColor}
+        border="1px solid"
+        borderColor={cardBorder}
+        borderRadius="lg"
+        boxShadow="sm"
       >
         <CardBody>
           <VStack align="stretch" spacing={4}>
             <FormControl display="flex" alignItems="center">
-              <FormLabel fontSize="sm" color="gray.400" textTransform="uppercase" mb={0}>
+              <FormLabel fontSize="sm" color={labelColor} textTransform="uppercase" mb={0}>
                 Email Notifications
               </FormLabel>
               <Switch
                 isChecked={emailNotifications}
                 onChange={(e) => setEmailNotifications(e.target.checked)}
-                colorScheme="red"
+                colorScheme="brand"
               />
             </FormControl>
             <Button
-              bg="red.800"
-              border="2px solid"
-              borderColor="blue.900"
-              color="white"
-              _hover={{
-                bg: "red.700",
-                boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
-                transform: "scale(1.02)",
-              }}
-              _active={{ bg: "red.900" }}
-              transition="all 0.2s"
+              colorScheme="brand"
               alignSelf="flex-end"
               onClick={handleSave}
             >

@@ -1,16 +1,23 @@
-import { extendTheme } from "@chakra-ui/react";
+import { extendTheme, type ThemeConfig } from "@chakra-ui/react";
 
-// Clean, minimalistic theme
+// Theme configuration
+const config: ThemeConfig = {
+  initialColorMode: "light",
+  useSystemColorMode: false,
+};
+
+// Clean, minimalistic theme with dark mode support
 const theme = extendTheme({
+  config,
   styles: {
-    global: {
+    global: (props: any) => ({
       body: {
-        bg: "gray.50",
-        color: "gray.800",
+        bg: props.colorMode === "dark" ? "gray.900" : "gray.50",
+        color: props.colorMode === "dark" ? "gray.100" : "gray.800",
         fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
         lineHeight: "tall",
       },
-    },
+    }),
   },
   colors: {
     brand: {
@@ -26,10 +33,6 @@ const theme = extendTheme({
       900: "#002766",
     },
   },
-  config: {
-    initialColorMode: "light",
-    useSystemColorMode: false,
-  },
   components: {
     Button: {
       defaultProps: {
@@ -44,16 +47,38 @@ const theme = extendTheme({
       defaultProps: {
         focusBorderColor: "brand.500",
       },
+      variants: {
+        outline: (props: any) => ({
+          field: {
+            bg: props.colorMode === "dark" ? "gray.800" : "white",
+            borderColor: props.colorMode === "dark" ? "gray.600" : "gray.300",
+            _hover: {
+              borderColor: props.colorMode === "dark" ? "gray.500" : "gray.400",
+            },
+          },
+        }),
+      },
     },
     Card: {
-      baseStyle: {
+      baseStyle: (props: any) => ({
         container: {
-          bg: "white",
-          boxShadow: "sm",
+          bg: props.colorMode === "dark" ? "gray.800" : "white",
+          boxShadow: props.colorMode === "dark" ? "dark-lg" : "sm",
           borderRadius: "lg",
           borderWidth: "1px",
-          borderColor: "gray.200",
+          borderColor: props.colorMode === "dark" ? "gray.700" : "gray.200",
         },
+      }),
+    },
+    Box: {
+      variants: {
+        card: (props: any) => ({
+          bg: props.colorMode === "dark" ? "gray.800" : "white",
+          borderRadius: "lg",
+          borderWidth: "1px",
+          borderColor: props.colorMode === "dark" ? "gray.700" : "gray.200",
+          boxShadow: props.colorMode === "dark" ? "dark-lg" : "sm",
+        }),
       },
     },
   },

@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { Flex, Box } from "@chakra-ui/react";
+import { Flex, Box, useColorModeValue } from "@chakra-ui/react";
 import SettingsSidebar from "./SettingsSidebar";
 import SettingsHeader from "./SettingsHeader";
 
@@ -20,10 +20,12 @@ const SettingsLayout = ({
   onTabChange,
   onLogout,
 }: SettingsLayoutProps) => {
+  const bgColor = useColorModeValue("gray.50", "gray.900");
+
   return (
     <Flex
       minH="100vh"
-      bg="gray.50"
+      bg={bgColor}
       position="relative"
     >
       {!isMobile && (

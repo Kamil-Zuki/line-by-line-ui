@@ -1,4 +1,6 @@
 // app/components/ui/CardReview.tsx
+"use client";
+
 import {
   Box,
   Button,
@@ -7,6 +9,7 @@ import {
   HStack,
   VStack,
   Spinner,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { CardDto } from "@/app/interfaces";
 import { useState } from "react";
@@ -25,6 +28,14 @@ export function CardReview({
   const [isFlipped, setIsFlipped] = useState(false);
   const [isLoadingImage, setIsLoadingImage] = useState(!!card.mediaUrl);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Theme-aware colors
+  const bgColor = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("blue.200", "blue.900");
+  const textColor = useColorModeValue("gray.800", "white");
+  const hintColor = useColorModeValue("gray.600", "gray.300");
+  const flipBtnBg = useColorModeValue("gray.100", "gray.700");
+  const flipBtnHoverBg = useColorModeValue("gray.200", "gray.600");
 
   // Handle flip with keyboard accessibility
   const handleFlip = () => setIsFlipped(!isFlipped);
@@ -49,9 +60,9 @@ export function CardReview({
       p={4}
       borderWidth="1px"
       borderRadius="md"
-      bg="gray.800"
-      borderColor="blue.900"
-      boxShadow="0 0 5px rgba(66, 153, 225, 0.3)"
+      bg={bgColor}
+      borderColor={borderColor}
+      boxShadow="lg"
       w="100%"
       maxW="600px"
       mx="auto"
@@ -61,14 +72,13 @@ export function CardReview({
       <Text
         fontWeight="bold"
         fontSize="lg"
-        color="white"
+        color={textColor}
         textAlign="center"
-        textShadow="1px 1px 2px rgba(0, 0, 0, 0.8)"
       >
         {isFlipped ? card.back : card.front}
       </Text>
       {card.hint && !isFlipped && (
-        <Text color="gray.300" fontSize="sm" textAlign="center">
+        <Text color={hintColor} fontSize="sm" textAlign="center">
           Hint: {card.hint}
         </Text>
       )}
@@ -99,10 +109,8 @@ export function CardReview({
       <Button
         onClick={handleFlip}
         aria-label={`Flip card to ${isFlipped ? "front" : "back"}`}
-        bg="gray.700"
-        color="white"
-        _hover={{ bg: "gray.600", transform: "scale(1.02)" }}
-        _active={{ bg: "gray.800" }}
+        bg={flipBtnBg}
+        _hover={{ bg: flipBtnHoverBg, transform: "scale(1.02)" }}
         transition="all 0.2s"
         w="full"
       >

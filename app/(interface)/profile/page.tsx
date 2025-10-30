@@ -9,6 +9,7 @@ import AccountProfile from "@/app/components/settings/AccountProfile";
 import DangerZone from "@/app/components/settings/DangerZone";
 import PrivacySettings from "@/app/components/settings/PrivacySettings";
 import NotificationSettings from "@/app/components/settings/NotificationSettings";
+import AppearanceSettings from "@/app/components/settings/AppearanceSettings";
 
 const SettingsPage = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -72,6 +73,7 @@ const SettingsPage = () => {
       {activeTab === "profile" && (
         <>
           <AccountProfile user={user} />
+          <AppearanceSettings />
           <DangerZone onDeleteAccount={handleDeleteAccount} />
         </>
       )}

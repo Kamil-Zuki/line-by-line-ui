@@ -1,4 +1,6 @@
-import { Box, Heading, Text, VStack, Badge, HStack } from "@chakra-ui/react";
+"use client";
+
+import { Box, Heading, Text, VStack, Badge, HStack, useColorModeValue } from "@chakra-ui/react";
 import { DeckResponse } from "@/app/interfaces";
 
 interface DeckCardProps {
@@ -12,22 +14,28 @@ export function DeckCard({
   onClick,
   "aria-label": ariaLabel,
 }: DeckCardProps) {
+  const bgColor = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const headingColor = useColorModeValue("gray.800", "gray.100");
+  const textColor = useColorModeValue("gray.600", "gray.400");
+  const hoverBorderColor = "brand.500";
+
   return (
     <Box
       as="button"
       onClick={onClick}
       aria-label={ariaLabel}
-      bg="white"
+      bg={bgColor}
       p={5}
       borderWidth="1px"
-      borderColor="gray.200"
+      borderColor={borderColor}
       boxShadow="sm"
       width={{ base: "100%", sm: "300px" }}
       minHeight="180px"
       borderRadius="lg"
       _hover={{
         boxShadow: "md",
-        borderColor: "brand.500",
+        borderColor: hoverBorderColor,
         transform: "translateY(-2px)",
       }}
       _focus={{
@@ -45,14 +53,14 @@ export function DeckCard({
         <Heading
           as="h3"
           size="md"
-          color="gray.800"
+          color={headingColor}
           noOfLines={2}
         >
           {deck.title}
         </Heading>
         <Text
           fontSize="sm"
-          color="gray.600"
+          color={textColor}
           noOfLines={2}
           flex="1"
         >

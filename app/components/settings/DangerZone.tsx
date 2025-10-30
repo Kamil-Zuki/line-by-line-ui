@@ -1,56 +1,47 @@
 "use client";
 
-import { Box, Text as ChakraText, Card, CardBody, HStack, Button } from "@chakra-ui/react";
+import { Box, Text as ChakraText, Card, CardBody, HStack, Button, useColorModeValue } from "@chakra-ui/react";
 
 interface DangerZoneProps {
   onDeleteAccount?: () => void;
 }
 
 const DangerZone = ({ onDeleteAccount }: DangerZoneProps) => {
+  const cardBg = useColorModeValue("white", "gray.800");
+  const textColor = useColorModeValue("gray.800", "white");
+  const descColor = useColorModeValue("gray.600", "gray.400");
+  const dangerBorder = useColorModeValue("red.200", "red.900");
+
   return (
     <Box mt={6}>
       <ChakraText
-        fontSize="20px"
-        fontWeight="bold"
+        fontSize="xl"
+        fontWeight="semibold"
         mb={4}
-        color="white"
-        textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(66, 153, 225, 0.3)"
+        color={textColor}
       >
         Danger Zone
       </ChakraText>
       <Card
-        bg="gray.700"
-        color="white"
-        border="2px solid"
-        borderColor="red.600"
-        borderRadius="md"
-        boxShadow="2px 2px 4px rgba(0, 0, 0, 0.5)"
-        _hover={{ boxShadow: "0 0 5px rgba(229, 62, 62, 0.3)" }}
-        transition="all 0.2s"
+        bg={cardBg}
+        border="1px solid"
+        borderColor={dangerBorder}
+        borderRadius="lg"
+        boxShadow="sm"
       >
         <CardBody>
-          <HStack justify="space-between">
+          <HStack justify="space-between" align="center">
             <Box>
-              <ChakraText fontWeight="bold" color="white" textShadow="1px 1px 2px rgba(0, 0, 0, 0.8)">
+              <ChakraText fontWeight="semibold" color={textColor}>
                 Delete Account
               </ChakraText>
-              <ChakraText fontSize="sm" color="gray.300">
+              <ChakraText fontSize="sm" color={descColor}>
                 Permanently delete your account and all data
               </ChakraText>
             </Box>
             <Button
-              bg="red.800"
-              border="2px solid"
-              borderColor="blue.900"
-              color="white"
+              colorScheme="red"
               size="sm"
-              _hover={{
-                bg: "red.700",
-                boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
-                transform: "scale(1.02)",
-              }}
-              _active={{ bg: "red.900" }}
-              transition="all 0.2s"
               onClick={onDeleteAccount}
             >
               Delete

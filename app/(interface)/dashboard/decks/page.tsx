@@ -13,6 +13,7 @@ import {
   StatLabel,
   StatNumber,
   StatGroup,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
@@ -192,6 +193,9 @@ export default function MyDecksPage() {
     router.push("/dashboard/decks/new");
   };
 
+  const statsBg = useColorModeValue("white", "gray.800");
+  const statsBorderColor = useColorModeValue("gray.200", "gray.700");
+
   return (
     <Box>
       <Heading as="h1" size="xl" mb={6}>
@@ -225,13 +229,13 @@ export default function MyDecksPage() {
 
       {/* Informational Panel */}
       <Box
-        bg="white"
+        bg={statsBg}
         borderRadius="lg"
         p={6}
         mb={6}
         boxShadow="sm"
         borderWidth="1px"
-        borderColor="gray.200"
+        borderColor={statsBorderColor}
       >
         <StatGroup>
           <Stat>

@@ -16,6 +16,7 @@ import {
   Container,
   Card,
   CardBody,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { useAuth } from "@/app/hooks/useAuth";
 import Link from "next/link";
@@ -28,6 +29,9 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const { register } = useAuth();
   const toast = useToast();
+
+  const bgColor = useColorModeValue("gray.50", "gray.900");
+  const textColor = useColorModeValue("gray.600", "gray.400");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +80,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <Box minH="100vh" display="flex" alignItems="center" justifyContent="center" bg="gray.50">
+    <Box minH="100vh" display="flex" alignItems="center" justifyContent="center" bg={bgColor}>
       <Container maxW="md">
         <Card>
           <CardBody p={8}>
@@ -121,7 +125,7 @@ export default function RegisterPage() {
               >
                 Register
               </Button>
-              <Text fontSize="sm" color="gray.600" textAlign="center">
+              <Text fontSize="sm" color={textColor} textAlign="center">
                 Already have an account?{" "}
                 <ChakraLink
                   as={Link}

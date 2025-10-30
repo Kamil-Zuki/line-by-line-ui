@@ -9,6 +9,7 @@ import {
   Icon,
   useDisclosure,
   IconButton,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useRouter } from "next/navigation";
@@ -70,6 +71,9 @@ export default function SideBar({ buttonData }: SideBarProps) {
 
   const profileActions = isAuthenticated ? actions : [];
 
+  const sidebarBg = useColorModeValue("white", "gray.800");
+  const sidebarBorderColor = useColorModeValue("gray.200", "gray.700");
+
   return (
     <>
       {/* Mobile Toggle Button */}
@@ -90,9 +94,9 @@ export default function SideBar({ buttonData }: SideBarProps) {
         as="nav"
         w={{ base: isOpen ? "250px" : "0", md: "250px" }}
         h="100vh"
-        bg="white"
+        bg={sidebarBg}
         borderRight="1px solid"
-        borderColor="gray.200"
+        borderColor={sidebarBorderColor}
         p={{ base: isOpen ? 4 : 0, md: 4 }}
         position="fixed"
         top={0}

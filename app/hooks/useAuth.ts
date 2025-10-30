@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 interface Tokens {
   refreshToken?: string;
@@ -21,6 +21,7 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
+  const pathname = usePathname();
 
   const getCookie = (name: string): string | undefined => {
     const cookieString = document.cookie;
@@ -36,6 +37,15 @@ export function useAuth() {
   };
 
   useEffect(() => {
+    const publicRoutes = new Set(["/login", "/register"]);
+    if (publicRoutes.has(pathname || "")) {
+      // Skip auth check on public routes
+      setIsAuthenticated(false);
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
     const checkAuth = async () => {
       console.log("Starting checkAuth");
       setLoading(true);
@@ -86,13 +96,13 @@ export function useAuth() {
     };
 
     checkAuth();
-  }, []);
+  }, [pathname]);
 
   const refreshToken = async (): Promise<boolean> => {
     const refresh = tokens.refreshToken || getCookie("refreshToken");
     if (!refresh) {
       console.log("No refresh token available, cannot refresh");
-      logout();
+      // Do not force logout here; let caller handle unauthenticated state
       return false;
     }
 
@@ -115,7 +125,6 @@ export function useAuth() {
 
       if (!res.ok) {
         console.log(`Refresh failed with status: ${res.status}`);
-        logout();
         return false;
       }
 
@@ -145,7 +154,6 @@ export function useAuth() {
       if (error.name === "AbortError") {
         console.error("Request to /api/auth/refresh-token timed out");
       }
-      logout();
       return false;
     } finally {
       console.log("Setting loading to false in refreshToken");
@@ -207,15 +215,32 @@ export function useAuth() {
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        return {
-          success: false,
-          error: errorData.message || "Registration failed",
-        };
+        const raw = await res.text();
+        let errorMessage = "Registration failed";
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw);
+            errorMessage = parsed.message || raw;
+          } catch {
+            errorMessage = raw;
+          }
+        } else {
+          errorMessage = `Registration failed (status ${res.status})`;
+        }
+        return { success: false, error: errorMessage };
       }
 
-      const { message } = await res.json();
-      return { success: true, message };
+      const okRaw = await res.text();
+      let successMessage = "Registration successful";
+      if (okRaw) {
+        try {
+          const parsedOk = JSON.parse(okRaw);
+          successMessage = parsedOk.message || successMessage;
+        } catch {
+          successMessage = okRaw || successMessage;
+        }
+      }
+      return { success: true, message: successMessage };
     } catch (error: any) {
       console.error("Registration failed:", error.message);
       return { success: false, error: error.message };

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   Box,
   Button,
@@ -29,7 +28,6 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const { register } = useAuth();
   const toast = useToast();
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +50,7 @@ export default function RegisterPage() {
           duration: 3000,
           isClosable: true,
         });
-        router.push("/login");
+        // No redirect after successful registration
       } else {
         setError(result.error || "Registration failed");
         toast({

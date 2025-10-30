@@ -23,33 +23,8 @@ const SettingsLayout = ({
   return (
     <Flex
       minH="100vh"
-      bg="gray.800"
-      color="white"
+      bg="gray.50"
       position="relative"
-      _before={{
-        content: '""',
-        position: "absolute",
-        top: "0",
-        left: "0",
-        right: "0",
-        bottom: "0",
-        background:
-          "linear-gradient(45deg, rgba(255, 255, 255, 0.05), transparent)",
-        opacity: 0.3,
-        zIndex: 1,
-      }}
-      _after={{
-        content: '""',
-        position: "absolute",
-        top: "0",
-        left: "50%",
-        transform: "translateX(-50%)",
-        width: "60px",
-        height: "2px",
-        bg: "white",
-        boxShadow: "0 0 3px rgba(255, 255, 255, 0.3)",
-        zIndex: 2,
-      }}
     >
       {!isMobile && (
         <SettingsSidebar

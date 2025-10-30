@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="128" viewBox="0 0 512 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- LbL monogram with edging (stroke) -->
+  <defs>
+    <linearGradient id="lbl-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2B6CB0" />
+      <stop offset="100%" stop-color="#63B3ED" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background subtle accent circle -->
+  <circle cx="64" cy="64" r="44" fill="#EDF2F7" />
+
+  <!-- LbL letters with stroke edging -->
+  <g font-family="Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-weight="800" font-size="72"
+     paint-order="stroke fill" stroke="#1A202C" stroke-width="3" stroke-linejoin="round">
+    <text x="36" y="86" fill="url(#lbl-grad)">L</text>
+    <text x="78" y="86" fill="#1A202C">b</text>
+    <text x="122" y="86" fill="url(#lbl-grad)">L</text>
+  </g>
+
+  <!-- Word tagline (optional) -->
+  <g font-family="Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-weight="600" font-size="20" fill="#4A5568">
+    <text x="190" y="82">LineByLine</text>
+  </g>
+</svg>
+

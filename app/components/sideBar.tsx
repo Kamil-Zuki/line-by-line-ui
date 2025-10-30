@@ -16,6 +16,7 @@ import { FaSignInAlt, FaBars, FaCog, FaBook, FaHome, FaTimes } from "react-icons
 import ProfileMenu from "./ProfileMenu";
 import { IconType } from "react-icons";
 import React from "react";
+import Logo from "@/app/components/Logo";
 
 interface SideBarButtonData {
   icon: IconType;
@@ -105,13 +106,6 @@ export default function SideBar({ buttonData }: SideBarProps) {
         <VStack align="stretch" spacing={4}>
           {/* Logo/Title */}
           <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-            <Text
-              fontSize="2xl"
-              fontWeight="bold"
-              color="brand.600"
-            >
-              LineByLine
-            </Text>
             <IconButton
               aria-label="Close menu"
               icon={<FaTimes />}
@@ -120,6 +114,7 @@ export default function SideBar({ buttonData }: SideBarProps) {
               variant="ghost"
               onClick={onClose}
             />
+            <Logo size={28} />
           </Box>
 
           {/* Profile Menu or Login Button */}

@@ -24,6 +24,7 @@ import {
   Tr,
   Th,
   Td,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
@@ -37,6 +38,7 @@ import {
 } from "@/app/interfaces";
 import { CardReview } from "@/app/components/ui/CardReview";
 import { fetchApi } from "@/app/lib/api";
+
 export default function LearnPage({
   params,
 }: {
@@ -62,6 +64,16 @@ export default function LearnPage({
   const [hasCompletedCards, setHasCompletedCards] = useState(false);
   const [stats, setStats] = useState<CardStatsDto | null>(null);
 
+  // Theme colors
+  const bgColor = useColorModeValue("gray.50", "gray.900");
+  const headingColor = useColorModeValue("gray.800", "white");
+  const textColor = useColorModeValue("gray.600", "gray.300");
+  const spinnerColor = useColorModeValue("brand.500", "brand.400");
+  const progressBg = useColorModeValue("gray.200", "gray.600");
+  const modalBg = useColorModeValue("white", "gray.800");
+  const modalBorder = useColorModeValue("gray.200", "gray.700");
+  const tableHeaderColor = useColorModeValue("gray.600", "gray.300");
+
 
   // Resolve deckId from params
   useEffect(() => {
@@ -79,34 +91,12 @@ export default function LearnPage({
     status: "success" | "error"
   ) => {
     toast({
+      title,
+      description,
+      status,
       position: "top",
       duration: 3000,
       isClosable: true,
-      render: ({ onClose }) => (
-        <Box
-          bg="gray.800"
-          border="2px solid"
-          borderColor="blue.900"
-          color="white"
-          p={4}
-          borderRadius="md"
-          boxShadow="0 0 5px rgba(66, 153, 225, 0.3)"
-          display="flex"
-          alignItems="center"
-          justifyContent="space-between"
-          _hover={{ bg: "gray.700" }}
-        >
-          <VStack align="start" spacing={1}>
-            <Heading as="h3" size="sm" color="white">
-              {title}
-            </Heading>
-            <ChakraText fontSize="sm">{description}</ChakraText>
-          </VStack>
-          <Button size="sm" variant="ghost" color="white" onClick={onClose}>
-            Close
-          </Button>
-        </Box>
-      ),
     });
   };
 
@@ -279,14 +269,9 @@ export default function LearnPage({
   // Authentication and loading states
   if (authLoading || isLoading || !deckId) {
     return (
-      <Box
-        minH="100vh"
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-      >
-        <Spinner size="xl" color="white" thickness="3px" speed="0.65s" />
-      </Box>
+      <Flex minH="100vh" justify="center" align="center" bg={bgColor}>
+        <Spinner size="xl" color={spinnerColor} thickness="3px" speed="0.65s" />
+      </Flex>
     );
   }
 
@@ -299,19 +284,12 @@ export default function LearnPage({
   // Initial state: Start session or no cards
   if (!sessionId && !sessionDetails) {
     return (
-      <Box
-        minH="100vh"
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        p={4}
-      >
+      <Flex minH="100vh" justify="center" align="center" p={4} bg={bgColor}>
         <VStack spacing={4} align="stretch" maxW="800px" w="100%">
           <Heading
             as="h1"
             size={{ base: "lg", md: "xl" }}
-            color="white"
-            textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(66, 153, 225, 0.3)"
+            color={headingColor}
             textAlign="center"
           >
             Learn Deck
@@ -321,7 +299,7 @@ export default function LearnPage({
             userSettings.newCardsCompletedToday >=
               userSettings.dailyNewCardLimit) ? (
             <>
-              <ChakraText color="gray.300" mb={4} textAlign="center">
+              <ChakraText color={textColor} mb={4} textAlign="center">
                 {userSettings &&
                 userSettings.newCardsCompletedToday >=
                   userSettings.dailyNewCardLimit
@@ -329,17 +307,7 @@ export default function LearnPage({
                   : "No due cards for this deck."}
               </ChakraText>
               <Button
-                bg="red.800"
-                border="2px solid"
-                borderColor="blue.900"
-                color="white"
-                _hover={{
-                  bg: "red.700",
-                  boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
-                  transform: "scale(1.02)",
-                }}
-                _active={{ bg: "red.900" }}
-                transition="all 0.2s"
+                colorScheme="brand"
                 onClick={() => router.push(`/dashboard/decks/${deckId}`)}
               >
                 Back to Deck
@@ -347,17 +315,8 @@ export default function LearnPage({
             </>
           ) : hasDueCards === true ? (
             <Button
-              bg="red.800"
-              border="2px solid"
-              borderColor="blue.900"
-              color="white"
-              _hover={{
-                bg: "red.700",
-                boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
-                transform: "scale(1.02)",
-              }}
-              _active={{ bg: "red.900" }}
-              transition="all 0.2s"
+              colorScheme="brand"
+              size="lg"
               isLoading={isStartingSession}
               onClick={startSession}
             >
@@ -365,7 +324,7 @@ export default function LearnPage({
             </Button>
           ) : null}
         </VStack>
-      </Box>
+      </Flex>
     );
   }
 
@@ -380,40 +339,35 @@ export default function LearnPage({
     const progress = totalCards > 0 ? (totalReviewed / totalCards) * 100 : 0;
 
     return (
-      <Box
-        minH="100vh"
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        p={4}
-      >
-        <VStack spacing={4} align="center" maxW="800px" w="100%">
-          <Flex justify="space-between" align="center">
+      <Flex minH="100vh" justify="center" align="center" p={4} bg={bgColor}>
+        <VStack spacing={6} align="center" maxW="800px" w="100%">
+          <VStack spacing={2} w="100%">
             <Heading
               as="h1"
               size={{ base: "lg", md: "xl" }}
-              color="white"
-              textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(66, 153, 225, 0.3)"
+              color={headingColor}
+              textAlign="center"
             >
               {hasCompletedCards
                 ? "All Cards Reviewed!"
                 : `Card ${cardHistory.length} of ${totalCards || "Loading..."}`}
             </Heading>
-          </Flex>
-          {stats && (
-            <ChakraText color="gray.300" fontSize="md">
-              New: {stats.newCount} | Review: {stats.reviewCount} | Learning:{" "}
-              {stats.learningCount}
-            </ChakraText>
-          )}
+            {stats && (
+              <ChakraText color={textColor} fontSize="md">
+                New: {stats.newCount} | Review: {stats.reviewCount} | Learning:{" "}
+                {stats.learningCount}
+              </ChakraText>
+            )}
+          </VStack>
           {!hasCompletedCards && currentCard && (
             <>
               <Progress
                 value={progress}
                 size="sm"
-                colorScheme="blue"
-                bg="gray.600"
+                colorScheme="brand"
+                bg={progressBg}
                 borderRadius="md"
+                w="100%"
               />
               <CardReview
                 key={currentCard.id}
@@ -425,25 +379,25 @@ export default function LearnPage({
           )}
           {hasCompletedCards && (
             <VStack spacing={4}>
-              <ChakraText color="gray.300" fontSize="lg" textAlign="center">
-                You’ve reviewed all cards in this session!
+              <ChakraText color={textColor} fontSize="lg" textAlign="center">
+                You've reviewed all cards in this session!
               </ChakraText>
+              <Button
+                colorScheme="brand"
+                onClick={() => router.push(`/dashboard/decks/${deckId}`)}
+              >
+                Back to Deck
+              </Button>
             </VStack>
           )}
         </VStack>
-      </Box>
+      </Flex>
     );
   }
 
   // Session ended: Show summary
   return (
-    <Box
-      minH="100vh"
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      p={4}
-    >
+    <Flex minH="100vh" justify="center" align="center" p={4} bg={bgColor}>
       <Modal
         isOpen={!!sessionDetails}
         onClose={() => router.push(`/dashboard/decks/${deckId}`)}
@@ -451,20 +405,11 @@ export default function LearnPage({
         size={{ base: "full", md: "xl" }}
       >
         <ModalOverlay />
-        <ModalContent
-          bg="gray.700"
-          border="2px solid"
-          borderColor="blue.900"
-          color="white"
-          borderRadius="md"
-        >
-          <ModalHeader
-            textShadow="1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(66, 153, 225, 0.3)"
-            textAlign="center"
-          >
+        <ModalContent bg={modalBg} borderColor={modalBorder}>
+          <ModalHeader textAlign="center">
             Session Summary
           </ModalHeader>
-          <ModalCloseButton color="white" />
+          <ModalCloseButton />
           <ModalBody>
             <VStack spacing={4} align="stretch">
               <ChakraText fontSize="lg">
@@ -483,13 +428,13 @@ export default function LearnPage({
               </ChakraText>
               {sessionDetails?.reviewedCards?.length ? (
                 <Box overflowX="auto">
-                  <Table variant="simple" colorScheme="gray">
+                  <Table variant="simple" size="sm">
                     <Thead>
                       <Tr>
-                        <Th color="gray.300">Front</Th>
-                        <Th color="gray.300">Back</Th>
-                        <Th color="gray.300">Quality</Th>
-                        <Th color="gray.300">Reviewed At</Th>
+                        <Th color={tableHeaderColor}>Front</Th>
+                        <Th color={tableHeaderColor}>Back</Th>
+                        <Th color={tableHeaderColor}>Quality</Th>
+                        <Th color={tableHeaderColor}>Reviewed At</Th>
                       </Tr>
                     </Thead>
                     <Tbody>
@@ -511,17 +456,7 @@ export default function LearnPage({
           </ModalBody>
           <ModalFooter>
             <Button
-              bg="red.800"
-              border="2px solid"
-              borderColor="blue.900"
-              color="white"
-              _hover={{
-                bg: "red.700",
-                boxShadow: "0 0 5px rgba(66, 153, 225, 0.3)",
-                transform: "scale(1.02)",
-              }}
-              _active={{ bg: "red.900" }}
-              transition="all 0.2s"
+              colorScheme="brand"
               onClick={() => router.push(`/dashboard/decks/${deckId}`)}
             >
               Back to Deck
@@ -529,6 +464,6 @@ export default function LearnPage({
           </ModalFooter>
         </ModalContent>
       </Modal>
-    </Box>
+    </Flex>
   );
 }

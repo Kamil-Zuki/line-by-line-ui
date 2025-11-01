@@ -54,12 +54,18 @@ export default function MyDecksPage() {
   const [filter, setFilter] = useState<FilterOption>("all");
   const [sortOption, setSortOption] = useState<SortOption>("newest");
   const [selectedDeck, setSelectedDeck] = useState<DeckResponse | null>(null);
-  const [userSettings, setUserSettings] = useState<UserSettingsDto | null>(null);
+  const [userSettings, setUserSettings] = useState<UserSettingsDto | null>(
+    null
+  );
   const [decksWithDueCards, setDecksWithDueCards] = useState<number>(0);
   const router = useRouter();
   const toast = useToast();
 
-  const showToast = (title: string, description: string, status: "success" | "error") => {
+  const showToast = (
+    title: string,
+    description: string,
+    status: "success" | "error"
+  ) => {
     toast({
       title,
       description,
@@ -77,7 +83,9 @@ export default function MyDecksPage() {
       const myDecks: DeckResponse[] = await fetchApi("/deck/my-decks");
       setDecks(myDecks);
     } catch (error: any) {
-      console.error("Error fetching decks:", error.message, { status: error.status });
+      console.error("Error fetching decks:", error.message, {
+        status: error.status,
+      });
       showToast("Error", "Failed to load decks. Please try again.", "error");
       router.push("/dashboard");
     } finally {
@@ -91,7 +99,9 @@ export default function MyDecksPage() {
       const settings = await fetchApi<UserSettingsDto>("/settings");
       setUserSettings(settings);
     } catch (error: any) {
-      console.error("Error fetching user settings:", error.message, { status: error.status });
+      console.error("Error fetching user settings:", error.message, {
+        status: error.status,
+      });
       showToast("Error", "Failed to load user settings.", "error");
     }
   }, []);
@@ -101,14 +111,18 @@ export default function MyDecksPage() {
     try {
       let count = 0;
       for (const deck of decks) {
-        const dueCards: CardDto[] = await fetchApi<CardDto[]>(`/card/due?deckId=${deck.id}&mode=learn`);
-        if (dueCards.length > 0) {
+        const response = await fetchApi<{ hasDueCards: boolean }>(
+          `/card/due?deckId=${deck.id}&mode=learn`
+        );
+        if (response.hasDueCards) {
           count++;
         }
       }
       setDecksWithDueCards(count);
     } catch (error: any) {
-      console.error("Error fetching due cards:", error.message, { status: error.status });
+      console.error("Error fetching due cards:", error.message, {
+        status: error.status,
+      });
       showToast("Error", "Failed to load due cards for decks.", "error");
     }
   }, [decks]);
@@ -142,7 +156,10 @@ export default function MyDecksPage() {
   }, [decks, fetchDecksWithDueCards]);
 
   // Calculate total cards
-  const totalCards = decks.reduce((sum, deck) => sum + (deck.cardCount || 0), 0);
+  const totalCards = decks.reduce(
+    (sum, deck) => sum + (deck.cardCount || 0),
+    0
+  );
 
   // Filter and sort decks
   const filteredDecks = decks
@@ -153,7 +170,9 @@ export default function MyDecksPage() {
     })
     .sort((a, b) => {
       if (sortOption === "newest") {
-        return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
+        return (
+          new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
+        );
       }
       return a.title.localeCompare(b.title);
     });
@@ -173,7 +192,9 @@ export default function MyDecksPage() {
       setSelectedDeck(null);
       showToast("Success", "Deck deleted successfully.", "success");
     } catch (error: any) {
-      console.error("Error deleting deck:", error.message, { status: error.status });
+      console.error("Error deleting deck:", error.message, {
+        status: error.status,
+      });
       showToast("Error", "Failed to delete deck. Please try again.", "error");
     }
   };

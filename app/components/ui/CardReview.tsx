@@ -119,7 +119,7 @@ export function CardReview({
       {isFlipped && (
         <HStack spacing={2} w="full" justify="center">
           <Button
-            onClick={() => handleReviewClick(0)}
+            onClick={() => handleReviewClick(1)}
             colorScheme="red"
             aria-label="Rate as Again"
             _hover={{ transform: "scale(1.05)" }}
@@ -131,7 +131,7 @@ export function CardReview({
             Again
           </Button>
           <Button
-            onClick={() => handleReviewClick(1)}
+            onClick={() => handleReviewClick(2)}
             colorScheme="orange"
             aria-label="Rate as Hard"
             _hover={{ transform: "scale(1.05)" }}
@@ -143,7 +143,7 @@ export function CardReview({
             Hard
           </Button>
           <Button
-            onClick={() => handleReviewClick(2)}
+            onClick={() => handleReviewClick(3)}
             colorScheme="teal"
             aria-label="Rate as Good"
             _hover={{ transform: "scale(1.05)" }}
@@ -155,7 +155,7 @@ export function CardReview({
             Good
           </Button>
           <Button
-            onClick={() => handleReviewClick(3)}
+            onClick={() => handleReviewClick(4)}
             colorScheme="green"
             aria-label="Rate as Easy"
             _hover={{ transform: "scale(1.05)" }}

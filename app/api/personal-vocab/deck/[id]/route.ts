@@ -94,13 +94,10 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const response = await fetch(
-      `http://85.175.218.17/api/v1/deck/${params.id}`,
-      {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${accessToken}` },
-      }
-    );
+    const response = await fetch(`${API_URL}/${params.id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
     if (!response.ok)
       return NextResponse.json(
         { error: "Failed to delete deck" },
